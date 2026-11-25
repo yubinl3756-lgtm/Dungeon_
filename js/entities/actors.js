@@ -285,7 +285,7 @@ class Enemy extends Entity {
     this.spin = Math.random() * TAU; this.pat = null; this.lastPat = null; this.pd = {}; this.jumpH = 0;
     this.burn = 0; this.burnDps = 0; this.poison = 0; this.poisonDps = 0; this.slow = 0; this.slowK = 1; this.shock = 0; this.blind = 0; this.curse = 0; this.dotTimer = 0.5; this.reactCd = 0; this.fade = 1; this.phase = 1; this.elite = false;
   }
-  get targetable() { return this.alive && this.state !== 'SPAWN' && this.state !== 'INTRO' && this.state !== 'PHASE'; }
+  get targetable() { return this.alive && this.state !== 'SPAWN' && this.state !== 'INTRO' && this.state !== 'PHASE' && !this.intangible; } // intangible: 무형의 오류가 형체 없는 동안
   makeElite(E) { this.elite = true; this.maxHp = Math.round(this.maxHp * E.hp); this.hp = this.maxHp; this.damage = Math.round(this.damage * E.dmg); }
   get speedMul() { return this.slow > 0 ? this.slowK : 1; }
   setState(s) { this.state = s; this.stateTime = 0; }
@@ -422,6 +422,8 @@ class Enemy extends Entity {
     if (this.state === 'SPAWN') return;
     const x = Math.round(this.x), y = Math.round(this.y), def = this.def;
     if (def.colossal && typeof drawPrimordial === 'function') { drawPrimordial(ctx, this); return; } // 거대 보스(태고룡): 부위별 전용 그림
+    if (def.formless && typeof drawFormless === 'function') { drawFormless(ctx, this); return; } // 무형의 오류
+    if (def.mirrorDouble && typeof drawMirrorDouble === 'function') { drawMirrorDouble(ctx, this); return; } // 거울 오류: 플레이어 모습
     if (this.negateT > 0 && this.state !== 'DEAD') { const R = this.radius + 8, t = performance.now() / 1000; ctx.save(); ctx.globalCompositeOperation = 'lighter'; /* 가레스의 부정: 하얀 빛의 막 */
       ctx.globalAlpha = 0.18; ctx.fillStyle = '#d8f0ff'; ctx.beginPath(); ctx.arc(x, y - 4, R, 0, TAU); ctx.fill();
       ctx.globalAlpha = 0.85; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y - 4, R + Math.sin(t * 12), 0, TAU); ctx.stroke(); ctx.restore(); ctx.lineWidth = 1; }
@@ -444,6 +446,7 @@ class Enemy extends Entity {
       ctx.globalAlpha = 1; return;
     }
     drawEnemy(ctx, this, x, y, this.hurtFlash > 0);
+    if ((def.glitchy || this.glitchy) && typeof drawGlitchGhost === 'function') drawGlitchGhost(ctx, this, x, y); // 글리치에 오염된 적
     if (/^boss_gilgamesh/.test(def.id) && this.state !== 'DEAD') { /* [사용자 결정] 심층의 무언가에 오염된 왕: 몸에서 피어오르는 검은 기운 */
       const t = performance.now() / 1000; ctx.save(); ctx.globalAlpha = 0.35;
       for (let i = 0; i < 7; i++) { const ph = (t * 0.6 + i / 7) % 1, a = i * 2.4 + t * 0.7, rx = Math.cos(a) * (def.hitboxHalf + 2), ry = -6 - ph * 26;

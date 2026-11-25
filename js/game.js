@@ -955,32 +955,32 @@ class Game {
     const rc = T(town.cx, town.y0 + town.h - 3); this.portals.push(new Portal(rc.x, rc.y, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90])); // 안전한 마을이라 여기서 돌아갈 수 있음
     this.recordDeepSave(this.W.depth, true);
   }
-  explorerState() { // 최초의 탐험가 퀘스트 상태 (예전 '개척자의 시험' 저장은 '무명객을 찾아라'로 옮김)
-    const sv = this.save, X = sv.explorer = sv.explorer || { met: false, quest: 0, traces: 0, v2: 1 };
-    if (!X.v2) { X.v2 = 1; if (X.met) { X.quest = 1; X.traces = 0; } delete X.kills; writeSave(sv); }
+  explorerState() { // 최초의 탐험가 퀘스트 상태 (v3: 무명객을 찾아라 — 심층 60 · 예전 저장은 처음부터 다시)
+    const sv = this.save, X = sv.explorer = sv.explorer || { met: false, quest: 0, v3: 1 };
+    if (!X.v3) { X.v3 = 1; if (X.met) X.quest = 1; delete X.kills; delete X.traces; writeSave(sv); }
     return X;
   }
-  talkExplorer(npc) { // 최초의 탐험가: 첫 만남 → 무명객을 찾아라 (흔적 3개) → 보고
-    const sv = this.save, X = this.explorerState(), N = EXPLORER_TRIAL.traces;
-    if (!X.met) { this.playCutscene(EXPLORER_MEET_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.met = true; X.quest = 1; X.traces = 0; writeSave(sv); this.showBanner('무명객을 찾아라', `심층 41층 이후 어딘가에 남은 무명객의 흔적 (0/${N})`, '#48eaff'); } }); return; }
-    if (X.quest === 1 && (X.traces || 0) >= N) { this.playCutscene(EXPLORER_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.quest = 2; writeSave(sv); this.showBanner('무명객을 찾아라 — 완료', '무명객은 아직 더 깊은 곳을 걷고 있다 (다음 이야기는 준비 중)', '#48eaff'); } }); return; }
-    if (X.quest === 1) { npc.bubble = { text: `무명객의 흔적 ${X.traces || 0}/${N} — 심층 41층 아래 어딘가에 있을 거다`, t: 3.5 }; return; }
-    npc.bubble = { text: pick(['그 녀석, 지금쯤 어디를 걷고 있을까.', '지도에 빈칸이 아직 많군.', '이 아래… 이번엔 끝까지 간다.']), t: 3.5 };
+  talkExplorer(npc) { // 최초의 탐험가: 첫 만남(무명객을 찾아라) → 심층 60에서 무명객을 만남 → 보고하면 최초의 탐험가 스킨
+    const sv = this.save, X = this.explorerState();
+    if (!X.met) { this.playCutscene(EXPLORER_MEET_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.met = true; X.quest = 1; writeSave(sv); this.showBanner('무명객을 찾아라', '던전을 탐사하며 무명객의 행방을 찾기', '#48eaff'); } }); return; }
+    if (X.quest === 1 && sv.unrecordedMet) { this.playCutscene(EXPLORER_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => {
+      X.quest = 2; const id = 'skin_u_first_explorer'; sv.skins = sv.skins || []; if (!sv.skins.includes(id)) sv.skins.push(id); writeSave(sv);
+      this.showBanner('고유 스킨 획득 — 최초의 탐험가', '검사 고유 외형 · 스킨 창에서 장착할 수 있습니다', '#e0b058'); this.legendIntroCheck([id]); } }); return; }
+    if (X.quest === 1) { npc.bubble = { text: pick(['그 녀석의 소식은 아직인가.', '던전 어딘가를 걷고 있을 거다. 아무도 모르게.', '찾거든 꼭 알려 줘.']), t: 3.5 }; return; }
+    npc.bubble = { text: pick(['그 외투, 잘 어울리는군.', '지도에 빈칸이 아직 많군.', '그 녀석이 준비하는 거라… 나도 가만히 있을 순 없지.']), t: 3.5 };
   }
-  placeUnrecordedTrace(map) { // 무명객의 흔적: 퀘스트 중이면 심층 41 이후 일반 스테이지에 절반 확률로 하나 (솔로)
-    const W = this.W; if (!W.deep || W.trial || W.town || this.coopRunKey || this.areaId || W.depth < 41 || this.isBossStage) return;
-    const X = this.explorerState(); if (X.quest !== 1 || (X.traces || 0) >= EXPLORER_TRIAL.traces || Math.random() >= 0.5) return;
-    const rooms = map.rooms.filter((r) => r.type === 'combat'); if (!rooms.length) return;
-    const r = pick(rooms), c = map.tileCenter(r.cx, r.cy);
-    this.props.push(new UnrecordedTrace(c.x + 24, c.y + 16, X.traces || 0));
+  placeGlitch(map) { // 글리치: 심층 1층부터 가끔 (솔로) · 심층 60은 방 몇 개가 오염되고 글리치가 늘 하나
+    const W = this.W; if (!W.deep || W.trial || W.town || this.areaId) return;
+    if (W.glitchFloor) { const rooms = map.rooms.filter((r) => r.type === 'combat'); rooms.forEach((r, i) => { if (i % 2 === 0 || Math.random() < 0.3) r.glitch = true; }); const br = map.roomOf('boss'); if (br) br.glitch = true; }
+    if (this.coopRunKey) return;
+    const rooms = map.rooms.filter((r) => r.type === 'combat' || r.type === 'start'); if (!rooms.length || (!W.glitchFloor && Math.random() >= 0.3)) return;
+    const r = pick(rooms.filter((x) => x.type === 'combat').length ? rooms.filter((x) => x.type === 'combat') : rooms), c = map.tileCenter(r.cx, r.cy);
+    this.props.push(new GlitchRift(c.x + (Math.random() < 0.5 ? -28 : 28), c.y + 18));
   }
-  findUnrecordedTrace(tr) {
-    const X = this.save.explorer; if (!X || X.quest !== 1 || tr.taken) return; tr.taken = true;
-    const k = Math.min(UNRECORDED_TRACES.length - 1, X.traces || 0), N = EXPLORER_TRIAL.traces;
-    this.effects.ring(tr.x, tr.y, 22, '#48eaff'); SFX.play('heal');
-    this.playCutscene(UNRECORDED_TRACES[k], { always: true, force: true, focus: { x: tr.x, y: tr.y }, done: () => {
-      X.traces = Math.min(N, (X.traces || 0) + 1); writeSave(this.save);
-      this.showBanner('무명객의 흔적', X.traces >= N ? `${X.traces}/${N} — 개척자의 마을로 돌아가 보고하기` : `${X.traces}/${N}`, '#48eaff'); } });
+  investigateGlitch(g) {
+    if (g.done) return; g.done = true; const sv = this.save, N = GLITCH_GATE.need; sv.glitches = (sv.glitches || 0) + 1; writeSave(sv);
+    this.effects.ring(g.x, g.y - 6, 24, '#ff3af0'); this.effects.burst(g.x, g.y - 6, '#3affe0', 14); this.addShake(0.12, 2); SFX.play('gate', 0.4);
+    this.showBanner(`글리치 조사 ${Math.min(sv.glitches, N)}/${N}${sv.glitches >= N ? ' — 오염된 포탈을 지날 수 있다' : ''}`, pick(GLITCH_WORDS), '#ff3af0');
   }
   deepPortal() { // 로비 심층 포탈: 세이브 포인트가 있으면 시작 지점 고르기 (멀티 단체 입장은 그대로)
     if ((Net.inRoom && Net.players.length > 1) || !this.deepSaveList().length) { this.startRun(true); return; }
@@ -1146,7 +1146,7 @@ class Game {
     const shop = map.roomOf('shop');
     if (shop) this.stockShop(shop);
     this.stockSpecialRooms(map);
-    this.placeUnrecordedTrace(map); // 무명객의 흔적 (최초의 탐험가 퀘스트)
+    this.placeGlitch(map); // 글리치 (심층 1층부터 가끔 · 심층 60 오염된 방)
     const ex = map.roomOf('exit');
     if (ex) { const c = map.tileCenter(ex.cx, ex.cy); this.portals.push(new Portal(c.x, c.y, () => this.advanceStage(), '다음 스테이지')); }
     if (!W.trial) {
@@ -1400,6 +1400,7 @@ class Game {
     this.updateFlow(dt);
     if (this.coop && this.coop.host) { for (const e of this.enemies) this.withPlayer(this.nearestPlayer(e.x, e.y), () => updateEnemy(e, dt, this)); } // 적은 가장 가까운 플레이어를 노림
     else for (const e of this.enemies) updateEnemy(e, dt, this);
+    if (typeof glitchTick === 'function') glitchTick(this, dt); // 오염된 적의 순간이동
     separateEnemies(this.enemies, this.map);
     for (const pr of this.projectiles) { if (this.coop && this.coop.host && pr.owner && pr.owner !== this.player) this.withPlayer(pr.owner, () => pr.update(dt, this)); else pr.update(dt, this); } // 멀티: 참가자의 탄은 그 사람 기준으로
     for (const b of this.enemyBullets) b.update(dt, this);
@@ -2382,6 +2383,7 @@ class Game {
     const def = this.data.enemies.get(id);
     if (!def) throw new Error('알 수 없는 적 ID: ' + id);
     const e = new Enemy(x, y, def, this.scale, room);
+    if (room && room.glitch) e.glitchy = true; // 오염된 방의 적
     if (!def.boss && !def.master && !def.dummy && this.areaId) { const M = BALANCE.babylonMob; e.maxHp = Math.round(e.maxHp * M.hp); e.hp = e.maxHp; e.damage = Math.round(e.damage * M.dmg); } /* 귀환길 잡몹 +10% */
     if (def.boss && !def.master && this.areaId) { const Z = BALANCE.babylonBoss, k = Math.min(1, (this.zoneField || 0) / 9); e.maxHp = Math.round(e.maxHp * (1 + (Z.hp - 1) * k)); e.hp = e.maxHp; e.damage = Math.round(e.damage * (1 + (Z.dmg - 1) * k)); e.cdMul = (e.cdMul || 1) * (1 - (1 - Z.cooldown) * k); } /* 바빌로니아 보스 강화는 위층으로 갈수록 서서히 (지하 4는 없음 · 지구라트 4 길가메시는 전부) */ /* [사용자 결정] 바빌로니아 귀환길 보스(길가메시 포함) 난이도 상향 */
     if (this.partyCount() > 1 && !def.dummy) { e.maxHp = Math.round(e.maxHp * this.partyScale(def.boss ? 'bossHp' : 'mobHp')); e.hp = e.maxHp; } // 멀티: 인원만큼 체력 증가
@@ -2468,6 +2470,9 @@ class Game {
       this.portalSpot = c;
       const after = () => {
         if (W.deep && !W.trial) this.recordDeepSave(W.depth); // 심층 10·20·30·40: 세이브 포인트
+        if (W.deep && !W.trial && W.boss === 'boss_formless') { const fig = new UnrecordedFigure(c.x, c.y - 30); this.props.push(fig); // 무형의 오류 처치: 무명객 등장
+          this.playCutscene(UNRECORDED_MEET_LINES, { id: 'unrecorded_meet', always: true, focus: { x: fig.x, y: fig.y - 10 }, done: () => { fig.leave = 0.01; this.save.unrecordedMet = true; writeSave(this.save);
+            const X = this.save.explorer; if (X && X.met && X.quest === 1) this.showBanner('무명객을 찾아라', '개척자의 마을로 돌아가 최초의 탐험가에게 알리기', '#48eaff'); } }); }
         if (W.deep && !W.trial && W.boss === 'boss_primordial') this.playCutscene(PRIMORDIAL_FALL_LINES, { id: 'primordial_fall', focus: { x: c.x, y: c.y } }); // 태고룡 처치: 천율과 네 분신의 진실 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 20 && W.boss === 'boss_nest_mother') this.playCutscene(PRIMORDIAL_HINT_LINES, { id: 'primordial_hint', focus: { x: c.x, y: c.y } }); // 태고룡의 떡밥 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 30) {
@@ -2490,7 +2495,8 @@ class Game {
         else if (W.zone === 'babylon_under') this.babylonUnderBoss(c, W);
         else {
           this.props.push(new Chest(c.x, c.y - 24, 'weapon'));
-          this.portals.push(new Portal(c.x, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, next.deep ? [120, 200, 255] : undefined)); // [사용자 결정] 심층 보스 뒤 귀환 포탈 없앰 (돌아가려면 메뉴의 '포기하고 로비로')
+          if (next.glitchFloor && (this.save.glitches || 0) < GLITCH_GATE.need && !this.coopRunKey) this.props.push(new CorruptPortal(c.x, c.y + 24, `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`)); // 글리치를 덜 조사했으면 오염된 포탈
+          else this.portals.push(new Portal(c.x, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, next.deep ? [120, 200, 255] : undefined)); // [사용자 결정] 심층 보스 뒤 귀환 포탈 없앰 (돌아가려면 메뉴의 '포기하고 로비로')
           if (W.deep && W.depth === 10 && this.babylonOpen()) { this.portals.push(new Portal(c.x, c.y + 60, () => this.enterBabylon(), '금빛 포탈 — 바빌로니아', [255, 190, 40])); this.effects.rays(c.x, c.y + 60, '#ffd84a', 14, 50, 1); this.effects.skyBeam(c.x, c.y + 60, '#fff4c0', 0, 12); this.screenFlash = 0.2; this.flashColor = '255,216,74'; SFX.play('solomon', 0.5);
             this.playCutscene(BABYLON_APPEAR_LINES, { id: 'babylon_appear', focus: { x: c.x, y: c.y + 50 } }); } /* 금빛의 문이 처음 나타날 때 이야기 (한 번, 이야기 기록에서 다시 보기) */ /* [사용자 결정] 심층 10-4: 바빌로니아로 가는 금빛 포탈 */
         }
@@ -2970,6 +2976,8 @@ class Game {
   onEnemyKilled(enemy) {
     if (enemy.rewardGiven) return;
     enemy.rewardGiven = true;
+    if (enemy.def.glitchCore) { const B = this.enemies.find((e) => e.alive && e.def.formless); if (B) { const d = Math.round(B.maxHp * 0.035); B.hp = Math.max(1, B.hp - d); B.hurtFlash = 0.1; this.effects.beamline(enemy.x, enemy.y, B.x, B.y - 18, 2, '#ff3af0'); this.effects.text(B.x, B.y - 40, '-' + d, '#ff8af8'); } } // 글리치 핵: 부서지면 본체에도 피해
+    if (enemy.def.formless) for (const e of this.enemies) if (e !== enemy && e.alive && (e.def.glitchCore || e.def.mirrorDouble)) { e.alive = false; e.hp = 0; e.setState('DEAD'); e.rewardGiven = true; } // 본체가 쓰러지면 핵·거울도 사라짐
     { const fp = this.player; if (fp && fp.jobKillHeal && fp.state !== 'DEAD' && !enemy.def.dummy) { fp.hp = Math.min(fp.maxHp, fp.hp + fp.jobKillHeal); } } /* [직업 숙련] 망자의 수확: 처치 시 체력 회복 */
     if (!enemy.def.boss && !enemy.def.dummy && !enemy.def.master) { const C = this.corpses || (this.corpses = []); C.push({ x: enemy.x, y: enemy.y, t: this.time, used: false, maxHp: enemy.maxHp }); if (C.length > 40) C.shift(); } /* 시체 (망자의 파수기용, BALANCE.TRAP.corpseLife초) */
     this.kills++;
@@ -3152,7 +3160,7 @@ class Game {
     if (this.shake > 0) { sx = Math.round((Math.random() - 0.5) * 2 * this.shakeMag); sy = Math.round((Math.random() - 0.5) * 2 * this.shakeMag); }
     ctx.translate(-cx + sx, -cy + sy);
 
-    this.map.render(ctx, { x: cx, y: cy });
+    this.map.render(ctx, { x: cx, y: cy }); if (typeof drawGlitchRooms === 'function') drawGlitchRooms(ctx, this);
     this.map.renderDoors(ctx, this.time);
     this.map.renderAnim(ctx, this.time, { x: cx, y: cy });
     for (const po of this.portals) po.render(ctx);

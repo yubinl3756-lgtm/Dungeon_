@@ -1892,6 +1892,273 @@ const DATA_ENEMIES = [
       { type: 'meteor', count: 12, delay: 0.72, stagger: 0.16, radius: 32, bullets: 7, color: '#ff8a3a' }],
     finalPatterns: [
       { type: 'ringIn', name: '마지막 야영의 불', rings: 5, count: 58, gap: 5, speed: 102, interval: 0.72, color: '#ffb060' },
-      { type: 'spiral', name: '끝나지 않는 행군', duration: 4.8, arms: 12, interval: 0.048, spin: -3.6, color: '#ffc080' }] }
+      { type: 'spiral', name: '끝나지 않는 행군', duration: 4.8, arms: 12, interval: 0.048, spin: -3.6, color: '#ffc080' }] },
+  // ── 심층 51: 유리 사막
+  { id: 'enemy_glassscorpion_001', name: '유리 전갈', sprite: 'glassscorpion', color: '#9ad0d8', aiType: 'charger', traits: ['redash'],
+    health: 410, damage: 36, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 20 },
+  { id: 'enemy_miragespirit_001', name: '신기루 정령', sprite: 'miragespirit', color: '#e0d0a0', aiType: 'teleporter', traits: ['afterimage'],
+    health: 360, damage: 36, moveSpeed: 68, hitboxHalf: 8, preferredRange: 160, attackRange: 340, telegraphTime: 0.54, attackCooldown: 1.9, recoveryTime: 0.35,
+    bulletSpeed: 226, bulletCount: 12, bulletSpread: 0.17, bulletColor: '#bff4ff', rewardGold: 20 },
+  { id: 'enemy_sandglassgolem_001', name: '모래유리 골렘', sprite: 'sandglassgolem', color: '#c8b888', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 510, damage: 36, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 20 },
+  { id: 'enemy_prismcactus_001', name: '프리즘 선인장', sprite: 'prismcactus', color: '#6aa070', aiType: 'turret', traits: ['turretRing'],
+    health: 480, damage: 36, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#bff4ff', knockbackResist: 1, rewardGold: 20 },
+  // ── 심층 52: 시든 꽃의 왕궁
+  { id: 'enemy_thornmaid_001', name: '가시 시녀', sprite: 'thornmaid', color: '#8a4a5a', aiType: 'melee_chase', traits: ['deathBurst'],
+    health: 518, damage: 36, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 20 },
+  { id: 'enemy_pollenmoth_001', name: '꽃가루 나방', sprite: 'pollenmoth', color: '#d8c070', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 378, damage: 36, moveSpeed: 68, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.57, attackCooldown: 1.8, recoveryTime: 0.35,
+    bulletSpeed: 230, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#ffe9a0', rewardGold: 20 },
+  { id: 'enemy_witheredguard_001', name: '시든 근위병', sprite: 'witheredguard', color: '#6a5a48', aiType: 'charger', traits: ['redash'],
+    health: 418, damage: 36, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 20 },
+  { id: 'enemy_rosevineturret_001', name: '장미 덩굴 포대', sprite: 'rosevineturret', color: '#4a6a3a', aiType: 'turret', traits: ['turretSweep'],
+    health: 488, damage: 36, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 266, bulletCount: 18, bulletColor: '#ff8aa8', knockbackResist: 1, rewardGold: 20 },
+  // ── 심층 53: 노래하는 종유석 동굴
+  { id: 'enemy_echobat_001', name: '메아리 박쥐', sprite: 'echobat', color: '#5a6a8a', aiType: 'ranged_kite',
+    health: 386, damage: 37, moveSpeed: 68, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.57, attackCooldown: 1.8, recoveryTime: 0.35,
+    bulletSpeed: 230, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#9ad8ff', rewardGold: 20 },
+  { id: 'enemy_stalagolem_001', name: '종유석 골렘', sprite: 'stalagolem', color: '#8a8ea0', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 526, damage: 37, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 20 },
+  { id: 'enemy_resonancecrystal_001', name: '공명 수정', sprite: 'resonancecrystal', color: '#9ad8ff', aiType: 'turret', traits: ['turretRing'],
+    health: 496, damage: 37, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#e0f4ff', knockbackResist: 1, rewardGold: 20 },
+  { id: 'enemy_cavebard_001', name: '동굴 음유시인', sprite: 'cavebard', color: '#6a5a7a', aiType: 'caster', traits: ['castMix'],
+    health: 366, damage: 37, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.6, attackCooldown: 1.95, recoveryTime: 0.37,
+    bulletSpeed: 166, bulletCount: 26, bulletColor: '#c8b8ff', rewardGold: 20 },
+  // ── 심층 54: 고철 거인의 묘지
+  { id: 'enemy_scraprat_001', name: '고철 쥐', sprite: 'scraprat', color: '#7a6a5a', aiType: 'charger', traits: ['dashTrail'],
+    health: 434, damage: 37, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 21 },
+  { id: 'enemy_rustturret_001', name: '녹슨 회전포탑', sprite: 'rustturret', color: '#8a5a3a', aiType: 'turret', traits: ['turretSweep'],
+    health: 504, damage: 37, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 266, bulletCount: 18, bulletColor: '#ffb04a', knockbackResist: 1, rewardGold: 21 },
+  { id: 'enemy_weldghost_001', name: '용접 망령', sprite: 'weldghost', color: '#5a7a9a', aiType: 'caster', traits: ['zoneCast'],
+    health: 374, damage: 37, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.6, attackCooldown: 1.95, recoveryTime: 0.37,
+    bulletSpeed: 166, bulletCount: 26, bulletColor: '#9ae8ff', rewardGold: 21 },
+  { id: 'enemy_boltgolem_001', name: '볼트 골렘', sprite: 'boltgolem', color: '#6a6a72', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 534, damage: 37, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 21 },
+  // ── 심층 55: 안개 낀 등불 시장
+  { id: 'enemy_lanternyokai_001', name: '등불 요괴', sprite: 'lanternyokai', color: '#c86a3a', aiType: 'turret', traits: ['turretRing'],
+    health: 512, damage: 38, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#ffc860', knockbackResist: 1, rewardGold: 21 },
+  { id: 'enemy_maskmerchant_001', name: '가면 상인', sprite: 'maskmerchant', color: '#6a4a5a', aiType: 'teleporter', traits: ['afterimage'],
+    health: 392, damage: 38, moveSpeed: 68, hitboxHalf: 8, preferredRange: 160, attackRange: 340, telegraphTime: 0.54, attackCooldown: 1.9, recoveryTime: 0.35,
+    bulletSpeed: 226, bulletCount: 12, bulletSpread: 0.17, bulletColor: '#ffd84a', rewardGold: 21 },
+  { id: 'enemy_umbrellaghost_001', name: '우산 귀신', sprite: 'umbrellaghost', color: '#8a5aa0', aiType: 'charger', traits: ['pounce'],
+    health: 442, damage: 38, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 21 },
+  { id: 'enemy_fogcat_001', name: '안개 고양이', sprite: 'fogcat', color: '#a0a0b8', aiType: 'melee_chase', traits: ['deathBurst'],
+    health: 542, damage: 38, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 21 },
+  // ── 심층 56: 불과 얼음의 경계
+  { id: 'enemy_lavalizard_001', name: '용암 도마뱀', sprite: 'lavalizard', color: '#c8502a', aiType: 'charger', traits: ['dashTrail'],
+    health: 450, damage: 38, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 21 },
+  { id: 'enemy_frostwisp_001', name: '서리 정령', sprite: 'frostwisp', color: '#a8d8ff', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 410, damage: 38, moveSpeed: 68, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.57, attackCooldown: 1.8, recoveryTime: 0.35,
+    bulletSpeed: 230, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#c8f0ff', rewardGold: 21 },
+  { id: 'enemy_halfgolem_001', name: '반쪽 골렘', sprite: 'halfgolem', color: '#7a6a6a', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 550, damage: 38, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 21 },
+  { id: 'enemy_steamvent_001', name: '증기 분출구', sprite: 'steamvent', color: '#6a6a6a', aiType: 'turret', traits: ['turretRing'],
+    health: 520, damage: 38, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#e8e8f0', knockbackResist: 1, rewardGold: 21 },
+  // ── 심층 57: 뼈피리 부족의 마을
+  { id: 'enemy_boneflutewarrior_001', name: '뼈피리 전사', sprite: 'boneflutewarrior', color: '#c8b890', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 558, damage: 39, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 22 },
+  { id: 'enemy_skullshaman_001', name: '해골 주술사', sprite: 'skullshaman', color: '#8a6a4a', aiType: 'caster', traits: ['castMix'],
+    health: 398, damage: 39, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.6, attackCooldown: 1.95, recoveryTime: 0.37,
+    bulletSpeed: 166, bulletCount: 26, bulletColor: '#e8d8a8', rewardGold: 22 },
+  { id: 'enemy_drumskeleton_001', name: '북 치는 해골', sprite: 'drumskeleton', color: '#a89070', aiType: 'turret', traits: ['turretRing'],
+    health: 528, damage: 39, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#ffe0a0', knockbackResist: 1, rewardGold: 22 },
+  { id: 'enemy_bonewolf_001', name: '뼈 늑대', sprite: 'bonewolf', color: '#d8ccb0', aiType: 'charger', traits: ['pounce'],
+    health: 458, damage: 39, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 22 },
+  // ── 심층 58: 끝없는 폭포의 협곡
+  { id: 'enemy_falcarp_001', name: '폭포 잉어', sprite: 'falcarp', color: '#e07a3a', aiType: 'charger', traits: ['redash'],
+    health: 466, damage: 39, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 22 },
+  { id: 'enemy_spraywisp_001', name: '물보라 정령', sprite: 'spraywisp', color: '#9ae8ff', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 426, damage: 39, moveSpeed: 68, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.57, attackCooldown: 1.8, recoveryTime: 0.35,
+    bulletSpeed: 230, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#c8f4ff', rewardGold: 22 },
+  { id: 'enemy_mossturtle_001', name: '이끼 거북', sprite: 'mossturtle', color: '#4a7a5a', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 566, damage: 39, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 22 },
+  { id: 'enemy_waterwheel_001', name: '물레방아 포대', sprite: 'waterwheel', color: '#6a5a40', aiType: 'turret', traits: ['turretSweep'],
+    health: 536, damage: 39, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 266, bulletCount: 18, bulletColor: '#7ae0ff', knockbackResist: 1, rewardGold: 22 },
+  // ── 심층 59: 금 간 하늘 아래의 폐허
+  { id: 'enemy_ruinpatrol_001', name: '폐허 순찰자', sprite: 'ruinpatrol', color: '#7a7488', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 574, damage: 40, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, rewardGold: 22 },
+  { id: 'enemy_crackedstatue_001', name: '금 간 석상', sprite: 'crackedstatue', color: '#9a96a8', aiType: 'turret', traits: ['turretRing'],
+    health: 544, damage: 40, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#d8c8ff', knockbackResist: 1, rewardGold: 22 },
+  { id: 'enemy_windblade_001', name: '바람 칼날 정령', sprite: 'windblade', color: '#a8d0c8', aiType: 'charger', traits: ['dashTrail'],
+    health: 474, damage: 40, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 22 },
+  { id: 'enemy_oblivionscholar_001', name: '망각의 학자', sprite: 'oblivionscholar', color: '#5a5070', aiType: 'caster', traits: ['castMix'],
+    health: 414, damage: 40, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.6, attackCooldown: 1.95, recoveryTime: 0.37,
+    bulletSpeed: 166, bulletCount: 26, bulletColor: '#c8b8ff', rewardGold: 22 },
+  // ── 심층 60: 오염된 층 — 글리치에 오염된 것들
+  { id: 'enemy_brokenshade_001', name: '깨진 그림자', sprite: 'brokenshade', color: '#3a3a4a', aiType: 'melee_chase', traits: ['deathBurst'],
+    health: 582, damage: 40, moveSpeed: 62, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.26, recoveryTime: 0.44, knockbackResist: 0.8, glitchy: true, rewardGold: 23 },
+  { id: 'enemy_noisewisp_001', name: '노이즈 정령', sprite: 'noisewisp', color: '#5ae8d8', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 442, damage: 40, moveSpeed: 68, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.57, attackCooldown: 1.8, recoveryTime: 0.35,
+    bulletSpeed: 230, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#ff3af0', glitchy: true, rewardGold: 23 },
+  { id: 'enemy_errorturret_001', name: '오류 포탑', sprite: 'errorturret', color: '#5a5a6a', aiType: 'turret', traits: ['turretRing'],
+    health: 552, damage: 40, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.82, attackCooldown: 2.15, recoveryTime: 0.32,
+    bulletSpeed: 240, bulletCount: 14, bulletColor: '#3affe0', knockbackResist: 1, glitchy: true, rewardGold: 23 },
+  { id: 'enemy_damagedknight_001', name: '손상된 기사', sprite: 'damagedknight', color: '#6a6a7a', aiType: 'charger', traits: ['redash'],
+    health: 482, damage: 40, moveSpeed: 112, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.4, dashSpeed: 530, dashDuration: 0.5,
+    attackCooldown: 1.5, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, glitchy: true, rewardGold: 23 },
+  // 무형의 오류가 흩뿌리는 글리치 핵 (모두 부수면 본체가 잠시 형체를 드러냄) · 플레이어를 비추는 거울 분신
+  { id: 'enemy_glitchcore_001', name: '글리치 핵', sprite: 'glitchcore', color: '#ff3af0', aiType: 'turret', traits: ['turretRing'], glitchy: true, glitchCore: true,
+    health: 330, damage: 40, moveSpeed: 0, hitboxHalf: 8, attackRange: 400, telegraphTime: 0.9, attackCooldown: 2.6, recoveryTime: 0.3,
+    bulletSpeed: 210, bulletCount: 10, bulletColor: '#ff3af0', knockbackResist: 1, rewardGold: 0 },
+  { id: 'enemy_glitchdouble_001', name: '거울 오류', sprite: 'glitchcore', color: '#3affe0', aiType: 'mirror', glitchy: true, mirrorDouble: true,
+    health: 900, damage: 40, moveSpeed: 170, hitboxHalf: 8, attackRange: 420, telegraphTime: 0.5, attackCooldown: 1.5, recoveryTime: 0.3,
+    bulletSpeed: 250, bulletCount: 5, bulletSpread: 0.16, bulletColor: '#3affe0', knockbackResist: 1, rewardGold: 0 },
+  // ── 심층 51 보스: 유리 전갈왕
+  { id: 'boss_glass_scorpion', name: '유리 전갈왕', title: '햇빛을 모아 사막을 녹이는 투명한 전갈', sprite: 'boss_glassscorpion', color: '#6e6448', phaseColors: ['#6e6448', '#9ad0d8', '#bff4ff'],
+    boss: true, aiType: 'boss', health: 3000, damage: 36, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1500, patterns: [
+      { type: 'charge', dashes: 3, speed: 470, color: '#bff4ff' },
+      { type: 'laser', beams: 2, spreadAng: 0.5, sweep: 1.8, duration: 2.4, width: 9, telegraph: 1.0, color: '#bff4ff' },
+      { type: 'summon', enemyId: 'enemy_glassscorpion_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'split', volleys: 5, count: 5, spread: 0.3, speed: 198, splitAfter: 0.5, splitN: 10, color: '#e0f8ff' },
+      { type: 'rain', duration: 2.6, interval: 0.055, speed: 186, slant: 0.5, color: '#d8ccaa' }],
+    finalPatterns: [
+      { type: 'laser', name: '집광', beams: 4, spreadAng: 1.57, sweep: 1.5, duration: 3.0, width: 9, telegraph: 1.2, color: '#ffffff' },
+      { type: 'vortex', name: '유리 모래 폭풍', duration: 5.4, pull: 78, arms: 11, interval: 0.056, spin: 3.6, color: '#bff4ff' }] },
+  // ── 심층 52 보스: 시든 장미 여왕
+  { id: 'boss_withered_rose', name: '시든 장미 여왕', title: '꽃이 다 지고도 왕좌를 지키는 여왕', sprite: 'boss_witheredrose', color: '#5e4248', phaseColors: ['#5e4248', '#c08a96', '#ff8aa8'],
+    boss: true, aiType: 'boss', health: 3060, damage: 36, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1560, patterns: [
+      { type: 'orbit', count: 30, radius: 80, spinTime: 1.2, spin: 3.2, speed: 188, color: '#ff8aa8' },
+      { type: 'zones', count: 12, radius: 30, delay: 0.72, bullets: 7, spreadAround: 135, stagger: 0.065, color: '#ff8aa8' },
+      { type: 'summon', enemyId: 'enemy_thornmaid_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'lances', count: 24, delay: 0.53, speed: 332, color: '#ffd0e0' },
+      { type: 'reverse', rings: 4, count: 48, gap: 5, speed: 164, flip: 0.7, interval: 0.37, color: '#ff8aa8' }],
+    finalPatterns: [
+      { type: 'spiral', name: '마지막 꽃잎', duration: 4.8, arms: 12, interval: 0.048, spin: 3.6, color: '#ff8aa8' },
+      { type: 'grid', name: '가시 정원', spacing: 3, delay: 0.72, radius: 32, bullets: 5, color: '#a0d070' }] },
+  // ── 심층 53 보스: 메아리의 지휘자
+  { id: 'boss_echo_conductor', name: '메아리의 지휘자', title: '동굴의 모든 소리를 하나의 노래로 묶는 자', sprite: 'boss_echoconductor', color: '#464a58', phaseColors: ['#464a58', '#9aa4c0', '#9ad8ff'],
+    boss: true, aiType: 'boss', health: 3120, damage: 37, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1620, patterns: [
+      { type: 'ringOut', rings: 4, count: 54, gap: 5, speed: 160, interval: 0.38, color: '#9ad8ff' },
+      { type: 'aimed', volleys: 6, count: 13, spread: 0.13, color: '#c8b8ff' },
+      { type: 'summon', enemyId: 'enemy_echobat_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'ringIn', rings: 4, count: 46, gap: 5, speed: 100, interval: 0.74, color: '#9ad8ff' },
+      { type: 'teleport', bullets: 26, color: '#e0f4ff' }],
+    finalPatterns: [
+      { type: 'radial', name: '공명', rings: 6, count: 30, color: '#9ad8ff' },
+      { type: 'spiral', name: '동굴의 합창', duration: 4.8, arms: 12, interval: 0.048, spin: -3.6, color: '#c8b8ff' }] },
+  // ── 심층 54 보스: 깨어난 고철 거인
+  { id: 'boss_scrap_giant', name: '깨어난 고철 거인', title: '버려진 기계들이 모여 일어선 거인', sprite: 'boss_scrapgiant', color: '#4e4842', phaseColors: ['#4e4842', '#a89a8a', '#ffb04a'],
+    boss: true, aiType: 'boss', health: 3180, damage: 37, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1680, patterns: [
+      { type: 'slam', radius: 82, color: '#ffb04a' },
+      { type: 'meteor', count: 12, delay: 0.72, stagger: 0.16, radius: 32, bullets: 7, color: '#ff8a3a' },
+      { type: 'summon', enemyId: 'enemy_scraprat_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'charge', dashes: 4, speed: 470, color: '#ffb04a' },
+      { type: 'wall', waves: 6, gap: 4, speed: 150, interval: 0.6, color: '#ffd08a' }],
+    finalPatterns: [
+      { type: 'grid', name: '고철 낙하', spacing: 3, delay: 0.72, radius: 32, bullets: 5, color: '#ff8a3a' },
+      { type: 'vortex', name: '용광로 심장', duration: 5.5, pull: 78, arms: 11, interval: 0.056, spin: 3.7, color: '#ffb04a' }] },
+  // ── 심층 55 보스: 등불 상인
+  { id: 'boss_lantern_merchant', name: '등불 상인', title: '안개 속에서 길 잃은 자의 시간을 사는 상인', sprite: 'boss_lanternmerchant', color: '#4e4058', phaseColors: ['#4e4058', '#c0a0b8', '#ffc860'],
+    boss: true, aiType: 'boss', health: 3240, damage: 38, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1740, patterns: [
+      { type: 'teleport', bullets: 26, color: '#ffc860' },
+      { type: 'split', volleys: 6, count: 5, spread: 0.3, speed: 198, splitAfter: 0.5, splitN: 10, color: '#ffc860' },
+      { type: 'summon', enemyId: 'enemy_umbrellaghost_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'orbit', count: 32, radius: 82, spinTime: 1.15, spin: 3.3, speed: 192, color: '#ffc860' },
+      { type: 'cross', waves: 6, len: 12, step: 22, radius: 16, delay: 0.6, interval: 0.33, bullets: 0, color: '#c0a0b8' }],
+    finalPatterns: [
+      { type: 'ringIn', name: '꺼지지 않는 등불', rings: 5, count: 58, gap: 5, speed: 102, interval: 0.72, color: '#ffc860' },
+      { type: 'spiral', name: '안개 속 흥정', duration: 4.8, arms: 12, interval: 0.048, spin: 3.6, color: '#c0a0b8' }] },
+  // ── 심층 56 보스: 갈라진 정령왕
+  { id: 'boss_split_elemental', name: '갈라진 정령왕', title: '불과 얼음이 한 몸에서 싸우는 정령', sprite: 'boss_splitelemental', color: '#4a3a3a', phaseColors: ['#4a3a3a', '#c08a7a', '#ff9a5a'],
+    boss: true, aiType: 'boss', health: 3300, damage: 38, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1800, patterns: [
+      { type: 'laser', beams: 2, spreadAng: 3.14, sweep: 2.0, duration: 2.6, width: 9, telegraph: 1.0, color: '#ff9a5a' },
+      { type: 'meteor', count: 12, delay: 0.72, stagger: 0.16, radius: 32, bullets: 7, color: '#a8d8ff' },
+      { type: 'summon', enemyId: 'enemy_frostwisp_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'reverse', rings: 4, count: 50, gap: 5, speed: 166, flip: 0.7, interval: 0.36, color: '#a8d8ff' },
+      { type: 'zones', count: 12, radius: 30, delay: 0.72, bullets: 7, spreadAround: 135, stagger: 0.065, color: '#ff9a5a' }],
+    finalPatterns: [
+      { type: 'vortex', name: '불과 얼음의 소용돌이', duration: 5.5, pull: 78, arms: 12, interval: 0.054, spin: 3.7, color: '#ff9a5a' },
+      { type: 'laser', name: '경계 붕괴', beams: 6, spreadAng: 1.05, sweep: 1.4, duration: 3.0, width: 9, telegraph: 1.2, color: '#a8d8ff' }] },
+  // ── 심층 57 보스: 뼈피리 족장
+  { id: 'boss_bone_chief', name: '뼈피리 족장', title: '뼈피리 소리로 죽은 자를 일으키는 족장', sprite: 'boss_bonechief', color: '#54483a', phaseColors: ['#54483a', '#c8b490', '#e8d8a8'],
+    boss: true, aiType: 'boss', health: 3360, damage: 39, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1860, patterns: [
+      { type: 'summon', enemyId: 'enemy_bonewolf_001', count: 3 },
+      { type: 'aimed', volleys: 6, count: 13, spread: 0.13, color: '#e8d8a8' },
+      { type: 'summon', enemyId: 'enemy_boneflutewarrior_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'slam', radius: 82, color: '#e8d8a8' },
+      { type: 'ringOut', rings: 4, count: 56, gap: 5, speed: 162, interval: 0.38, color: '#ffe0a0' }],
+    finalPatterns: [
+      { type: 'stampede', name: '뼈 늑대 떼', dashes: 4, aim: 0.55, speed: 470, maxDist: 420, trail: 24, radius: 18, hdelay: 0.5, bullets: 4, mult: 1.3, ring: 16, ringSpeed: 150, color: '#e8d8a8' },
+      { type: 'spiral', name: '망자의 피리', duration: 4.8, arms: 12, interval: 0.048, spin: -3.6, color: '#ffe0a0' }] },
+  // ── 심층 58 보스: 폭포를 거스르는 잉어용
+  { id: 'boss_carp_dragon', name: '폭포를 거스르는 잉어용', title: '천 년 동안 폭포를 거슬러 오른 잉어', sprite: 'boss_carpdragon', color: '#3a5258', phaseColors: ['#3a5258', '#8ac0c8', '#7ae0ff'],
+    boss: true, aiType: 'boss', health: 3420, damage: 39, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1920, patterns: [
+      { type: 'charge', dashes: 4, speed: 480, color: '#7ae0ff' },
+      { type: 'rain', duration: 2.8, interval: 0.05, speed: 196, slant: -0.2, color: '#c8f4ff' },
+      { type: 'summon', enemyId: 'enemy_falcarp_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'wall', waves: 6, gap: 4, speed: 152, interval: 0.58, color: '#7ae0ff' },
+      { type: 'lances', count: 24, delay: 0.52, speed: 336, color: '#ffd060' }],
+    finalPatterns: [
+      { type: 'vortex', name: '용문 돌파', duration: 5.5, pull: 80, arms: 12, interval: 0.054, spin: -3.7, color: '#7ae0ff' },
+      { type: 'meteor', name: '쏟아지는 폭포', count: 16, delay: 0.86, stagger: 0.12, radius: 34, bullets: 8, color: '#c8f4ff' }] },
+  // ── 심층 59 보스: 폐허를 걷는 거신
+  { id: 'boss_ruin_colossus', name: '폐허를 걷는 거신', title: '금 간 하늘을 등에 지고 걷는 돌의 거인', sprite: 'boss_ruincolossus', color: '#4e4a5a', phaseColors: ['#4e4a5a', '#b4acc8', '#d8c8ff'],
+    boss: true, aiType: 'boss', health: 3480, damage: 40, moveSpeed: 44, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 180,
+    rewardGold: 1980, patterns: [
+      { type: 'slam', radius: 86, color: '#d8c8ff' },
+      { type: 'cross', waves: 6, len: 12, step: 22, radius: 16, delay: 0.6, interval: 0.33, bullets: 0, color: '#d8c8ff' },
+      { type: 'summon', enemyId: 'enemy_ruinpatrol_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'meteor', count: 13, delay: 0.7, stagger: 0.15, radius: 33, bullets: 7, color: '#b4acc8' },
+      { type: 'ringIn', rings: 5, count: 50, gap: 5, speed: 102, interval: 0.72, color: '#d8c8ff' }],
+    finalPatterns: [
+      { type: 'grid', name: '무너지는 하늘', spacing: 3, delay: 0.7, radius: 33, bullets: 5, color: '#d8c8ff' },
+      { type: 'ringOut', name: '거신의 발걸음', rings: 6, count: 60, gap: 5, speed: 168, interval: 0.3, color: '#b4acc8' }] },
+  // ── 심층 60 보스: 무형의 오류 — 형체가 없다. 글리치 핵을 모두 부숴야 잠시 형체를 드러냄 · 2페이즈 거울 오류 · 3페이즈 오염 지대 [사용자 결정: 이전에 없던 보스전]
+  { id: 'boss_formless', name: '무형의 오류', title: '이름도 모습도 갖지 못한 것', sprite: 'boss_formless', formless: true, color: '#2a2a36', phaseColors: ['#2a2a36', '#5a3a7a', '#ff3af0'],
+    boss: true, aiType: 'formless', health: 2700, damage: 40, moveSpeed: 30, hitboxHalf: 18, knockbackResist: 1, attackCooldown: 0.95, bulletSpeed: 182,
+    rewardGold: 2200, patterns: [
+      { type: 'aimed', volleys: 5, count: 11, spread: 0.15, color: '#ff3af0' },
+      { type: 'zones', count: 10, radius: 30, delay: 0.8, bullets: 7, spreadAround: 135, stagger: 0.07, color: '#3affe0' },
+      { type: 'split', volleys: 5, count: 5, spread: 0.3, speed: 196, splitAfter: 0.5, splitN: 10, color: '#ff3af0' }],
+    phase2Patterns: [
+      { type: 'teleport', bullets: 26, color: '#3affe0' },
+      { type: 'reverse', rings: 4, count: 46, gap: 5, speed: 162, flip: 0.7, interval: 0.38, color: '#ff3af0' }],
+    finalPatterns: [
+      { type: 'grid', name: '데이터 붕괴', spacing: 3, delay: 0.76, radius: 31, bullets: 4, color: '#3affe0' },
+      { type: 'spiral', name: '이름 없는 노이즈', duration: 4.8, arms: 12, interval: 0.05, spin: 3.6, color: '#ff3af0' }] }
 
 ];

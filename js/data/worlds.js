@@ -287,7 +287,59 @@ const DEEP_WORLDS = [
   // ── 심층 50: 개척자의 마을 — 최초의 탐험가가 만든, 던전에서 유일하게 사람이 사는 곳 (몬스터 없음) [사용자 결정]
   { id: 'deep_pioneertown', name: '개척자의 마을', boss: null, bossOnly: true, town: true, waves: 0, deep: true, enemies: [],
     palette: { style: 'wood', accent: '#ffd080', floor: ['#5a4a36', '#5e4e3a'], corridor: ['#4a3c2c', '#4c3e2e'], wall: '#6a4e34', wallTop: '#86643f',
-      wallFace: '#c89a62', faceLine: '#a87e4c', deco: 'rgba(255,208,128,0.4)' } }
+      wallFace: '#c89a62', faceLine: '#a87e4c', deco: 'rgba(255,208,128,0.4)' } },
+  // ── 심층 51~59 [사용자 요청]
+  // ── 심층 51: 유리 사막
+  { id: 'deep_glassdesert', name: '유리 사막', boss: 'boss_glass_scorpion', waves: 2, deep: true,
+    enemies: [['enemy_glassscorpion_001', 3], ['enemy_miragespirit_001', 2], ['enemy_sandglassgolem_001', 3], ['enemy_prismcactus_001', 2]],
+    palette: { style: 'sand', accent: '#bff4ff', floor: ['#5a5040', '#5e5444'], corridor: ['#3e3828', '#403a2a'], wall: '#6e6448', wallTop: '#8a7e5a',
+      wallFace: '#d8ccaa', faceLine: '#b8ac88', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 52: 시든 꽃의 왕궁
+  { id: 'deep_witheredpalace', name: '시든 꽃의 왕궁', boss: 'boss_withered_rose', waves: 2, deep: true,
+    enemies: [['enemy_thornmaid_001', 3], ['enemy_pollenmoth_001', 3], ['enemy_witheredguard_001', 2], ['enemy_rosevineturret_001', 2]],
+    palette: { style: 'goldhall', accent: '#ff8aa8', floor: ['#4a3a3e', '#4e3e42'], corridor: ['#32262a', '#34282c'], wall: '#5e4248', wallTop: '#7a565e',
+      wallFace: '#c08a96', faceLine: '#a0707c', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 53: 노래하는 종유석 동굴
+  { id: 'deep_echocave', name: '노래하는 종유석 동굴', boss: 'boss_echo_conductor', waves: 2, deep: true,
+    enemies: [['enemy_echobat_001', 3], ['enemy_stalagolem_001', 3], ['enemy_resonancecrystal_001', 2], ['enemy_cavebard_001', 2]],
+    palette: { style: 'mine', accent: '#9ad8ff', floor: ['#34363e', '#383a42'], corridor: ['#22242a', '#24262c'], wall: '#464a58', wallTop: '#5a6072',
+      wallFace: '#9aa4c0', faceLine: '#7e88a6', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 54: 고철 거인의 묘지
+  { id: 'deep_scrapyard', name: '고철 거인의 묘지', boss: 'boss_scrap_giant', waves: 2, deep: true,
+    enemies: [['enemy_scraprat_001', 3], ['enemy_rustturret_001', 2], ['enemy_weldghost_001', 2], ['enemy_boltgolem_001', 3]],
+    palette: { style: 'metal', accent: '#ffb04a', floor: ['#3a3632', '#3e3a36'], corridor: ['#26231f', '#282521'], wall: '#4e4842', wallTop: '#665e56',
+      wallFace: '#a89a8a', faceLine: '#8a7e70', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 55: 안개 낀 등불 시장
+  { id: 'deep_lanternmarket', name: '안개 낀 등불 시장', boss: 'boss_lantern_merchant', waves: 2, deep: true,
+    enemies: [['enemy_lanternyokai_001', 2], ['enemy_maskmerchant_001', 3], ['enemy_umbrellaghost_001', 3], ['enemy_fogcat_001', 2]],
+    palette: { style: 'theater', accent: '#ffc860', floor: ['#3a3240', '#3e3644'], corridor: ['#26202c', '#28222e'], wall: '#4e4058', wallTop: '#665474',
+      wallFace: '#c0a0b8', faceLine: '#a0849c', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 56: 불과 얼음의 경계
+  { id: 'deep_fireice', name: '불과 얼음의 경계', boss: 'boss_split_elemental', waves: 2, deep: true,
+    enemies: [['enemy_lavalizard_001', 3], ['enemy_frostwisp_001', 3], ['enemy_halfgolem_001', 2], ['enemy_steamvent_001', 2]],
+    palette: { style: 'basalt', accent: '#ff9a5a', floor: ['#3a3030', '#2e3640'], corridor: ['#262020', '#1e242a'], wall: '#4a3a3a', wallTop: '#5e4848',
+      wallFace: '#c08a7a', faceLine: '#7a9ab8', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 57: 뼈피리 부족의 마을
+  { id: 'deep_bonetribe', name: '뼈피리 부족의 마을', boss: 'boss_bone_chief', waves: 2, deep: true,
+    enemies: [['enemy_boneflutewarrior_001', 3], ['enemy_skullshaman_001', 2], ['enemy_drumskeleton_001', 2], ['enemy_bonewolf_001', 3]],
+    palette: { style: 'bone', accent: '#e8d8a8', floor: ['#3e3628', '#42392b'], corridor: ['#2a241a', '#2c261c'], wall: '#54483a', wallTop: '#6e5e4a',
+      wallFace: '#c8b490', faceLine: '#a8966e', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 58: 끝없는 폭포의 협곡
+  { id: 'deep_waterfall', name: '끝없는 폭포의 협곡', boss: 'boss_carp_dragon', waves: 2, deep: true,
+    enemies: [['enemy_falcarp_001', 3], ['enemy_spraywisp_001', 3], ['enemy_mossturtle_001', 2], ['enemy_waterwheel_001', 2]],
+    palette: { style: 'sunken', accent: '#7ae0ff', floor: ['#2e3c40', '#314044'], corridor: ['#1e282a', '#202a2c'], wall: '#3a5258', wallTop: '#4c6a72',
+      wallFace: '#8ac0c8', faceLine: '#6ea4ac', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 59: 금 간 하늘 아래의 폐허
+  { id: 'deep_crackedruins', name: '금 간 하늘 아래의 폐허', boss: 'boss_ruin_colossus', waves: 2, deep: true,
+    enemies: [['enemy_ruinpatrol_001', 3], ['enemy_crackedstatue_001', 2], ['enemy_windblade_001', 3], ['enemy_oblivionscholar_001', 2]],
+    palette: { style: 'sanctum', accent: '#d8c8ff', floor: ['#3a3842', '#3e3c46'], corridor: ['#26242c', '#28262e'], wall: '#4e4a5a', wallTop: '#666076',
+      wallFace: '#b4acc8', faceLine: '#968eac', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 60: 오염된 층 — 글리치에 오염된 방들, 무형의 보스 (글리치를 20개 이상 조사해야 들어올 수 있음) [사용자 결정]
+  { id: 'deep_corrupted', name: '오염된 층', boss: 'boss_formless', waves: 2, deep: true, glitchFloor: true,
+    enemies: [['enemy_brokenshade_001', 3], ['enemy_noisewisp_001', 3], ['enemy_errorturret_001', 2], ['enemy_damagedknight_001', 2]],
+    palette: { style: 'void', accent: '#ff3af0', floor: ['#22222a', '#25252e'], corridor: ['#16161c', '#18181e'], wall: '#32323e', wallTop: '#424252',
+      wallFace: '#7a7a96', faceLine: '#62627c', deco: 'rgba(58,255,224,0.32)' } }
+
 
 ];
 const DEEP_START = DATA_WORLDS.length; // 이 번호부터 심층
@@ -337,6 +389,7 @@ function zoneLabel(z, f, l) { const Z = ZONES[z], F = Z && Z.fields[Math.max(0, 
 function runLabel(r) { return r.zone && ZONES[r.zone] ? zoneLabel(r.zone, r.zf || 0, r.levelIdx) : stageLabel(r.worldIdx, r.levelIdx); } // 이어하기 표시용
 function runWorld(r) { return r.zone && ZONES[r.zone] ? zoneWorld(r.zone, r.zf || 0) : worldDef(r.worldIdx); }
 // 화면 표시용 스테이지 이름: 1-1 ~ 10-4, 심층은 '심층 1-1'
+const GLITCH_GATE = { need: 20, depth: 60 }; // [사용자 결정] 글리치를 20개 이상 조사해야 심층 60으로 가는 포탈이 오염되지 않음
 const DEEP_SAVE_DEPTHS = [10, 20, 30, 40, 50]; // 50: 개척자의 마을 (도착하면 저장, 마을부터 시작) // 심층 세이브 포인트 (이 층 보스를 깨면 저장)
 function stageLabel(w, l) { return w >= DEEP_START ? (worldDef(w).bossOnly ? `심층 ${w - DEEP_START + 1}` : `심층 ${w - DEEP_START + 1}-${l + 1}`) : `${w + 1}-${l + 1}`; } // 보스만 있는 층(심층 40)은 스테이지 번호 없이
 const LOBBY_PALETTE = { style: 'wood', floor: ['#3a2e26', '#3d3129'], corridor: ['#3a2e26', '#3d3129'], wall: '#40354f', wallTop: '#4b3f5c',
