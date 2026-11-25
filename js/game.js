@@ -949,6 +949,7 @@ class Game {
     const sc = T(start.cx, start.y0 + 1); this.props.push(new TownSign(sc.x + 30, sc.y + 6, '개척자의 마을'));
     const pc = T(town.cx, town.cy); this.props.push(new Fountain(pc.x, pc.y)); this.props[this.props.length - 1].town = true;
     for (const [dx, dy, key, name, lines] of TOWN_FOLK) { const c = T(town.cx + dx, town.y0 + dy); this.props.push(new TownResident(c.x, c.y, key, name, lines, dx < 0 ? 1 : -1)); }
+    if (this.save.unrecordedMet) { const uc = T(town.cx + 21, town.y0 + 12); this.props.push(new TownUnrecorded(uc.x, uc.y)); } // 심층 60에서 만난 뒤: 마을에 머무는 미기록자
     const ac = T(town.cx - 11, town.y0 + 12); this.props.push(new UpgradeAnvil(ac.x, ac.y, BALANCE.upgrade.forgeRoomDiscount, BALANCE.upgrade.forgeRoomBonus, true));
     const ec = T(house.cx, house.y0 + 3); this.props.push(new FirstExplorer(ec.x, ec.y));
     const next = worldDef(this.worldIdx + 1), nc = T(house.cx + 6, house.y0 + house.h - 3);

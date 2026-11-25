@@ -11,6 +11,12 @@ Object.assign(GUILD_NPC_LOOK, {
   t_herb: { id: 'npc_t_herb', look: { sprite: 'druid', body: '#4a6a3a', accent: '#c8e0a0' } },
   t_hunter: { id: 'npc_t_hunter', look: { sprite: 'gunslinger', body: '#3a3a4a', accent: '#c83a3a' } }
 });
+// 고유 스킨 모습으로 그리기 (최초의 탐험가 · 미기록자 NPC) [사용자 결정: 고유 스킨의 모델링 사용]
+function uniqueNpcDraw(ctx, skinId, x, y, face, game) {
+  const K = typeof SKINS !== 'undefined' && SKINS.find((k) => k.id === skinId), hero = K && game.data.heroes.get(K.hero);
+  if (!hero) return false;
+  drawHero(ctx, heroWithLook(hero, { sprite: K.sprite }), x, y + Math.round(Math.sin((game ? game.time : 0) * 2 + x) * 0.6), face, 0, false); return true;
+}
 // 말풍선 (길드용 drawBubble과 같지만 길드 벽 안쪽으로 붙이지 않음)
 function townBubble(ctx, x, y, text) {
   ctx.font = 'bold 8px monospace';
@@ -74,7 +80,7 @@ class FirstExplorer {
     ctx.fillStyle = '#c83a3a'; ctx.fillRect(x + 23, y - 28, 3, 3); ctx.fillStyle = '#5a8a6a'; ctx.fillRect(x - 27, y - 23, 3, 3);
     ctx.fillStyle = OUTLINE; ctx.fillRect(x - 17, y + 2, 34, 9); ctx.fillStyle = '#7a5230'; ctx.fillRect(x - 16, y + 3, 32, 7); ctx.fillStyle = '#e8d4a8'; ctx.fillRect(x - 12, y + 3, 10, 4); ctx.fillRect(x + 3, y + 4, 8, 3); // 책상 + 펼친 지도
     ctx.fillStyle = `rgba(255,200,96,${0.6 + 0.3 * Math.sin(t * 6)})`; ctx.fillRect(x + 12, y, 3, 3); // 촛불
-    npcDraw(ctx, 'explorer', x, y - 6, 1, game);
+    if (!uniqueNpcDraw(ctx, 'skin_u_first_explorer', x, y - 6, 1, game)) npcDraw(ctx, 'explorer', x, y - 6, 1, game);
     const X = game.save.explorer || {}, ready = X.quest === 1 && !!game.save.unrecordedMet;
     if ((!X.met || ready) && Math.floor(t * 3) % 2 === 0) hudText(ctx, ready ? '?' : '!', x, y - 34, '#ffd84a', 'center', 14);
     hudText(ctx, X.met ? '최초의 탐험가' : '???', x, y + 13, '#e0b058', 'center', 7);
@@ -86,4 +92,16 @@ class TownSign {
   constructor(x, y, text) { this.x = x; this.y = y; this.text = text; this.radius = 0; }
   label() { return null; }
   render(ctx) { const x = Math.round(this.x), y = Math.round(this.y); ctx.fillStyle = OUTLINE; ctx.fillRect(x - 1, y - 6, 3, 12); ctx.fillStyle = '#6a4a2a'; ctx.fillRect(x, y - 5, 1, 10); signText(ctx, this.text, x, y - 10, '#ffe0b0'); }
+}
+// 심층 60에서 만난 뒤 마을에 머무는 미기록자 (무명객) — 고유 스킨 모습 [사용자 결정]
+class TownUnrecorded extends TownResident {
+  constructor(x, y) { super(x, y, 'unrecorded', '미기록자', UNRECORDED_TOWN_LINES, -1); }
+  get labelColor() { return '#48eaff'; }
+  render(ctx, game) {
+    const x = Math.round(this.x), y = Math.round(this.y), t = game.time;
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x, y + 5, 7, 2.5, 0, 0, TAU); ctx.fill();
+    if (!uniqueNpcDraw(ctx, 'skin_u_unrecorded', x, y - 2, this.face, game)) npcDraw(ctx, 'unrecorded', x, y - 2, this.face, game);
+    if (Math.floor(t * 3) % 9 === 0 && typeof glitchNoise === 'function') glitchNoise(ctx, x - 8, y - 22, 16, 22, 5, t); // 가끔 스치는 노이즈
+    hudText(ctx, this.name, x, y + 8, '#48eaff', 'center', 6);
+  }
 }

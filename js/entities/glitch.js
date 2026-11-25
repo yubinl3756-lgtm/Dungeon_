@@ -88,7 +88,7 @@ class UnrecordedFigure {
   render(ctx, game) {
     this.t += 1 / 60; if (this.leave) this.leave += 1 / 60; const a = this.leave ? Math.max(0, 1 - this.leave / 1.2) : Math.min(1, this.t / 0.8); if (a <= 0) return;
     const x = Math.round(this.x + (Math.floor(this.t * 9) % 5 === 0 ? 2 : 0)), y = Math.round(this.y);
-    if (a > 0.5) npcDraw(ctx, 'unrecorded', x, y - 2, -1, game); // (drawHero는 투명도를 1로 되돌리므로 반쯤 나타난 뒤부터 그림)
+    if (a > 0.5 && !(typeof uniqueNpcDraw === 'function' && uniqueNpcDraw(ctx, 'skin_u_unrecorded', x, y - 2, -1, game))) npcDraw(ctx, 'unrecorded', x, y - 2, -1, game); // (drawHero는 투명도를 1로 되돌리므로 반쯤 나타난 뒤부터 그림)
     ctx.save(); ctx.globalAlpha = a * 0.5; ctx.fillStyle = '#48eaff'; ctx.fillRect(x - 7, y - 20 + (Math.floor(this.t * 20) % 18), 14, 1); ctx.restore();
     glitchNoise(ctx, x - 10, y - 26, 20, 10, 6, this.t, a); // 얼굴 자리가 노이즈로 가려짐
     hudText(ctx, '???', x, y + 8, '#48eaff', 'center', 7);
