@@ -1157,12 +1157,15 @@ class Game {
       this.props.push(new ShopItem(c.x + (i >= 2 ? 8 : 0), c.y, kind, price, def));
     });
   }
+  // 결정석 부활: 일반 던전은 탐험마다 1번, 심층은 3번까지 (runReviveUsed = 이번 탐험에서 부활한 횟수, 예전 저장의 true는 1번으로 봄)
+  reviveMax() { return this.worldIdx >= DEEP_START ? 3 : 1; }
+  reviveLeft() { return Math.max(0, this.reviveMax() - (Number(this.save.runReviveUsed) || 0)); }
   reviveRun() {
-    const COST = 200, p = this.player, coopRun = !!this.coopRunKey, used = coopRun ? !!(this.coopReviveUsed || (this.coop && this.coop.reviveUsed)) : !!this.save.runReviveUsed;
+    const COST = 200, p = this.player, coopRun = !!this.coopRunKey, used = coopRun ? !!(this.coopReviveUsed || (this.coop && this.coop.reviveUsed)) : this.reviveLeft() <= 0;
     if (this.mode !== 'dungeon' || this.trialW || !p || p.state !== 'DEAD' || used || this.save.bank < COST) return false;
     this.save.bank -= COST;
     if (coopRun) { this.coopReviveUsed = true; if (this.coop) this.coop.reviveUsed = true; }
-    else this.save.runReviveUsed = true;
+    else this.save.runReviveUsed = (Number(this.save.runReviveUsed) || 0) + 1;
     writeSave(this.save);
     p.state = 'NORMAL'; p.deathTimer = 0;
     p.hp = Math.max(1, Math.ceil(p.maxHp * 0.5));
@@ -1364,7 +1367,7 @@ class Game {
     } else if (p.deathTimer > 1 && !this.overlay) {
       SFX.stopMusic();
       if (this.areaId) { this.babylonDeathRestart(); }
-      else if (this.mode === 'dungeon' && !this.trialW && !this.save.runReviveUsed) this.overlay = { type: 'revive', msg: null };
+      else if (this.mode === 'dungeon' && !this.trialW && (this.coopRunKey ? !this.save.runReviveUsed : this.reviveLeft() > 0)) this.overlay = { type: 'revive', msg: null };
       else this.endRun(false);
     }
     this.updateCamera(dt);

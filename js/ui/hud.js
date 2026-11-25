@@ -775,7 +775,8 @@ class HUD {
     } else if (o.type === 'revive') {
       const cost = 200, bank = game.save.bank, canRevive = bank >= cost;
       hudText(ctx, '쓰러졌습니다', VIEW_W / 2, 65, '#ff7070', 'center', 17);
-      hudText(ctx, '결정석 200개를 사용하면 이번 탐험에서 한 번 부활할 수 있습니다.', VIEW_W / 2, 96, '#ddd', 'center', 9);
+      const rMax = game.coopRunKey ? 1 : game.reviveMax(), rLeft = game.coopRunKey ? 1 : game.reviveLeft();
+      hudText(ctx, rMax > 1 ? `결정석 200개로 부활 — 심층에서는 탐험마다 ${rMax}번까지 (남은 횟수 ${rLeft}/${rMax})` : '결정석 200개를 사용하면 이번 탐험에서 한 번 부활할 수 있습니다.', VIEW_W / 2, 96, '#ddd', 'center', 9);
       hudText(ctx, `보유 결정석: ${bank}개`, VIEW_W / 2, 116, canRevive ? '#7ad0ff' : '#ff9a9a', 'center', 10);
       const reviveRect = HUD.reviveRect(0), leaveRect = HUD.reviveRect(1);
       ctx.fillStyle = canRevive ? 'rgba(90,150,210,0.24)' : 'rgba(90,90,90,0.12)';
