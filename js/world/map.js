@@ -272,6 +272,25 @@ function buildBossArena(opts) {
   return map;
 }
 
+// 심층 50 개척자의 마을: 시작 방 → 넓은 마을 광장(집·샘·모루) → 맨 위 최초의 탐험가의 집. 몬스터 없음 (모든 방이 처음부터 '정리됨') [사용자 결정]
+function buildTown(opts) {
+  const map = new DungeonMap(GRID_W * CELL_W, GRID_H * CELL_H, opts.palette), cx = (GRID_W * CELL_W) >> 1;
+  const hw = 19, hh = 11, hy0 = 6, hx0 = cx - (hw >> 1);          // 탐험가의 집 (보스 방 자리)
+  const tw = 49, th = 23, ty0 = hy0 + hh + 5, tx0 = cx - (tw >> 1); // 마을 광장
+  const sw = 11, sh = 9, sy0 = ty0 + th + 5, sx0 = cx - (sw >> 1); // 시작 방 (마을 입구)
+  const mk = (type, x0, y0, w, h) => ({ type, gx: 2, gy: 1, x0, y0, w, h, cx, cy: y0 + (h >> 1), doors: [], state: 'cleared', visited: true, wavesLeft: 0, safe: true });
+  const house = mk('boss', hx0, hy0, hw, hh), town = mk('town', tx0, ty0, tw, th), start = mk('start', sx0, sy0, sw, sh);
+  map.carveRoom(hx0, hy0, hw, hh); map.carveRoom(tx0, ty0, tw, th); map.carveRoom(sx0, sy0, sw, sh);
+  const corridor = (ys, ye) => { for (let y = ys; y <= ye; y++) { for (let d = -1; d <= 1; d++) map.set(cx + d, y, T_FLOOR); for (const d of [-2, 2]) if (map.get(cx + d, y) === T_VOID) map.set(cx + d, y, T_WALL); } };
+  corridor(hy0 + hh, ty0 - 1); corridor(ty0 + th, sy0 - 1);
+  map.houses = [];
+  const block = (x, y, w, h) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) map.set(x + i, y + j, T_COVER); map.houses.push({ x, y, w, h }); };
+  for (const [dx, dy] of [[3, 4], [12, 4], [31, 4], [40, 4], [3, 15], [12, 15], [31, 15], [40, 15]]) block(tx0 + dx, ty0 + dy, 6, 3); // 집 8채 (가운데 큰길은 비움)
+  map.rooms.push(house, town, start); map.edges.push([house, town], [town, start]);
+  map.startRoom = start; map.roomOf = (type) => map.rooms.find((r) => r.type === type) || null;
+  return map;
+}
+
 // 전투방 엄폐물 (문 통로를 막지 않고, 큰 적도 지나가도록 2칸 이상 틈 유지)
 function placeCover(map, r) {
   const block = (x, y, w, h) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) map.set(x + i, y + j, T_COVER); };

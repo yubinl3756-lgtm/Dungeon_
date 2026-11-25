@@ -593,6 +593,45 @@ const DEEP41_ARRIVAL_LINES = [
   '「한 층 내려갈 때마다, 천율에게 한 걸음씩 가까워진다.」 — 태고룡의 말이 떠오른다.',
   '계단 끝, 아주 먼 곳에서 닫힌 문 하나가 희미하게 빛나고 있다.'
 ];
+// 심층 50 개척자의 마을 [사용자 결정]: 최초의 탐험가가 만든, 던전에서 유일하게 사람이 사는 곳 (몬스터 없음)
+const TOWN_ARRIVAL_LINES = [
+  '계단 끝에서 따뜻한 불빛이 보인다. 몬스터의 기척이 전혀 없다.',
+  '돌담과 나무 지붕, 연기가 피어오르는 굴뚝. 던전 한가운데에 마을이 있다.',
+  '입구의 낡은 표지판: 「개척자의 마을 — 여기까지 온 자를 환영한다」',
+  '광장의 몇 안 되는 사람들이 고개를 든다. 모두 범상치 않은 기척을 지녔다.',
+  '마을 가장 안쪽, 큰 집의 창문에 아직 불이 켜져 있다.'
+];
+const EXPLORER_TRIAL = { bosses: 3 }; // 개척자의 시험: 마을을 나선 뒤(심층 51 이후) 보스 처치 수
+const EXPLORER_MEET_LINES = [
+  '벽 하나를 가득 채운 지도 앞에, 낡은 외투를 입은 사람이 서 있다.',
+  '「…손님이라니. 여기까지 걸어서 내려온 녀석은 몇 년 만이지?」',
+  '「놀랐나? 던전에도 사람이 살 곳 하나쯤은 있어야지. 이 마을은 내가 만들었다.」',
+  '「입구에는 아무 표식도 없었다. 그래서 내가 처음 새겼지.」',
+  '「길이 없다면— 만들면 된다.」',
+  '찢긴 일지의 마지막 문장. 「길이 없다면—」 그 뒤가 이제야 이어진다.',
+  '「그래, 기록관 서고의 그 일지는 내 거다. 마지막 장은 여기 오는 길에 찢어 버렸지.」',
+  '「사람들은 나를 최초의 탐험가라 부르더군. 이름 같은 건 오래전에 두고 왔다.」',
+  '「태고룡을 넘어왔다면 들었겠지. 천율, 네 분신, 그리고 이 던전이 거대한 체라는 것.」',
+  '「이 마을 사람들은 그 이야기를 듣고도 끝까지 살아남은 자들이다.」',
+  '「몬스터는 이 마을 안으로 들어오지 못한다. 내가 그렇게 만들었으니까.」',
+  '「하지만 나는 여기서 멈출 생각이 없다. 천율에게 가는 길을, 다시 한 번 개척할 거다.」',
+  '「그 전에 확인할 게 있다. 네가 함께 길을 낼 만한 녀석인지.」',
+  '「마을을 나서 더 아래로 내려가라. 그곳의 강한 녀석 셋을 쓰러뜨리고 돌아와라.」'
+];
+const EXPLORER_REPORT_LINES = [
+  '지도 위에 새 길을 긋던 개척자가 고개를 든다.',
+  '「…돌아왔군. 그 표정을 보니 길을 잃지는 않았나 보다.」',
+  '「좋다. 너라면 함께 갈 수 있겠어.」',
+  '「천율에게 가는 길은 나도 아직 끝까지 가 보지 못했다.」',
+  '「그러니— 이번에는 같이 만들자.」'
+];
+const TOWN_FOLK = [ /* [x(광장 가운데 기준 칸), y(광장 위 기준 칸), 모습, 이름, 대사] */
+  [-15, 9, 't_lancer', '은퇴한 창기사', ['여기까지 온 녀석은 오랜만이군.', '나는 천문 앞에서 무릎을 꿇었다. 그 뒤로는 여기서 창만 닦고 있지.', '마을 안에서는 몬스터 걱정은 하지 마라.']],
+  [13, 9, 't_mage', '백발의 마도사', ['별이 아래에서 뜨는 곳은 이 던전뿐이야.', '천율의 분신 하나를 멀리서 본 적이 있어. …다시는 보고 싶지 않아.', '촌장님은 위쪽 큰 집에 계셔. 지도에 파묻혀서.']],
+  [-8, 12, 't_smith', '대장장이', ['내 모루는 공짜가 아니다. 그래도 바깥보다는 낫지.', '무기는 주인보다 오래 살아남는 법이다.']],
+  [5, 12, 't_herb', '약초꾼', ['샘물은 마음껏 마셔. 개척자가 바위를 깎아서 낸 물길이야.', '이 마을엔 다섯이 채 안 살아. 다들 여기까지 온 괴물 같은 사람들이지.']],
+  [17, 19, 't_hunter', '쌍권총 사냥꾼', ['네 실력이면… 개척자가 먼저 말을 걸겠군.', '무명객? 이름도 남기지 않고 지나간 녀석이 있었지. 이상하게 얼굴이 기억나지 않아.']]
+];
 const DEEP30_ARRIVAL_LINES = [
   '돌바닥이 끝나고, 끝없이 이어지는 책장이 모습을 드러낸다.',
   '벽에는 수많은 탐험 기록이 꽂혀 있다. 완성된 기록도, 중간에 끊긴 기록도 있다.',
@@ -665,6 +704,9 @@ const STORY_ARCHIVE = [
   { id: 'primordial_hint', name: '용들의 벽화', kind: 'cut', lines: () => PRIMORDIAL_HINT_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_hint') },
   { id: 'elder_arrival', name: '태고룡의 둥지', kind: 'cut', lines: () => ELDER_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('elder_arrival') },
   { id: 'deep41_arrival', name: '부서진 하늘계단', kind: 'cut', lines: () => DEEP41_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('deep41_arrival') },
+  { id: 'town_arrival', name: '개척자의 마을', kind: 'cut', lines: () => TOWN_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('town_arrival') },
+  { id: 'explorer_meet', name: '최초의 탐험가', kind: 'cut', lines: () => EXPLORER_MEET_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.met) },
+  { id: 'explorer_report', name: '같이 만드는 길', kind: 'cut', lines: () => EXPLORER_REPORT_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.quest >= 2) },
   { id: 'primordial_fall', name: '천율과 네 분신', kind: 'cut', lines: () => PRIMORDIAL_FALL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_fall') },
   ...UNIQUE_RECORDS.map((R) => ({ id: 'urec_' + R.id, name: R.name, kind: 'cut', lines: () => R.lines, unlocked: (sv) => uniqueRecordFound(sv, R.id) })),
   { id: 'unique_records_all', name: '끊긴 이야기들', kind: 'cut', lines: () => UNIQUE_RECORDS_ALL_LINES, unlocked: (sv) => !!sv.uniqueQuest },

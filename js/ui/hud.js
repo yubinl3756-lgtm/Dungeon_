@@ -270,12 +270,13 @@ class HUD {
     } else if (o.type === 'deep_saves') { /* 심층 시작 지점 고르기 */
       const m = game.input.mouse, list = game.deepSaveList(), items = [null, ...list];
       hudText(ctx, '심층 입장 — 시작 지점 고르기', VIEW_W / 2, 30, '#9ad8ff', 'center', 14);
-      hudText(ctx, '심층 10·20·30·40 보스를 깬 순간의 캐릭터 그대로, 다음 층부터 시작합니다', VIEW_W / 2, 50, '#aaa', 'center', 7);
+      hudText(ctx, '심층 10·20·30·40 보스를 깬 순간(50은 마을에 도착한 순간)의 캐릭터 그대로 시작합니다', VIEW_W / 2, 50, '#aaa', 'center', 7);
       items.forEach((S, i) => { const r = HUD.travelRect(i, items.length), hov = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h, col = S ? '#9ad8ff' : '#c8b890';
         ctx.fillStyle = hov ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.06)'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = col; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
         if (!S) { hudText(ctx, `${i + 1}. 심층 1부터 (10-4 기록으로 입장)`, r.x + 10, r.y + 10, col, 'left', 9); return; }
         const H = game.data.heroes.get(S.hero), ln = S.p.line && jobLines(S.hero).find((l) => l.id === S.p.line);
-        hudText(ctx, `${i + 1}. 심층 ${S.depth + 1}부터 — 심층 ${S.depth} 세이브`, r.x + 10, r.y + 5, col, 'left', 9);
+        const townS = worldDef(DEEP_START + S.depth - 1).town;
+        hudText(ctx, townS ? `${i + 1}. 심층 ${S.depth} 개척자의 마을부터` : `${i + 1}. 심층 ${S.depth + 1}부터 — 심층 ${S.depth} 세이브`, r.x + 10, r.y + 5, townS ? '#ffd080' : col, 'left', 9);
         hudText(ctx, `${H ? H.name : ''}${ln ? ' · ' + ln.name : ''} · 무기 ${(S.p.weapons || []).length}개 · 축복 ${(S.p.buffs || []).length}개 · 골드 ${S.gold || 0}`, r.x + 10, r.y + 18, '#aaa', 'left', 7); });
       hudText(ctx, '번호 키 / 클릭: 선택   ·   Esc: 닫기', VIEW_W / 2, VIEW_H - 14, '#888', 'center', 7);
     } else if (o.type === 'travel') { /* + 빠른 이동 */

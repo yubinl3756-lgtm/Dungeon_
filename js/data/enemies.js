@@ -1786,6 +1786,111 @@ const DATA_ENEMIES = [
       { type: 'lances', count: 24, delay: 0.54, speed: 330, color: '#ffffff' }],
     finalPatterns: [
       { type: 'laser', name: '여섯 날개의 빛', beams: 6, spreadAng: 1.05, sweep: 1.4, duration: 3.0, width: 9, telegraph: 1.2, color: '#fff4c0' },
-      { type: 'ringIn', name: '닫히는 천문', rings: 5, count: 56, gap: 5, speed: 100, interval: 0.74, color: '#d8d4f0' }] }
+      { type: 'ringIn', name: '닫히는 천문', rings: 5, count: 56, gap: 5, speed: 100, interval: 0.74, color: '#d8d4f0' }] },
+  // ── 심층 46: 떠도는 섬 군도
+  { id: 'enemy_isleturtle_001', name: '섬 거북', sprite: 'isleturtle', color: '#5e8474', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 470, damage: 34, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.28, recoveryTime: 0.45, knockbackResist: 0.8, rewardGold: 18 },
+  { id: 'enemy_windray_001', name: '바람 가오리', sprite: 'windray', color: '#7ac0c8', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 360, damage: 34, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.58, attackCooldown: 1.82, recoveryTime: 0.35,
+    bulletSpeed: 226, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#9ae8ff', rewardGold: 18 },
+  { id: 'enemy_cloudjelly_001', name: '구름 해파리', sprite: 'cloudjelly', color: '#c8e8f0', aiType: 'turret', traits: ['turretRing'],
+    health: 440, damage: 34, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.84, attackCooldown: 2.2, recoveryTime: 0.32,
+    bulletSpeed: 236, bulletCount: 14, bulletColor: '#e0f8ff', knockbackResist: 1, rewardGold: 18 },
+  { id: 'enemy_islehawk_001', name: '군도의 매', sprite: 'islehawk', color: '#8a7a5a', aiType: 'charger', traits: ['dashTrail'],
+    health: 390, damage: 34, moveSpeed: 110, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.41, dashSpeed: 520, dashDuration: 0.5,
+    attackCooldown: 1.52, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 18 },
+  // ── 심층 47: 수정 심장의 동굴
+  { id: 'enemy_crystalgolem_001', name: '수정 골렘', sprite: 'crystalgolem', color: '#8a6ab0', aiType: 'melee_chase', traits: ['shockwave', 'deathBurst'],
+    health: 480, damage: 34, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.28, recoveryTime: 0.45, knockbackResist: 0.8, rewardGold: 18 },
+  { id: 'enemy_prismbat_001', name: '프리즘 박쥐', sprite: 'prismbat', color: '#c890e0', aiType: 'ranged_kite',
+    health: 355, damage: 34, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.58, attackCooldown: 1.82, recoveryTime: 0.35,
+    bulletSpeed: 228, bulletCount: 7, bulletSpread: 0.18, bulletColor: '#ffb0f0', rewardGold: 18 },
+  { id: 'enemy_shardtendril_001', name: '결정 촉수', sprite: 'shardtendril', color: '#a070c8', aiType: 'turret', traits: ['turretSweep'],
+    health: 450, damage: 34, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.84, attackCooldown: 2.2, recoveryTime: 0.32,
+    bulletSpeed: 264, bulletCount: 18, bulletColor: '#ffd0f8', knockbackResist: 1, rewardGold: 18 },
+  { id: 'enemy_refractmage_001', name: '굴절 술사', sprite: 'refractmage', color: '#6a4e86', aiType: 'caster', traits: ['castMix'],
+    health: 335, damage: 34, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.62, attackCooldown: 1.98, recoveryTime: 0.37,
+    bulletSpeed: 164, bulletCount: 25, bulletColor: '#ffb0f0', rewardGold: 18 },
+  // ── 심층 48: 천둥 제단
+  { id: 'enemy_stormmonk_001', name: '뇌운 수도승', sprite: 'stormmonk', color: '#585a74', aiType: 'teleporter', traits: ['afterimage'],
+    health: 345, damage: 35, moveSpeed: 68, hitboxHalf: 8, preferredRange: 160, attackRange: 340, telegraphTime: 0.55, attackCooldown: 1.92, recoveryTime: 0.35,
+    bulletSpeed: 224, bulletCount: 12, bulletSpread: 0.17, bulletColor: '#ffe94a', rewardGold: 19 },
+  { id: 'enemy_thunderdrum_001', name: '천둥 북', sprite: 'thunderdrum', color: '#7a5a3a', aiType: 'turret', traits: ['turretRing'],
+    health: 455, damage: 35, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.84, attackCooldown: 2.2, recoveryTime: 0.32,
+    bulletSpeed: 236, bulletCount: 14, bulletColor: '#fff27a', knockbackResist: 1, rewardGold: 19 },
+  { id: 'enemy_boltHound_001', name: '번개 사냥개', sprite: 'bolthound', color: '#4a5a8a', aiType: 'charger', traits: ['redash'],
+    health: 395, damage: 35, moveSpeed: 110, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.41, dashSpeed: 520, dashDuration: 0.5,
+    attackCooldown: 1.52, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 19 },
+  { id: 'enemy_rodknight_001', name: '피뢰침 기사', sprite: 'rodknight', color: '#8488ac', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 485, damage: 35, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.28, recoveryTime: 0.45, knockbackResist: 0.8, rewardGold: 19 },
+  // ── 심층 49: 원정대의 마지막 야영지
+  { id: 'enemy_lostscout_001', name: '길 잃은 정찰병', sprite: 'lostscout', color: '#7a6a4a', aiType: 'melee_chase', traits: ['deathBurst'],
+    health: 480, damage: 35, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.5,
+    attackCooldown: 1.28, recoveryTime: 0.45, knockbackResist: 0.8, rewardGold: 19 },
+  { id: 'enemy_rustsurveyor_001', name: '녹슨 측량기', sprite: 'rustsurveyor', color: '#8a6a4a', aiType: 'turret', traits: ['turretSweep'],
+    health: 460, damage: 35, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.84, attackCooldown: 2.2, recoveryTime: 0.32,
+    bulletSpeed: 266, bulletCount: 18, bulletColor: '#ffb060', knockbackResist: 1, rewardGold: 19 },
+  { id: 'enemy_starvedporter_001', name: '굶주린 짐꾼', sprite: 'starvedporter', color: '#6a5a44', aiType: 'charger', traits: ['pounce'],
+    health: 400, damage: 35, moveSpeed: 110, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.41, dashSpeed: 520, dashDuration: 0.5,
+    attackCooldown: 1.52, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 19 },
+  { id: 'enemy_madcartographer_001', name: '미쳐 버린 지도술사', sprite: 'madcartographer', color: '#5a4a3a', aiType: 'caster', traits: ['zoneCast'],
+    health: 340, damage: 35, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.62, attackCooldown: 1.98, recoveryTime: 0.37,
+    bulletSpeed: 164, bulletCount: 25, bulletColor: '#ffc080', rewardGold: 19 },
+  // ── 심층 46 보스: 하늘 고래 — 등에 작은 섬을 지고 구름 속을 헤엄친다
+  { id: 'boss_sky_whale', name: '하늘 고래', title: '섬을 등에 지고 구름을 헤엄치는 자', sprite: 'boss_skywhale', color: '#4a6a5e', phaseColors: ['#4a6a5e', '#7ac0c8', '#e0f8ff'],
+    boss: true, aiType: 'boss', health: 2740, damage: 34, moveSpeed: 40, hitboxHalf: 20, knockbackResist: 1, attackCooldown: 0.88, bulletSpeed: 174,
+    rewardGold: 1340, patterns: [
+      { type: 'charge', dashes: 3, speed: 440, color: '#9ae8ff' },
+      { type: 'rain', duration: 2.6, interval: 0.06, speed: 180, slant: 0.4, color: '#e0f8ff' },
+      { type: 'summon', enemyId: 'enemy_windray_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'ringOut', rings: 4, count: 54, gap: 5, speed: 160, interval: 0.4, color: '#9ae8ff' },
+      { type: 'wall', waves: 5, gap: 4, speed: 148, interval: 0.62, color: '#c8f4ff' }],
+    finalPatterns: [
+      { type: 'vortex', name: '고래의 숨', duration: 5.5, pull: 76, arms: 11, interval: 0.058, spin: 3.6, color: '#9ae8ff' },
+      { type: 'meteor', name: '떨어지는 섬', count: 14, delay: 0.9, stagger: 0.14, radius: 34, bullets: 8, color: '#a0d0c0' }] },
+  // ── 심층 47 보스: 수정 심장 — 빛을 삼켜 증폭하는 거대한 결정
+  { id: 'boss_crystal_heart', name: '수정 심장', title: '빛을 삼켜 몇 배로 되돌려 주는 결정', sprite: 'boss_crystalheart', color: '#4e3e66', phaseColors: ['#4e3e66', '#a070c8', '#ffd0f8'],
+    boss: true, aiType: 'boss', health: 2800, damage: 34, moveSpeed: 26, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.86, bulletSpeed: 176,
+    rewardGold: 1380, patterns: [
+      { type: 'laser', beams: 3, spreadAng: 2.09, sweep: 1.4, duration: 2.6, width: 8, telegraph: 1.0, color: '#ffb0f0' },
+      { type: 'split', volleys: 5, count: 6, spread: 0.28, speed: 196, splitAfter: 0.48, splitN: 10, color: '#ffd0f8' },
+      { type: 'summon', enemyId: 'enemy_shardtendril_001', count: 2 }],
+    phase2Patterns: [
+      { type: 'reverse', rings: 4, count: 48, gap: 5, speed: 164, flip: 0.7, interval: 0.37, color: '#ffb0f0' },
+      { type: 'lances', count: 24, delay: 0.53, speed: 332, color: '#ffffff' }],
+    finalPatterns: [
+      { type: 'laser', name: '프리즘 폭주', beams: 5, spreadAng: 1.25, sweep: 1.6, duration: 3.0, width: 8, telegraph: 1.2, color: '#ffb0f0' },
+      { type: 'spiral', name: '결정의 개화', duration: 4.8, arms: 12, interval: 0.048, spin: 3.6, color: '#ffd0f8' }] },
+  // ── 심층 48 보스: 뇌명의 사도 — 천둥으로 천율의 말을 전하는 자
+  { id: 'boss_thunder_apostle', name: '뇌명의 사도', title: '천둥으로 천율의 말을 전하는 자', sprite: 'boss_thunderapostle', color: '#44465a', phaseColors: ['#44465a', '#8488ac', '#ffe94a'],
+    boss: true, aiType: 'boss', health: 2860, damage: 35, moveSpeed: 46, hitboxHalf: 18, knockbackResist: 1, attackCooldown: 0.85, bulletSpeed: 178,
+    rewardGold: 1420, patterns: [
+      { type: 'zones', count: 12, radius: 30, delay: 0.72, bullets: 7, spreadAround: 135, stagger: 0.065, color: '#ffe94a' },
+      { type: 'teleport', bullets: 26, color: '#fff27a' },
+      { type: 'summon', enemyId: 'enemy_boltHound_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'cross', waves: 6, len: 12, step: 22, radius: 16, delay: 0.6, interval: 0.33, bullets: 0, color: '#ffe94a' },
+      { type: 'aimed', volleys: 6, count: 13, spread: 0.13, color: '#fff27a' }],
+    finalPatterns: [
+      { type: 'grid', name: '천벌', spacing: 3, delay: 0.72, radius: 32, bullets: 5, color: '#ffe94a' },
+      { type: 'vortex', name: '뇌운의 눈', duration: 5.5, pull: 78, arms: 11, interval: 0.056, spin: -3.7, color: '#fff27a' }] },
+  // ── 심층 49 보스: 돌아오지 못한 원정대장 — 마을에 닿지 못한 마지막 원정대
+  { id: 'boss_lost_captain', name: '돌아오지 못한 원정대장', title: '마을을 코앞에 두고 멈춰 버린 자', sprite: 'boss_lostcaptain', color: '#4e3e2e', phaseColors: ['#4e3e2e', '#9a7a58', '#ffb060'],
+    boss: true, aiType: 'boss', health: 2940, damage: 35, moveSpeed: 48, hitboxHalf: 17, knockbackResist: 1, attackCooldown: 0.84, bulletSpeed: 178,
+    rewardGold: 1480, patterns: [
+      { type: 'charge', dashes: 4, speed: 470, color: '#ffb060' },
+      { type: 'aimed', volleys: 6, count: 13, spread: 0.13, color: '#ffc080' },
+      { type: 'summon', enemyId: 'enemy_lostscout_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'slam', radius: 80, color: '#ffb060' },
+      { type: 'orbit', count: 30, radius: 80, spinTime: 1.15, spin: 3.3, speed: 192, color: '#ffc080' },
+      { type: 'meteor', count: 12, delay: 0.72, stagger: 0.16, radius: 32, bullets: 7, color: '#ff8a3a' }],
+    finalPatterns: [
+      { type: 'ringIn', name: '마지막 야영의 불', rings: 5, count: 58, gap: 5, speed: 102, interval: 0.72, color: '#ffb060' },
+      { type: 'spiral', name: '끝나지 않는 행군', duration: 4.8, arms: 12, interval: 0.048, spin: -3.6, color: '#ffc080' }] }
 
 ];

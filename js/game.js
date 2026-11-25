@@ -936,11 +936,37 @@ class Game {
   // ── 런 진행
   // ── 심층 세이브 포인트: 심층 10·20·30·40 보스를 깬 순간의 캐릭터를 저장 → 로비 심층 포탈에서 골라 바로 다음 층부터 시작 [사용자 결정]
   deepSaveList() { const S = this.save.deepSaves || {}; return DEEP_SAVE_DEPTHS.filter((d) => S[d] && S[d].p && this.data.heroes.get(S[d].hero)).map((d) => Object.assign({ depth: d }, S[d])); }
-  recordDeepSave(depth) {
+  recordDeepSave(depth, town = false) {
     if (!DEEP_SAVE_DEPTHS.includes(depth) || this.coopRunKey || this.trialW || this.areaId || !this.player) return;
     const snap = this.snapshotRun(); this.save.deepSaves = this.save.deepSaves || {};
     this.save.deepSaves[depth] = { hero: snap.hero, p: snap.p, gold: this.gold, t: Date.now() }; writeSave(this.save);
-    this.showBanner(`세이브 포인트 — 심층 ${depth}`, '로비의 심층 포탈에서 지금 이 상태로 다음 층부터 시작할 수 있습니다', '#9ad8ff');
+    if (!town) this.showBanner(`세이브 포인트 — 심층 ${depth}`, '로비의 심층 포탈에서 지금 이 상태로 다음 층부터 시작할 수 있습니다', '#9ad8ff');
+  }
+  populateTown(map) { // 심층 50 개척자의 마을: 집 · 주민 · 샘 · 모루 · 최초의 탐험가 · 포탈 + 세이브 포인트
+    const town = map.roomOf('town'), house = map.roomOf('boss'), start = map.startRoom, T = (tx, ty) => map.tileCenter(tx, ty);
+    (map.houses || []).forEach((h, i) => this.props.push(new TownHouse(h, i)));
+    const sc = T(start.cx, start.y0 + 1); this.props.push(new TownSign(sc.x + 30, sc.y + 6, '개척자의 마을'));
+    const pc = T(town.cx, town.cy); this.props.push(new Fountain(pc.x, pc.y)); this.props[this.props.length - 1].town = true;
+    for (const [dx, dy, key, name, lines] of TOWN_FOLK) { const c = T(town.cx + dx, town.y0 + dy); this.props.push(new TownResident(c.x, c.y, key, name, lines, dx < 0 ? 1 : -1)); }
+    const ac = T(town.cx - 11, town.y0 + 12); this.props.push(new UpgradeAnvil(ac.x, ac.y, BALANCE.upgrade.forgeRoomDiscount, BALANCE.upgrade.forgeRoomBonus, true));
+    const ec = T(house.cx, house.y0 + 3); this.props.push(new FirstExplorer(ec.x, ec.y));
+    const next = worldDef(this.worldIdx + 1), nc = T(house.cx + 6, house.y0 + house.h - 3);
+    this.portals.push(new Portal(nc.x, nc.y, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, [120, 200, 255]));
+    const rc = T(town.cx, town.y0 + town.h - 3); this.portals.push(new Portal(rc.x, rc.y, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90])); // 안전한 마을이라 여기서 돌아갈 수 있음
+    this.recordDeepSave(this.W.depth, true);
+  }
+  talkExplorer(npc) { // 최초의 탐험가: 첫 만남 → 개척자의 시험 (마을 밖 보스 셋) → 보고
+    const sv = this.save, X = sv.explorer = sv.explorer || { met: false, quest: 0, kills: 0 };
+    if (!X.met) { this.playCutscene(EXPLORER_MEET_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.met = true; X.quest = 1; X.kills = 0; writeSave(sv); this.showBanner('개척자의 시험', `마을을 나서 더 아래의 보스 처치 (0/${EXPLORER_TRIAL.bosses})`, '#e0b058'); } }); return; }
+    if (X.quest === 1 && (X.kills || 0) >= EXPLORER_TRIAL.bosses) { this.playCutscene(EXPLORER_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.quest = 2; writeSave(sv); this.showBanner('개척자의 시험 완료', '개척자와 함께 길을 낼 자격을 얻었다 — 다음 이야기는 준비 중', '#e0b058'); } }); return; }
+    if (X.quest === 1) { npc.bubble = { text: `시험: 마을 밖 보스 ${X.kills || 0}/${EXPLORER_TRIAL.bosses} — 강한 녀석을 쓰러뜨리고 와라`, t: 3.5 }; return; }
+    npc.bubble = { text: pick(['길은 같이 만드는 거다. 준비되면 말해라.', '지도에 빈칸이 아직 많군.', '천문 너머… 이번엔 끝까지 간다.']), t: 3.5 };
+  }
+  explorerBossKill(W) { // 개척자의 시험: 마을(심층 50)을 지난 뒤의 심층 보스 처치 수 (솔로)
+    const X = this.save.explorer; if (!X || X.quest !== 1 || !W.deep || W.trial || this.coopRunKey || W.depth <= 50) return;
+    if ((X.kills || 0) >= EXPLORER_TRIAL.bosses) return;
+    X.kills = (X.kills || 0) + 1; writeSave(this.save);
+    this.showBanner('개척자의 시험 진행', `마을 밖 보스 처치 (${X.kills}/${EXPLORER_TRIAL.bosses})${X.kills >= EXPLORER_TRIAL.bosses ? ' — 마을로 돌아가 보고하기' : ''}`, '#e0b058');
   }
   deepPortal() { // 로비 심층 포탈: 세이브 포인트가 있으면 시작 지점 고르기 (멀티 단체 입장은 그대로)
     if ((Net.inRoom && Net.players.length > 1) || !this.deepSaveList().length) { this.startRun(true); return; }
@@ -950,13 +976,14 @@ class Game {
     const S = (this.save.deepSaves || {})[depth], hero = S && this.data.heroes.get(S.hero); if (!hero) { this.startRun(true); return; }
     this.coopRunKey = null; this.coopPartyMembersList = null; this.coopPartyIdsList = null; this.coopRunData = null; this.coopReviveUsed = false;
     this.mode = 'dungeon'; this.trialW = null; this.areaId = null; this.runDeep = true;
-    this.worldIdx = DEEP_START + depth; this.levelIdx = 0; this.gold = S.gold || 0; this.kills = 0;
+    const townSave = !!worldDef(DEEP_START + depth - 1).town; // 마을 세이브: 마을부터 (그 밖: 다음 층부터)
+    this.worldIdx = DEEP_START + depth - (townSave ? 1 : 0); this.levelIdx = townSave ? STAGES_PER_WORLD - 1 : 0; this.gold = S.gold || 0; this.kills = 0;
     this.runStart = { stage: this.stageIndex, world: this.worldIdx }; this.save.runReviveUsed = false;
     this.save.selected = hero.id; if (S.p.line) { this.save.lineChoice = this.save.lineChoice || {}; this.save.lineChoice[hero.id] = S.p.line; } writeSave(this.save);
     const tr = DATA_TREASURES.find((t) => t.id === this.save.treasureEquipped);
     this.player = this.playerFromSnapshot(hero, S.p); this.useCheckpoint(this.player, S.p, tr);
     this.guild(); this.applySupplies(); this.loadStage();
-    this.showBanner(`심층 ${depth} 세이브 포인트에서 시작`, `${hero.name}${this.player.line ? ' · ' + this.player.line.name : ''} · ${this.player.weapons.map((w) => w.def.name).join(' + ')} · 축복 ${this.player.buffs.length}개`, '#9ad8ff');
+    if (!townSave) this.showBanner(`심층 ${depth} 세이브 포인트에서 시작`, `${hero.name}${this.player.line ? ' · ' + this.player.line.name : ''} · ${this.player.weapons.map((w) => w.def.name).join(' + ')} · 축복 ${this.player.buffs.length}개`, '#9ad8ff');
   }
   startRun(deep = false) {
     const partyLaunch = Net.inRoom && Net.isHost && Net.players.length > 1;
@@ -1092,6 +1119,7 @@ class Game {
     const W = this.W;
     if (W.deep && !W.trial && !this.coopRunKey) this.save.bestDeep = Math.max(this.save.bestDeep || 0, W.depth); // 솔로 심층 기록만 갱신
     const map = W.trial ? generateDungeon({ roomCount: W.rooms || 2, specials: ['boss'], waves: W.waves || 0, palette: W.palette, bossSize: W.bossRoom }) // 시련: 시작 방 + 보스 방 (카멜롯은 전투 방도)
+      : W.town ? buildTown({ palette: W.palette }) // 심층 50: 개척자의 마을
       : W.bossOnly ? buildBossArena({ palette: W.palette, size: W.arena }) // 심층 40: 시작 방 + 바로 위 거대 아레나
       : this.isBossStage
       ? generateDungeon({ roomCount: 4, specials: ['boss'], waves: W.waves, palette: W.palette, bossSize: W.bossRoom })
@@ -1112,6 +1140,7 @@ class Game {
         this.save.run = this.snapshotRun(); writeSave(this.save); }
     } // 솔로 이어하기와 파티별 멀티 이어하기·기록 분리
     if (W.sanctum) this.decorateSanctum(map);
+    if (W.town && !W.trial) this.populateTown(map);
     this.snapCamera();
     if (W.sanctum && this.levelIdx === 0) this.playCutscene(ORIGIN_ARRIVAL_LINES, { id: 'origin_arrival', focus: null });
     if (W.finalField && this.isBossStage) { const br = map.roomOf('boss'); if (br) this.decorateThroneHall(br); }
@@ -1121,9 +1150,11 @@ class Game {
     if (W.deep && !W.trial && W.depth === 1 && this.levelIdx === 0) this.playCutscene(DEEP_ARRIVAL_LINES, { id: 'deep_arrival', focus: null }); // 심층에 처음 들어설 때 (한 번만)
     if (W.deep && !W.trial && W.depth === 41 && this.levelIdx === 0) this.playCutscene(DEEP41_ARRIVAL_LINES, { id: 'deep41_arrival', focus: null }); // 태고룡 너머, 하늘계단에 처음 도착
     if (W.deep && !W.trial && W.depth === 30 && this.levelIdx === 0) this.playCutscene(DEEP30_ARRIVAL_LINES, { id: 'deep30_arrival', focus: null }); // 기록의 근원에 처음 도착
-    if (W.bossOnly && !W.trial) this.playCutscene(ELDER_ARRIVAL_LINES, { id: 'elder_arrival', focus: null }); // 태고룡의 둥지에 처음 도착
+    if (W.town && !W.trial) this.playCutscene(TOWN_ARRIVAL_LINES, { id: 'town_arrival', focus: null }); // 개척자의 마을에 처음 도착
+    if (W.bossOnly && !W.town && !W.trial) this.playCutscene(ELDER_ARRIVAL_LINES, { id: 'elder_arrival', focus: null }); // 태고룡의 둥지에 처음 도착
     if (this.coop && this.coop.host) { this.coopOnStage(); this.coopSaveRun(); } // 멀티: 동료 배치·부활 + 파티 진행 저장·새 맵 보내기
     if (W.trial) { this.showBanner(W.name, this.trialDef.intro, this.trialDef.color); return; }
+    if (W.town) { this.showBanner(`${this.stageName()}  ${W.name}`, '몬스터가 없는 마을 — 쉬어 가세요', '#ffd080'); return; }
     this.showBanner(`${this.stageName()}  ${W.name}`, this.isBossStage ? '보스가 기다리고 있습니다' : W.deep && this.levelIdx === 0 ? `심층 ${W.depth}번째 필드 — 던전은 더 깊은 곳으로 이어진다` : '출구 포탈을 찾으세요', W.deep ? '#9ad8ff' : undefined);
   }
   advanceStage() {
@@ -2422,6 +2453,7 @@ class Game {
       this.portalSpot = c;
       const after = () => {
         if (W.deep && !W.trial) this.recordDeepSave(W.depth); // 심층 10·20·30·40: 세이브 포인트
+        if (W.deep && !W.trial) this.explorerBossKill(W); // 개척자의 시험
         if (W.deep && !W.trial && W.boss === 'boss_primordial') this.playCutscene(PRIMORDIAL_FALL_LINES, { id: 'primordial_fall', focus: { x: c.x, y: c.y } }); // 태고룡 처치: 천율과 네 분신의 진실 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 20 && W.boss === 'boss_nest_mother') this.playCutscene(PRIMORDIAL_HINT_LINES, { id: 'primordial_hint', focus: { x: c.x, y: c.y } }); // 태고룡의 떡밥 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 30) {

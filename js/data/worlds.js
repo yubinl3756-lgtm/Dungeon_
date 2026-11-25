@@ -263,7 +263,31 @@ const DEEP_WORLDS = [
   { id: 'deep_heavengate', name: '천문의 계단참', boss: 'boss_gate_seraph', waves: 2, deep: true,
     enemies: [['enemy_haloseraph_001', 3], ['enemy_gatelion_001', 2], ['enemy_hymnorb_001', 2], ['enemy_lightlancer_001', 3]],
     palette: { style: 'starfall', accent: '#fff4c0', floor: ['#3a3a4a', '#3e3e50'], corridor: ['#26263a', '#28283c'], wall: '#50506e', wallTop: '#68688c',
-      wallFace: '#d8d4f0', faceLine: '#b8b4d8', deco: 'rgba(255,244,192,0.42)' } }
+      wallFace: '#d8d4f0', faceLine: '#b8b4d8', deco: 'rgba(255,244,192,0.42)' } },
+  // ── 심층 46: 떠도는 섬 군도
+  { id: 'deep_floatisles', name: '떠도는 섬 군도', boss: 'boss_sky_whale', waves: 2, deep: true,
+    enemies: [['enemy_isleturtle_001', 3], ['enemy_windray_001', 3], ['enemy_cloudjelly_001', 2], ['enemy_islehawk_001', 2]],
+    palette: { style: 'sky', accent: '#9ae8ff', floor: ['#3a5048', '#3e554c'], corridor: ['#26352f', '#283832'], wall: '#4a6a5e', wallTop: '#5e8474',
+      wallFace: '#a0d0c0', faceLine: '#84b8a6', deco: 'rgba(154,232,255,0.4)' } },
+  // ── 심층 47: 수정 심장의 동굴
+  { id: 'deep_crystalheart', name: '수정 심장의 동굴', boss: 'boss_crystal_heart', waves: 2, deep: true,
+    enemies: [['enemy_crystalgolem_001', 3], ['enemy_prismbat_001', 3], ['enemy_shardtendril_001', 2], ['enemy_refractmage_001', 2]],
+    palette: { style: 'ice', accent: '#ffb0f0', floor: ['#3a3048', '#3e344c'], corridor: ['#261f30', '#282132'], wall: '#4e3e66', wallTop: '#664e86',
+      wallFace: '#c8a0e8', faceLine: '#aa84cc', deco: 'rgba(255,176,240,0.42)' } },
+  // ── 심층 48: 천둥 제단
+  { id: 'deep_thunderaltar', name: '천둥 제단', boss: 'boss_thunder_apostle', waves: 2, deep: true,
+    enemies: [['enemy_stormmonk_001', 2], ['enemy_thunderdrum_001', 2], ['enemy_boltHound_001', 3], ['enemy_rodknight_001', 3]],
+    palette: { style: 'metal', accent: '#ffe94a', floor: ['#30323c', '#343640'], corridor: ['#20222a', '#22242c'], wall: '#44465a', wallTop: '#585a74',
+      wallFace: '#a0a4c8', faceLine: '#8488ac', deco: 'rgba(255,233,74,0.4)' } },
+  // ── 심층 49: 원정대의 마지막 야영지 — 개척자의 마을에 닿지 못한 자들
+  { id: 'deep_lastcamp', name: '원정대의 마지막 야영지', boss: 'boss_lost_captain', waves: 2, deep: true,
+    enemies: [['enemy_lostscout_001', 3], ['enemy_rustsurveyor_001', 2], ['enemy_starvedporter_001', 3], ['enemy_madcartographer_001', 2]],
+    palette: { style: 'wood', accent: '#ffb060', floor: ['#3a3026', '#3e3429'], corridor: ['#28201a', '#2a221c'], wall: '#4e3e2e', wallTop: '#68523c',
+      wallFace: '#b89470', faceLine: '#9a7a58', deco: 'rgba(255,176,96,0.38)' } },
+  // ── 심층 50: 개척자의 마을 — 최초의 탐험가가 만든, 던전에서 유일하게 사람이 사는 곳 (몬스터 없음) [사용자 결정]
+  { id: 'deep_pioneertown', name: '개척자의 마을', boss: null, bossOnly: true, town: true, waves: 0, deep: true, enemies: [],
+    palette: { style: 'wood', accent: '#ffd080', floor: ['#5a4a36', '#5e4e3a'], corridor: ['#4a3c2c', '#4c3e2e'], wall: '#6a4e34', wallTop: '#86643f',
+      wallFace: '#c89a62', faceLine: '#a87e4c', deco: 'rgba(255,208,128,0.4)' } }
 
 ];
 const DEEP_START = DATA_WORLDS.length; // 이 번호부터 심층
@@ -313,7 +337,7 @@ function zoneLabel(z, f, l) { const Z = ZONES[z], F = Z && Z.fields[Math.max(0, 
 function runLabel(r) { return r.zone && ZONES[r.zone] ? zoneLabel(r.zone, r.zf || 0, r.levelIdx) : stageLabel(r.worldIdx, r.levelIdx); } // 이어하기 표시용
 function runWorld(r) { return r.zone && ZONES[r.zone] ? zoneWorld(r.zone, r.zf || 0) : worldDef(r.worldIdx); }
 // 화면 표시용 스테이지 이름: 1-1 ~ 10-4, 심층은 '심층 1-1'
-const DEEP_SAVE_DEPTHS = [10, 20, 30, 40]; // 심층 세이브 포인트 (이 층 보스를 깨면 저장)
+const DEEP_SAVE_DEPTHS = [10, 20, 30, 40, 50]; // 50: 개척자의 마을 (도착하면 저장, 마을부터 시작) // 심층 세이브 포인트 (이 층 보스를 깨면 저장)
 function stageLabel(w, l) { return w >= DEEP_START ? (worldDef(w).bossOnly ? `심층 ${w - DEEP_START + 1}` : `심층 ${w - DEEP_START + 1}-${l + 1}`) : `${w + 1}-${l + 1}`; } // 보스만 있는 층(심층 40)은 스테이지 번호 없이
 const LOBBY_PALETTE = { style: 'wood', floor: ['#3a2e26', '#3d3129'], corridor: ['#3a2e26', '#3d3129'], wall: '#40354f', wallTop: '#4b3f5c',
   wallFace: '#6a5a82', faceLine: '#5a4c70', deco: null };

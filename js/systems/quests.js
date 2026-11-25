@@ -34,7 +34,8 @@ function questBook(game) {
     { title: '지도에 없는 곳', desc: '성역보다 더 아래, 심층으로 내려가기', prog: '', done: deep >= 1 || seen('deep_arrival') },
     { title: '기록의 근원', desc: '심층 30층 — 무명의 기록관을 쓰러뜨리기', prog: `${Math.min(deep, 30)}/30 층`, done: archivist },
     { title: '태고룡의 둥지', desc: '심층 40층 — 모든 용의 시작, 태고룡을 쓰러뜨리기', prog: `${Math.min(deep, 40)}/40 층`, done: seen('primordial_fall') },
-    { title: '천율을 향해', desc: `하늘계단을 올라 천문으로 — 심층 ${maxDeep}층까지 (그 너머 이야기는 준비 중)`, prog: `${Math.min(deep, maxDeep)}/${maxDeep} 층`, done: false }
+    { title: '천율을 향해', desc: '하늘계단을 올라 천문 너머로 — 심층 50 개척자의 마을까지', prog: `${Math.min(deep, 50)}/50 층`, done: deep >= 50 },
+    { title: '함께 내는 길', desc: '최초의 탐험가와 함께 천율에게 가는 길을 (이야기는 준비 중)', prog: '', done: false }
   ];
   const main = []; let cur = false;
   for (const q of chain) {
@@ -61,6 +62,11 @@ function questBook(game) {
   const recs = typeof UNIQUE_RECORDS !== 'undefined' ? UNIQUE_RECORDS : [], found = recs.filter((R) => sv.uniqueRecords && sv.uniqueRecords[R.id]).length;
   if (sv.uniqueQuest) sub.push({ title: '끊긴 이야기들', desc: '세 기록의 다음 장을 찾아라 (다음 이야기는 준비 중)', prog: '3/3 기록', state: 'now' });
   else if (archivist || found) sub.push({ title: '끊긴 세 기록', desc: '심층 30층 서고에 떠오른 기록 세 권 읽기', prog: `${found}/${recs.length || 3}`, state: 'now' });
+  else hidden++;
+  const X = sv.explorer || {}, XT = typeof EXPLORER_TRIAL !== 'undefined' ? EXPLORER_TRIAL.bosses : 3;
+  if (X.quest >= 2) sub.push({ title: '개척자의 시험', desc: '최초의 탐험가에게 인정받았다 (다음 이야기는 준비 중)', prog: '완료', state: 'done' });
+  else if (X.quest === 1) { const ok = (X.kills || 0) >= XT; sub.push({ title: '개척자의 시험', desc: ok ? '심층 50 개척자의 마을로 돌아가 최초의 탐험가에게 보고' : '개척자의 마을(심층 50)을 나서 더 아래의 보스 처치', prog: ok ? '보고하기' : `${X.kills || 0}/${XT}`, state: ok ? 'ready' : 'now' }); }
+  else if (deep >= 50) sub.push({ title: '마을의 큰 집', desc: '개척자의 마을 가장 안쪽 큰 집의 사람에게 말 걸기', prog: '', state: 'ready' });
   else hidden++;
   // ── 수락한 임무: 토벌 의뢰 → 오늘 · 이번 주 길드 퀘스트
   const tasks = [];
