@@ -253,7 +253,7 @@ class HUD {
   }
   overlay(ctx, game) {
     const o = game.overlay;
-    ctx.fillStyle = o.type === 'story' || o.type === 'treasure_pick' ? '#06050a' : o.type === 'codex' || o.type === 'armory' || o.type === 'treasures' || o.type === 'joblevel' || o.type === 'hero_info' || o.type === 'skins' || o.type === 'travel' || o.type === 'archive' || o.type === 'guild' || o.type === 'hunt' || o.type === 'trade' || o.type === 'gamble' || o.type === 'trial_confirm' || o.type === 'trial_weapons' || o.type === 'admin' || o.type === 'details' || o.type === 'quests' || o.type === 'multi' || o.type === 'rank' ? 'rgba(8,6,14,0.94)' : 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    ctx.fillStyle = o.type === 'story' || o.type === 'treasure_pick' ? '#06050a' : o.type === 'codex' || o.type === 'armory' || o.type === 'treasures' || o.type === 'joblevel' || o.type === 'hero_info' || o.type === 'skins' || o.type === 'travel' || o.type === 'deep_saves' || o.type === 'archive' || o.type === 'guild' || o.type === 'hunt' || o.type === 'trade' || o.type === 'gamble' || o.type === 'trial_confirm' || o.type === 'trial_weapons' || o.type === 'admin' || o.type === 'details' || o.type === 'quests' || o.type === 'multi' || o.type === 'rank' ? 'rgba(8,6,14,0.94)' : 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     if (o.type === 'pause') { drawPauseMenu(ctx, game); // Esc 메뉴 (js/ui/pause_menu.js)
     } else if (o.type === 'keys') { /* 조작키 설정 */
       hudText(ctx, '조작키 설정', VIEW_W / 2, 20, '#fff', 'center', 14);
@@ -267,6 +267,17 @@ class HUD {
       [['기본값으로', 0], ['닫기', 1]].forEach(([t, k]) => { const r = keysBtn(k); ctx.fillStyle = hit(r) ? 'rgba(255,216,74,0.3)' : 'rgba(255,255,255,0.1)'; ctx.fillRect(r.x, r.y, r.w, r.h); hudText(ctx, t, r.x + r.w / 2, r.y + 3, '#fff', 'center', 9); });
       hudText(ctx, '메뉴·대사 창에서는 언제나 원래 키(좌클릭·Esc·Enter)로 조작합니다', VIEW_W / 2, keysBtn(0).y + 21, '#888', 'center', 8);
       if (o.msg) hudText(ctx, o.msg.text, VIEW_W / 2, keysBtn(0).y + 33, o.msg.color, 'center', 9);
+    } else if (o.type === 'deep_saves') { /* 심층 시작 지점 고르기 */
+      const m = game.input.mouse, list = game.deepSaveList(), items = [null, ...list];
+      hudText(ctx, '심층 입장 — 시작 지점 고르기', VIEW_W / 2, 30, '#9ad8ff', 'center', 14);
+      hudText(ctx, '심층 10·20·30·40 보스를 깬 순간의 캐릭터 그대로, 다음 층부터 시작합니다', VIEW_W / 2, 50, '#aaa', 'center', 7);
+      items.forEach((S, i) => { const r = HUD.travelRect(i, items.length), hov = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h, col = S ? '#9ad8ff' : '#c8b890';
+        ctx.fillStyle = hov ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.06)'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = col; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
+        if (!S) { hudText(ctx, `${i + 1}. 심층 1부터 (10-4 기록으로 입장)`, r.x + 10, r.y + 10, col, 'left', 9); return; }
+        const H = game.data.heroes.get(S.hero), ln = S.p.line && jobLines(S.hero).find((l) => l.id === S.p.line);
+        hudText(ctx, `${i + 1}. 심층 ${S.depth + 1}부터 — 심층 ${S.depth} 세이브`, r.x + 10, r.y + 5, col, 'left', 9);
+        hudText(ctx, `${H ? H.name : ''}${ln ? ' · ' + ln.name : ''} · 무기 ${(S.p.weapons || []).length}개 · 축복 ${(S.p.buffs || []).length}개 · 골드 ${S.gold || 0}`, r.x + 10, r.y + 18, '#aaa', 'left', 7); });
+      hudText(ctx, '번호 키 / 클릭: 선택   ·   Esc: 닫기', VIEW_W / 2, VIEW_H - 14, '#888', 'center', 7);
     } else if (o.type === 'travel') { /* + 빠른 이동 */
       const m = game.input.mouse, cam = o.sub === 'camelot', items = cam ? game.camelotFloors() : ['camelot', 'babylon'];
       hudText(ctx, cam ? '카멜롯 — 층 고르기' : '빠른 이동', VIEW_W / 2, 30, '#ffd84a', 'center', 14);

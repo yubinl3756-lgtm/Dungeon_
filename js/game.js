@@ -867,7 +867,7 @@ class Game {
     this.guild(); // 오늘의 퀘스트·의뢰·진열 준비
     const pc = this.map.tileCenter(17, 18);
     this.portals.push(new Portal(pc.x, pc.y, () => this.startRun(), '던전 입장')); this.portals[this.portals.length - 1].group = 'run'; // 멀티: 단체 입장
-    if (this.save.sanctumReached) { const dc = this.map.tileCenter(21, 18); this.portals.push(new Portal(dc.x, dc.y, () => this.startRun(true), '심층 입장', [120, 200, 255])); this.portals[this.portals.length - 1].group = 'deep'; } // 심층을 열면 로비에서 바로 심층으로
+    if (this.save.sanctumReached) { const dc = this.map.tileCenter(21, 18); this.portals.push(new Portal(dc.x, dc.y, () => this.deepPortal(), '심층 입장', [120, 200, 255])); this.portals[this.portals.length - 1].group = 'deep'; } // 심층을 열면 로비에서 바로 심층으로
     this.snapCamera();
     if (!fromVault) this.showBanner('로비', '캐릭터를 고르고 포탈로 들어가세요');
   }
@@ -934,6 +934,30 @@ class Game {
     SFX.play('ui');
   }
   // ── 런 진행
+  // ── 심층 세이브 포인트: 심층 10·20·30·40 보스를 깬 순간의 캐릭터를 저장 → 로비 심층 포탈에서 골라 바로 다음 층부터 시작 [사용자 결정]
+  deepSaveList() { const S = this.save.deepSaves || {}; return DEEP_SAVE_DEPTHS.filter((d) => S[d] && S[d].p && this.data.heroes.get(S[d].hero)).map((d) => Object.assign({ depth: d }, S[d])); }
+  recordDeepSave(depth) {
+    if (!DEEP_SAVE_DEPTHS.includes(depth) || this.coopRunKey || this.trialW || this.areaId || !this.player) return;
+    const snap = this.snapshotRun(); this.save.deepSaves = this.save.deepSaves || {};
+    this.save.deepSaves[depth] = { hero: snap.hero, p: snap.p, gold: this.gold, t: Date.now() }; writeSave(this.save);
+    this.showBanner(`세이브 포인트 — 심층 ${depth}`, '로비의 심층 포탈에서 지금 이 상태로 다음 층부터 시작할 수 있습니다', '#9ad8ff');
+  }
+  deepPortal() { // 로비 심층 포탈: 세이브 포인트가 있으면 시작 지점 고르기 (멀티 단체 입장은 그대로)
+    if ((Net.inRoom && Net.players.length > 1) || !this.deepSaveList().length) { this.startRun(true); return; }
+    this.overlay = { type: 'deep_saves', msg: null }; this.input.mouse.down = false;
+  }
+  startFromDeepSave(depth) {
+    const S = (this.save.deepSaves || {})[depth], hero = S && this.data.heroes.get(S.hero); if (!hero) { this.startRun(true); return; }
+    this.coopRunKey = null; this.coopPartyMembersList = null; this.coopPartyIdsList = null; this.coopRunData = null; this.coopReviveUsed = false;
+    this.mode = 'dungeon'; this.trialW = null; this.areaId = null; this.runDeep = true;
+    this.worldIdx = DEEP_START + depth; this.levelIdx = 0; this.gold = S.gold || 0; this.kills = 0;
+    this.runStart = { stage: this.stageIndex, world: this.worldIdx }; this.save.runReviveUsed = false;
+    this.save.selected = hero.id; if (S.p.line) { this.save.lineChoice = this.save.lineChoice || {}; this.save.lineChoice[hero.id] = S.p.line; } writeSave(this.save);
+    const tr = DATA_TREASURES.find((t) => t.id === this.save.treasureEquipped);
+    this.player = this.playerFromSnapshot(hero, S.p); this.useCheckpoint(this.player, S.p, tr);
+    this.guild(); this.applySupplies(); this.loadStage();
+    this.showBanner(`심층 ${depth} 세이브 포인트에서 시작`, `${hero.name}${this.player.line ? ' · ' + this.player.line.name : ''} · ${this.player.weapons.map((w) => w.def.name).join(' + ')} · 축복 ${this.player.buffs.length}개`, '#9ad8ff');
+  }
   startRun(deep = false) {
     const partyLaunch = Net.inRoom && Net.isHost && Net.players.length > 1;
     if (partyLaunch) {
@@ -1487,6 +1511,14 @@ class Game {
       if (k < 0) return; const a = acts[k]; this.input.mouse.down = false;
       if ('ok' in a && !a.ok) { o.msg = { text: '지금은 쓸 수 없습니다', color: '#ff9a9a', t: 1.5 }; return; }
       const closes = /스테이지로|필드로|시련|진화|바로 시작/.test(a.name); a.run(); if (closes) this.overlay = null; else o.msg = { text: a.name.replace(/ \[.*\]/, '') + ' — 완료', color: '#ffd84a', t: 1.5 };
+    } else if (o.type === 'deep_saves') { // 심층 시작 지점 고르기
+      if (input.wasPressed('Escape') || input.wasPressed('KeyE')) { this.overlay = null; return; }
+      const items = [0, ...this.deepSaveList().map((S) => S.depth)]; let ch = -1;
+      items.forEach((_, i) => { if (input.wasPressed('Digit' + (i + 1))) ch = i; });
+      if (input.wasPressed('Mouse0')) { const m = input.mouse; items.forEach((_, i) => { const r = HUD.travelRect(i, items.length); if (m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h) ch = i; }); this.input.mouse.down = false; }
+      if (ch < 0) return; const d = items[ch]; this.overlay = null;
+      this.transition = { t: 0, swapped: false, action: () => (d ? this.startFromDeepSave(d) : this.startRun(true)) };
+      return;
     } else if (o.type === 'travel') { // + 빠른 이동: 카멜롯(층 고르기) · 바빌로니아
       if (o.msg) o.msg.t -= STEP;
       if (input.wasPressed('Escape') || input.wasPressed('Equal') || input.wasPressed('NumpadAdd')) { if (o.sub) { o.sub = null; return; } this.overlay = null; return; }
@@ -2374,8 +2406,7 @@ class Game {
       const next = worldDef(this.worldIdx + 1); this.portalSpot = c;
       this.effects.rays(c.x, c.y - 20, '#ffc040', 14, 70, 1.2); this.addShake(0.5, 3); SFX.play('heavy');
       this.playCutscene(ELDER_NEST_LINES, { id: 'elder_nest', always: true, focus: { x: c.x, y: c.y - 20 }, done: () => {
-        this.portals.push(new Portal(c.x + 26, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, [120, 200, 255]));
-        this.portals.push(new Portal(c.x - 26, c.y + 24, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90]));
+        this.portals.push(new Portal(c.x, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, [120, 200, 255]));
         this.showBanner('태고룡의 둥지', '거대한 무언가가 잠들어 있다… (보스전 준비 중)', '#ffc040');
       } });
       return;
@@ -2389,13 +2420,13 @@ class Game {
       const W = this.W, next = worldDef(this.worldIdx + 1);
       this.portalSpot = c;
       const after = () => {
+        if (W.deep && !W.trial) this.recordDeepSave(W.depth); // 심층 10·20·30·40: 세이브 포인트
         if (W.deep && !W.trial && W.boss === 'boss_primordial') this.playCutscene(PRIMORDIAL_FALL_LINES, { id: 'primordial_fall', focus: { x: c.x, y: c.y } }); // 태고룡 처치: 천율과 네 분신의 진실 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 20 && W.boss === 'boss_nest_mother') this.playCutscene(PRIMORDIAL_HINT_LINES, { id: 'primordial_hint', focus: { x: c.x, y: c.y } }); // 태고룡의 떡밥 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 30) {
           this.playCutscene(ARCHIVIST_CLEAR_LINES, { id: 'archivist_clear', focus: { x: c.x, y: c.y }, done: () => {
             this.props.push(new Chest(c.x, c.y - 24, 'weapon'));
-            this.portals.push(new Portal(c.x + 26, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, next.deep ? [120, 200, 255] : undefined));
-            this.portals.push(new Portal(c.x - 26, c.y + 24, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90]));
+            this.portals.push(new Portal(c.x, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, next.deep ? [120, 200, 255] : undefined));
             this.showBanner('기록의 다음 장', '무명의 기록관이 아래로 이어지는 통로를 열었다', '#c5a4ff');
             const room = this.map.roomOf('boss'); // 서고 깊은 곳에 떠오른 끊긴 기록 세 권 (고유 스킨 퀘스트의 시작)
             UNIQUE_RECORDS.forEach((R, i) => { const s = room ? this.freeSpot(room, c.x + (i - 1) * 44, c.y - 58, 8) : { x: c.x + (i - 1) * 44, y: c.y - 58 }; this.props.push(new RecordTome(s.x, s.y, R)); this.effects.ring(s.x, s.y - 10, 18, R.color); });
@@ -2412,8 +2443,7 @@ class Game {
         else if (W.zone === 'babylon_under') this.babylonUnderBoss(c, W);
         else {
           this.props.push(new Chest(c.x, c.y - 24, 'weapon'));
-          this.portals.push(new Portal(c.x + (W.deep ? 26 : 0), c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, next.deep ? [120, 200, 255] : undefined));
-          if (W.deep) this.portals.push(new Portal(c.x - 26, c.y + 24, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90])); // 심층: 여기서 돌아가거나 더 내려감
+          this.portals.push(new Portal(c.x, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, next.deep ? [120, 200, 255] : undefined)); // [사용자 결정] 심층 보스 뒤 귀환 포탈 없앰 (돌아가려면 메뉴의 '포기하고 로비로')
           if (W.deep && W.depth === 10 && this.babylonOpen()) { this.portals.push(new Portal(c.x, c.y + 60, () => this.enterBabylon(), '금빛 포탈 — 바빌로니아', [255, 190, 40])); this.effects.rays(c.x, c.y + 60, '#ffd84a', 14, 50, 1); this.effects.skyBeam(c.x, c.y + 60, '#fff4c0', 0, 12); this.screenFlash = 0.2; this.flashColor = '255,216,74'; SFX.play('solomon', 0.5);
             this.playCutscene(BABYLON_APPEAR_LINES, { id: 'babylon_appear', focus: { x: c.x, y: c.y + 50 } }); } /* 금빛의 문이 처음 나타날 때 이야기 (한 번, 이야기 기록에서 다시 보기) */ /* [사용자 결정] 심층 10-4: 바빌로니아로 가는 금빛 포탈 */
         }

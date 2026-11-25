@@ -287,6 +287,7 @@ function zoneLabel(z, f, l) { const Z = ZONES[z], F = Z && Z.fields[Math.max(0, 
 function runLabel(r) { return r.zone && ZONES[r.zone] ? zoneLabel(r.zone, r.zf || 0, r.levelIdx) : stageLabel(r.worldIdx, r.levelIdx); } // 이어하기 표시용
 function runWorld(r) { return r.zone && ZONES[r.zone] ? zoneWorld(r.zone, r.zf || 0) : worldDef(r.worldIdx); }
 // 화면 표시용 스테이지 이름: 1-1 ~ 10-4, 심층은 '심층 1-1'
+const DEEP_SAVE_DEPTHS = [10, 20, 30, 40]; // 심층 세이브 포인트 (이 층 보스를 깨면 저장)
 function stageLabel(w, l) { return w >= DEEP_START ? (worldDef(w).bossOnly ? `심층 ${w - DEEP_START + 1}` : `심층 ${w - DEEP_START + 1}-${l + 1}`) : `${w + 1}-${l + 1}`; } // 보스만 있는 층(심층 40)은 스테이지 번호 없이
 const LOBBY_PALETTE = { style: 'wood', floor: ['#3a2e26', '#3d3129'], corridor: ['#3a2e26', '#3d3129'], wall: '#40354f', wallTop: '#4b3f5c',
   wallFace: '#6a5a82', faceLine: '#5a4c70', deco: null };
