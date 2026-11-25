@@ -601,7 +601,7 @@ const TOWN_ARRIVAL_LINES = [
   '광장의 몇 안 되는 사람들이 고개를 든다. 모두 범상치 않은 기척을 지녔다.',
   '마을 가장 안쪽, 큰 집의 창문에 아직 불이 켜져 있다.'
 ];
-const EXPLORER_TRIAL = { bosses: 3 }; // 개척자의 시험: 마을을 나선 뒤(심층 51 이후) 보스 처치 수
+const EXPLORER_TRIAL = { traces: 3 }; // [사용자 결정] 개척자의 부탁: 무명객을 찾아라 — 심층 41 이후 스테이지에 나타나는 무명객의 흔적 3개
 const EXPLORER_MEET_LINES = [
   '벽 하나를 가득 채운 지도 앞에, 낡은 외투를 입은 사람이 서 있다.',
   '「…손님이라니. 여기까지 걸어서 내려온 녀석은 몇 년 만이지?」',
@@ -615,15 +615,25 @@ const EXPLORER_MEET_LINES = [
   '「이 마을 사람들은 그 이야기를 듣고도 끝까지 살아남은 자들이다.」',
   '「몬스터는 이 마을 안으로 들어오지 못한다. 내가 그렇게 만들었으니까.」',
   '「하지만 나는 여기서 멈출 생각이 없다. 이 던전의 끝으로 가는 길을, 다시 한 번 개척할 거다.」',
-  '「그 전에 확인할 게 있다. 네가 함께 길을 낼 만한 녀석인지.」',
-  '「마을을 나서 더 아래로 내려가라. 그곳의 강한 녀석 셋을 쓰러뜨리고 돌아와라.」'
+  '「그 전에, 부탁이 하나 있다.」',
+  '「이 마을을 나와 함께 세운 녀석이 있었다. 이름도 얼굴도, 아무도 기억하지 못하는 녀석.」',
+  '「나는 그 녀석을 무명객이라 불렀다.」',
+  '「어느 날 말도 없이 더 아래로 내려가 버렸지. 기록되지 않는 자는 흔적도 좀처럼 남기지 않는다.」',
+  '「하지만 너라면 찾을 수 있을지도 모르겠다. 기록관 서고의 빈 책을 읽었다면 더더욱.」',
+  '「던전 어딘가에 남은 그 녀석의 흔적을 찾아 줘. 셋이면 충분하다.」'
+];
+// 무명객의 흔적 (심층 41 이후 스테이지에 가끔 나타남, 순서대로)
+const UNRECORDED_TRACES = [
+  ['바닥에 희미한 발자국이 이어져 있다. 방금 누군가 지나간 듯 아직 따뜻하다.', '그런데 이상하다. 발자국의 주인을 떠올리려 하면 생각이 미끄러진다.', '「…무명객의 흔적이다.」'],
+  ['벽에 무언가를 새기다 만 자국이 있다.', '이름을 쓰려다, 스스로 지운 흔적. 지운 자리만 선명하다.', '「기록되지 않으려고… 일부러 지운 건가.」'],
+  ['돌 틈에 부서진 가면 조각이 끼어 있다. 앞면이 하얗게 비어 있다.', '조각을 집어 들자, 아주 잠깐 누군가의 웃음소리가 들린 것 같다.', '「세 번째 흔적. 개척자에게 가져가자.」']
 ];
 const EXPLORER_REPORT_LINES = [
-  '지도 위에 새 길을 긋던 개척자가 고개를 든다.',
-  '「…돌아왔군. 그 표정을 보니 길을 잃지는 않았나 보다.」',
-  '「좋다. 너라면 함께 갈 수 있겠어.」',
-  '「이 아래는 나도 아직 끝까지 가 보지 못했다.」',
-  '「그러니— 이번에는 같이 만들자.」'
+  '개척자가 당신이 가져온 세 가지 흔적을 오래도록 내려다본다.',
+  '「…따뜻한 발자국, 스스로 지운 이름, 비어 있는 가면. 틀림없다. 그 녀석이다.」',
+  '「살아 있군. 여전히 아무도 모르게, 더 깊은 곳을 걷고 있어.」',
+  '「고맙다. 이제 그 녀석이 어디로 향했는지 짐작이 간다.」',
+  '「언젠가 그 녀석을 만나거든— 내 이름은 몰라도 된다고 전해 줘. 어차피 기억 못 할 테니까.」'
 ];
 const TOWN_FOLK = [ /* [x(광장 가운데 기준 칸), y(광장 위 기준 칸), 모습, 이름, 대사] */
   [-15, 9, 't_lancer', '은퇴한 창기사', ['여기까지 온 녀석은 오랜만이군.', '나는 저 아래 수정 동굴에서 무릎을 꿇었다. 그 뒤로는 여기서 창만 닦고 있지.', '마을 안에서는 몬스터 걱정은 하지 마라.']],
@@ -706,7 +716,7 @@ const STORY_ARCHIVE = [
   { id: 'deep41_arrival', name: '잠든 거인의 뱃속', kind: 'cut', lines: () => DEEP41_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('deep41_arrival') },
   { id: 'town_arrival', name: '개척자의 마을', kind: 'cut', lines: () => TOWN_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('town_arrival') },
   { id: 'explorer_meet', name: '최초의 탐험가', kind: 'cut', lines: () => EXPLORER_MEET_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.met) },
-  { id: 'explorer_report', name: '같이 만드는 길', kind: 'cut', lines: () => EXPLORER_REPORT_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.quest >= 2) },
+  { id: 'explorer_report', name: '무명객의 흔적', kind: 'cut', lines: () => EXPLORER_REPORT_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.quest >= 2) },
   { id: 'primordial_fall', name: '천율과 네 분신', kind: 'cut', lines: () => PRIMORDIAL_FALL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_fall') },
   ...UNIQUE_RECORDS.map((R) => ({ id: 'urec_' + R.id, name: R.name, kind: 'cut', lines: () => R.lines, unlocked: (sv) => uniqueRecordFound(sv, R.id) })),
   { id: 'unique_records_all', name: '끊긴 이야기들', kind: 'cut', lines: () => UNIQUE_RECORDS_ALL_LINES, unlocked: (sv) => !!sv.uniqueQuest },

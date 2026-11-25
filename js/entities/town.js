@@ -75,7 +75,7 @@ class FirstExplorer {
     ctx.fillStyle = OUTLINE; ctx.fillRect(x - 17, y + 2, 34, 9); ctx.fillStyle = '#7a5230'; ctx.fillRect(x - 16, y + 3, 32, 7); ctx.fillStyle = '#e8d4a8'; ctx.fillRect(x - 12, y + 3, 10, 4); ctx.fillRect(x + 3, y + 4, 8, 3); // 책상 + 펼친 지도
     ctx.fillStyle = `rgba(255,200,96,${0.6 + 0.3 * Math.sin(t * 6)})`; ctx.fillRect(x + 12, y, 3, 3); // 촛불
     npcDraw(ctx, 'explorer', x, y - 6, 1, game);
-    const X = game.save.explorer || {}, ready = X.quest === 1 && (X.kills || 0) >= EXPLORER_TRIAL.bosses;
+    const X = game.save.explorer || {}, ready = X.quest === 1 && X.v2 && (X.traces || 0) >= EXPLORER_TRIAL.traces;
     if ((!X.met || ready) && Math.floor(t * 3) % 2 === 0) hudText(ctx, ready ? '?' : '!', x, y - 34, '#ffd84a', 'center', 14);
     hudText(ctx, X.met ? '최초의 탐험가' : '???', x, y + 13, '#e0b058', 'center', 7);
   }
@@ -86,4 +86,22 @@ class TownSign {
   constructor(x, y, text) { this.x = x; this.y = y; this.text = text; this.radius = 0; }
   label() { return null; }
   render(ctx) { const x = Math.round(this.x), y = Math.round(this.y); ctx.fillStyle = OUTLINE; ctx.fillRect(x - 1, y - 6, 3, 12); ctx.fillStyle = '#6a4a2a'; ctx.fillRect(x, y - 5, 1, 10); signText(ctx, this.text, x, y - 10, '#ffe0b0'); }
+}
+// 무명객의 흔적: 희미하게 빛나는 발자국 / 지운 글씨 / 빈 가면 조각 (k = 몇 번째 흔적인지)
+class UnrecordedTrace {
+  constructor(x, y, k) { this.x = x; this.y = y; this.k = k; this.radius = 20; this.taken = false; this.t = Math.random() * 6; }
+  label() { return this.taken ? null : '[E] 희미한 흔적 — 살펴보기'; }
+  get labelColor() { return '#48eaff'; }
+  interact(game) { game.findUnrecordedTrace(this); }
+  render(ctx, game) {
+    if (this.taken) return;
+    const x = Math.round(this.x), y = Math.round(this.y), t = (this.t += 1 / 60), a = 0.35 + 0.25 * Math.sin(t * 2.5);
+    ctx.save(); ctx.globalAlpha = a * 0.5; ctx.fillStyle = '#48eaff'; ctx.beginPath(); ctx.ellipse(x, y, 16, 7, 0, 0, TAU); ctx.fill(); ctx.restore();
+    ctx.globalAlpha = 0.55 + 0.3 * Math.sin(t * 3);
+    if (this.k === 0) { ctx.fillStyle = '#bff8ff'; for (let i = 0; i < 4; i++) { const fx = x - 12 + i * 7, fy = y + (i % 2 ? -2 : 2); ctx.fillRect(fx, fy - 2, 3, 4); ctx.fillRect(fx, fy - 4, 1, 1); ctx.fillRect(fx + 2, fy - 4, 1, 1); } } // 발자국
+    else if (this.k === 1) { ctx.fillStyle = '#bff8ff'; ctx.fillRect(x - 8, y - 2, 4, 1); ctx.fillRect(x - 3, y - 4, 1, 5); ctx.fillRect(x, y - 3, 3, 1); ctx.fillRect(x + 2, y - 3, 1, 4); ctx.fillStyle = '#48eaff'; ctx.fillRect(x - 10, y - 1, 20, 1); } // 지운 이름
+    else { ctx.fillStyle = OUTLINE; ctx.fillRect(x - 5, y - 6, 10, 10); ctx.fillStyle = '#f4f8ff'; ctx.fillRect(x - 4, y - 5, 8, 8); ctx.fillStyle = OUTLINE; ctx.fillRect(x - 3, y - 3, 2, 1); ctx.fillRect(x + 1, y - 3, 2, 1); ctx.fillRect(x + 2, y + 1, 3, 3); } // 빈 가면 조각
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#bff8ff'; ctx.fillRect(x + Math.round(Math.cos(t * 1.7) * 12), y - 8 + Math.round(Math.sin(t * 2.1) * 3), 1, 1); ctx.fillRect(x - Math.round(Math.cos(t * 1.3) * 10), y + 5, 1, 1);
+  }
 }

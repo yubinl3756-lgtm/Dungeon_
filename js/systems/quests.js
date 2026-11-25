@@ -63,9 +63,9 @@ function questBook(game) {
   if (sv.uniqueQuest) sub.push({ title: '끊긴 이야기들', desc: '세 기록의 다음 장을 찾아라 (다음 이야기는 준비 중)', prog: '3/3 기록', state: 'now' });
   else if (archivist || found) sub.push({ title: '끊긴 세 기록', desc: '심층 30층 서고에 떠오른 기록 세 권 읽기', prog: `${found}/${recs.length || 3}`, state: 'now' });
   else hidden++;
-  const X = sv.explorer || {}, XT = typeof EXPLORER_TRIAL !== 'undefined' ? EXPLORER_TRIAL.bosses : 3;
-  if (X.quest >= 2) sub.push({ title: '개척자의 시험', desc: '최초의 탐험가에게 인정받았다 (다음 이야기는 준비 중)', prog: '완료', state: 'done' });
-  else if (X.quest === 1) { const ok = (X.kills || 0) >= XT; sub.push({ title: '개척자의 시험', desc: ok ? '심층 50 개척자의 마을로 돌아가 최초의 탐험가에게 보고' : '개척자의 마을(심층 50)을 나서 더 아래의 보스 처치', prog: ok ? '보고하기' : `${X.kills || 0}/${XT}`, state: ok ? 'ready' : 'now' }); }
+  const X = sv.explorer || {}, XT = typeof EXPLORER_TRIAL !== 'undefined' ? EXPLORER_TRIAL.traces : 3, xq = X.v2 ? X.quest : X.met ? 1 : 0, xt = X.v2 ? X.traces || 0 : 0;
+  if (xq >= 2) sub.push({ title: '무명객을 찾아라', desc: '무명객의 흔적을 개척자에게 전했다 (다음 이야기는 준비 중)', prog: '완료', state: 'done' });
+  else if (xq === 1) { const ok = xt >= XT; sub.push({ title: '무명객을 찾아라', desc: ok ? '심층 50 개척자의 마을로 돌아가 최초의 탐험가에게 보고' : '심층 41층 이후 스테이지 어딘가에 남은 무명객의 흔적 찾기', prog: ok ? '보고하기' : `${xt}/${XT}`, state: ok ? 'ready' : 'now' }); }
   else if (deep >= 50) sub.push({ title: '마을의 큰 집', desc: '개척자의 마을 가장 안쪽 큰 집의 사람에게 말 걸기', prog: '', state: 'ready' });
   else hidden++;
   // ── 수락한 임무: 토벌 의뢰 → 오늘 · 이번 주 길드 퀘스트

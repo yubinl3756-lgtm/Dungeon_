@@ -955,18 +955,32 @@ class Game {
     const rc = T(town.cx, town.y0 + town.h - 3); this.portals.push(new Portal(rc.x, rc.y, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90])); // 안전한 마을이라 여기서 돌아갈 수 있음
     this.recordDeepSave(this.W.depth, true);
   }
-  talkExplorer(npc) { // 최초의 탐험가: 첫 만남 → 개척자의 시험 (마을 밖 보스 셋) → 보고
-    const sv = this.save, X = sv.explorer = sv.explorer || { met: false, quest: 0, kills: 0 };
-    if (!X.met) { this.playCutscene(EXPLORER_MEET_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.met = true; X.quest = 1; X.kills = 0; writeSave(sv); this.showBanner('개척자의 시험', `마을을 나서 더 아래의 보스 처치 (0/${EXPLORER_TRIAL.bosses})`, '#e0b058'); } }); return; }
-    if (X.quest === 1 && (X.kills || 0) >= EXPLORER_TRIAL.bosses) { this.playCutscene(EXPLORER_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.quest = 2; writeSave(sv); this.showBanner('개척자의 시험 완료', '개척자와 함께 길을 낼 자격을 얻었다 — 다음 이야기는 준비 중', '#e0b058'); } }); return; }
-    if (X.quest === 1) { npc.bubble = { text: `시험: 마을 밖 보스 ${X.kills || 0}/${EXPLORER_TRIAL.bosses} — 강한 녀석을 쓰러뜨리고 와라`, t: 3.5 }; return; }
-    npc.bubble = { text: pick(['길은 같이 만드는 거다. 준비되면 말해라.', '지도에 빈칸이 아직 많군.', '이 아래… 이번엔 끝까지 간다.']), t: 3.5 };
+  explorerState() { // 최초의 탐험가 퀘스트 상태 (예전 '개척자의 시험' 저장은 '무명객을 찾아라'로 옮김)
+    const sv = this.save, X = sv.explorer = sv.explorer || { met: false, quest: 0, traces: 0, v2: 1 };
+    if (!X.v2) { X.v2 = 1; if (X.met) { X.quest = 1; X.traces = 0; } delete X.kills; writeSave(sv); }
+    return X;
   }
-  explorerBossKill(W) { // 개척자의 시험: 마을(심층 50)을 지난 뒤의 심층 보스 처치 수 (솔로)
-    const X = this.save.explorer; if (!X || X.quest !== 1 || !W.deep || W.trial || this.coopRunKey || W.depth <= 50) return;
-    if ((X.kills || 0) >= EXPLORER_TRIAL.bosses) return;
-    X.kills = (X.kills || 0) + 1; writeSave(this.save);
-    this.showBanner('개척자의 시험 진행', `마을 밖 보스 처치 (${X.kills}/${EXPLORER_TRIAL.bosses})${X.kills >= EXPLORER_TRIAL.bosses ? ' — 마을로 돌아가 보고하기' : ''}`, '#e0b058');
+  talkExplorer(npc) { // 최초의 탐험가: 첫 만남 → 무명객을 찾아라 (흔적 3개) → 보고
+    const sv = this.save, X = this.explorerState(), N = EXPLORER_TRIAL.traces;
+    if (!X.met) { this.playCutscene(EXPLORER_MEET_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.met = true; X.quest = 1; X.traces = 0; writeSave(sv); this.showBanner('무명객을 찾아라', `심층 41층 이후 어딘가에 남은 무명객의 흔적 (0/${N})`, '#48eaff'); } }); return; }
+    if (X.quest === 1 && (X.traces || 0) >= N) { this.playCutscene(EXPLORER_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.quest = 2; writeSave(sv); this.showBanner('무명객을 찾아라 — 완료', '무명객은 아직 더 깊은 곳을 걷고 있다 (다음 이야기는 준비 중)', '#48eaff'); } }); return; }
+    if (X.quest === 1) { npc.bubble = { text: `무명객의 흔적 ${X.traces || 0}/${N} — 심층 41층 아래 어딘가에 있을 거다`, t: 3.5 }; return; }
+    npc.bubble = { text: pick(['그 녀석, 지금쯤 어디를 걷고 있을까.', '지도에 빈칸이 아직 많군.', '이 아래… 이번엔 끝까지 간다.']), t: 3.5 };
+  }
+  placeUnrecordedTrace(map) { // 무명객의 흔적: 퀘스트 중이면 심층 41 이후 일반 스테이지에 절반 확률로 하나 (솔로)
+    const W = this.W; if (!W.deep || W.trial || W.town || this.coopRunKey || this.areaId || W.depth < 41 || this.isBossStage) return;
+    const X = this.explorerState(); if (X.quest !== 1 || (X.traces || 0) >= EXPLORER_TRIAL.traces || Math.random() >= 0.5) return;
+    const rooms = map.rooms.filter((r) => r.type === 'combat'); if (!rooms.length) return;
+    const r = pick(rooms), c = map.tileCenter(r.cx, r.cy);
+    this.props.push(new UnrecordedTrace(c.x + 24, c.y + 16, X.traces || 0));
+  }
+  findUnrecordedTrace(tr) {
+    const X = this.save.explorer; if (!X || X.quest !== 1 || tr.taken) return; tr.taken = true;
+    const k = Math.min(UNRECORDED_TRACES.length - 1, X.traces || 0), N = EXPLORER_TRIAL.traces;
+    this.effects.ring(tr.x, tr.y, 22, '#48eaff'); SFX.play('heal');
+    this.playCutscene(UNRECORDED_TRACES[k], { always: true, force: true, focus: { x: tr.x, y: tr.y }, done: () => {
+      X.traces = Math.min(N, (X.traces || 0) + 1); writeSave(this.save);
+      this.showBanner('무명객의 흔적', X.traces >= N ? `${X.traces}/${N} — 개척자의 마을로 돌아가 보고하기` : `${X.traces}/${N}`, '#48eaff'); } });
   }
   deepPortal() { // 로비 심층 포탈: 세이브 포인트가 있으면 시작 지점 고르기 (멀티 단체 입장은 그대로)
     if ((Net.inRoom && Net.players.length > 1) || !this.deepSaveList().length) { this.startRun(true); return; }
@@ -1132,6 +1146,7 @@ class Game {
     const shop = map.roomOf('shop');
     if (shop) this.stockShop(shop);
     this.stockSpecialRooms(map);
+    this.placeUnrecordedTrace(map); // 무명객의 흔적 (최초의 탐험가 퀘스트)
     const ex = map.roomOf('exit');
     if (ex) { const c = map.tileCenter(ex.cx, ex.cy); this.portals.push(new Portal(c.x, c.y, () => this.advanceStage(), '다음 스테이지')); }
     if (!W.trial) {
@@ -2453,7 +2468,6 @@ class Game {
       this.portalSpot = c;
       const after = () => {
         if (W.deep && !W.trial) this.recordDeepSave(W.depth); // 심층 10·20·30·40: 세이브 포인트
-        if (W.deep && !W.trial) this.explorerBossKill(W); // 개척자의 시험
         if (W.deep && !W.trial && W.boss === 'boss_primordial') this.playCutscene(PRIMORDIAL_FALL_LINES, { id: 'primordial_fall', focus: { x: c.x, y: c.y } }); // 태고룡 처치: 천율과 네 분신의 진실 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 20 && W.boss === 'boss_nest_mother') this.playCutscene(PRIMORDIAL_HINT_LINES, { id: 'primordial_hint', focus: { x: c.x, y: c.y } }); // 태고룡의 떡밥 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 30) {
