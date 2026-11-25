@@ -1511,6 +1511,12 @@ class Game {
     } else if (o.type === 'gacha') { // 스킨 뽑기: 왼쪽=선택 배너 + 1뽑/5뽑, 오른쪽 사이드바=배너 선택 + 마일리지 상점
       if (o.msg) o.msg.t -= STEP;
       const pool = gachaPool(), n = pool.length, m = input.mouse, hit = (r) => m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
+      if (o.results && o.anim) { // 뽑기 연출 중: 클릭하면 건너뜀 · 끝나면 미뤄 둔 전설 컷신
+        const A = o.anim, t = (performance.now() - A.start) / 1000, end = gachaAnimEnd(A.n), skip = input.wasPressed('Mouse0') || input.wasPressed('Enter') || input.wasPressed('Space') || input.wasPressed('Escape');
+        if (!A.sfx1 && t > 0.05) { A.sfx1 = true; SFX.play('solomon', 0.5); } if (!A.sfx2 && t > 1.5) { A.sfx2 = true; SFX.play(A.best >= 4 ? 'victory' : 'clear'); }
+        for (let i = 0; i < A.n; i++) if (!(A.flipped & (1 << i)) && t > GACHA_ANIM.reveal + i * GACHA_ANIM.flip + GACHA_ANIM.flipLen * 0.5) { A.flipped |= 1 << i; SFX.play(gachaRank(A.results[i]) >= 3 ? 'skill' : 'coin', 0.5); }
+        if (skip || t >= end) { o.anim = null; this.input.mouse.down = false; if (A.intro) { this.legendIntro = A.intro; A.intro.start = performance.now(); } }
+        return; }
       if (o.results) { if (input.wasPressed('Mouse0') || input.wasPressed('Enter') || input.wasPressed('Space') || input.wasPressed('Escape')) { o.results = null; this.input.mouse.down = false; } return; } // 결과 보는 중엔 아무 클릭으로 닫기
       if (o.rates) { if (input.wasPressed('Mouse0') || input.wasPressed('Enter') || input.wasPressed('Escape')) { o.rates = false; this.input.mouse.down = false; } return; } // 확률표 보는 중
       if (input.wasPressed('Escape') || input.wasPressed('KeyJ') || input.wasPressed('KeyE')) { this.overlay = o.back === 'pause' ? { type: 'pause' } : null; return; } // Esc 메뉴에서 열었으면 Esc 메뉴로, 소환 제단에서 열었으면 바로 닫기
@@ -1522,7 +1528,7 @@ class Game {
         if (hit(HUD.gachaRatesBtn())) { o.rates = true; used = true; } // 좌측 하단 확률 보기
         pool.forEach((K, i) => { if (!used && hit(HUD.gachaBanner(i))) { o.tab = 0; o.banner = i; used = true; } }); // 사이드바 배너 선택
         if (!used && hit(HUD.gachaShopTab())) { o.tab = 1; used = true; } // 마일리지 상점
-        if (!used && o.tab === 0) for (const b of [0, 1]) if (hit(HUD.gachaPullBtn(b))) { const r = this.gachaPull(pool[o.banner].id, b ? 5 : 1); if (r.error) o.msg = { text: r.error, color: '#ff9a9a', t: 2.5 }; else o.results = r.results; used = true; } // 1뽑/5뽑
+        if (!used && o.tab === 0) for (const b of [0, 1]) if (hit(HUD.gachaPullBtn(b))) { const r = this.gachaPull(pool[o.banner].id, b ? 5 : 1); if (r.error) o.msg = { text: r.error, color: '#ff9a9a', t: 2.5 }; else { o.results = r.results; o.anim = { start: performance.now(), n: r.results.length, results: r.results, best: Math.max(...r.results.map(gachaRank)), flipped: 0, intro: this.legendIntro }; this.legendIntro = null; } used = true; } // 1뽑/5뽑
         if (!used && o.tab === 1) SHOP_TABS.forEach((_, i) => { if (!used && hit(HUD.gachaShopSubTab(i))) { o.stab = i; o.sscroll = 0; used = true; } }); // 상점 등급 탭
         if (!used && o.tab === 1) { const st = o.stab || 0, list = shopPool(SHOP_TABS[st][0]), buy = (K) => { const r = this.buyMileageSkin(K.id); o.msg = { text: r.error || `'${r.name}' 구매 완료!`, color: r.error ? '#ff9a9a' : '#ffd84a', t: 2.5 }; used = true; };
           if (st === 0) list.forEach((K, i) => { if (!used && hit(HUD.gachaShopBuy(i))) buy(K); });

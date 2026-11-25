@@ -52,6 +52,50 @@ function drawSpriteFit(ctx, spr, cx, bottom, maxW, maxH, maxScale = 2) { // 아�
   if (!spr) return; const bb = spriteBBox(spr), sc = Math.min(maxScale, maxW / bb.w, maxH / bb.h), w = Math.round(bb.w * sc), h = Math.round(bb.h * sc);
   const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; ctx.drawImage(spr.n, bb.x, bb.y, bb.w, bb.h, Math.round(cx - w / 2), Math.round(bottom - h), w, h); ctx.imageSmoothingEnabled = sm;
 }
+// ── 뽑기 연출: 소환진(최고 등급 색으로 차오름) → 빛기둥과 구슬 → 카드가 한 장씩 뒤집힘 (클릭하면 건너뜀)
+const GACHA_ANIM = { reveal: 1.9, flip: 0.2, flipLen: 0.22, tail: 0.35 };
+function gachaRank(r) { if (!r) return 0; if (r.type === 'skin') return 5; if (r.type === 'shard' || r.type === 'shardDupe') return 4; const K = SKINS.find((k) => k.id === r.id), t = r.type === 'common' ? r.tier : K && K.rarity; if (r.type === 'dupe' && t === 'legendary') return 4; return t === 'epic' ? 3 : t === 'rare' ? 2 : t === 'common' ? 1 : 0; }
+const GACHA_RANK_COL = ['#d8e0e8', '#a8bccf', '#5aa8ff', '#c58aff', '#ffe9a0', '#ffd84a'];
+function gachaAnimEnd(n) { return GACHA_ANIM.reveal + (n - 1) * GACHA_ANIM.flip + GACHA_ANIM.flipLen + GACHA_ANIM.tail; }
+function gachaAnimTime(o) { return o.anim ? (performance.now() - o.anim.start) / 1000 : 99; }
+function gachaCardRect(i, n) { const cw = 86, gap = 8, x0 = (VIEW_W - (n * cw + (n - 1) * gap)) / 2; return { x: x0 + i * (cw + gap), y: 80, w: cw, h: 120 }; }
+function drawGachaSummon(ctx, o, t) { // 1단계: 소환진
+  const A = o.anim, best = A.best, cx = VIEW_W / 2, cy = 150, W = VIEW_W, H = VIEW_H;
+  ctx.fillStyle = '#07050d'; ctx.fillRect(0, 0, W, H);
+  const step = t < 0.95 ? 0 : Math.min(best, 1 + Math.floor((t - 0.95) / 0.16)); // 흰색에서 시작해 최고 등급까지 한 단계씩
+  const col = step ? GACHA_RANK_COL[Math.max(1, step)] : '#e8e0ff', grow = Math.min(1, t / 0.7), R = 26 + 38 * grow;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const gl = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 2); gl.addColorStop(0, col); gl.addColorStop(1, 'rgba(0,0,0,0)'); ctx.globalAlpha = 0.18 + 0.15 * grow + (t > 1.6 ? (t - 1.6) * 2 : 0); ctx.fillStyle = gl; ctx.fillRect(cx - R * 2, cy - R * 2, R * 4, R * 4);
+  ctx.globalAlpha = 0.9 * grow; ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+  for (const [rr, sp, k] of [[R, 0.8, 1], [R * 0.72, -1.3, 0.6], [R * 1.18, 0.4, 0.4]]) { ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.42); ctx.rotate(t * sp); ctx.globalAlpha = 0.85 * grow * k + 0.1;
+    ctx.beginPath(); ctx.arc(0, 0, rr, 0, TAU); ctx.stroke(); for (let i = 0; i < 8; i++) { const a = i * TAU / 8; ctx.fillStyle = col; ctx.fillRect(Math.cos(a) * rr - 1.5, Math.sin(a) * rr - 1.5, 3, 3); } ctx.restore(); }
+  { ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.42); ctx.rotate(-t * 0.5); ctx.globalAlpha = 0.7 * grow; ctx.beginPath(); for (let i = 0; i <= 6; i++) { const a = i * TAU / 6 * 2; const px = Math.cos(a) * R * 0.72, py = Math.sin(a) * R * 0.72; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.stroke(); ctx.restore(); } // 육망성
+  for (let i = 0; i < 18; i++) { const a = i * 2.39 + t, d = (1 - ((t * 0.9 + i * 0.13) % 1)) * 120; ctx.globalAlpha = 0.6 * grow; ctx.fillStyle = i % 3 ? col : '#ffffff'; ctx.fillRect(Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d * 0.5), 2, 2); } // 모여드는 빛
+  if (t > 1.45) { const k = Math.min(1, (t - 1.45) / 0.3), w = 4 + 30 * k; ctx.globalAlpha = 0.8 * k; const pg = ctx.createLinearGradient(cx - w, 0, cx + w, 0); pg.addColorStop(0, 'rgba(0,0,0,0)'); pg.addColorStop(0.5, col); pg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = pg; ctx.fillRect(cx - w, 0, w * 2, cy); ctx.fillStyle = '#ffffff'; ctx.fillRect(cx - w * 0.15, 0, w * 0.3, cy); } // 빛기둥
+  if (best >= 4 && t > 1.5) { ctx.globalAlpha = 0.5; ctx.strokeStyle = col; for (let i = 0; i < 14; i++) { const a = i * TAU / 14 + t; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 20, cy + Math.sin(a) * 9); ctx.lineTo(cx + Math.cos(a) * 200, cy + Math.sin(a) * 90); ctx.stroke(); } } // 전설: 사방 빛살
+  if (t > 1.6) { const n = A.n, k = Math.min(1, (t - 1.6) / 0.3); for (let i = 0; i < n; i++) { const r = gachaCardRect(i, n), tx = r.x + r.w / 2, ty = r.y + r.h / 2, x = cx + (tx - cx) * k, y = cy - 40 * Math.sin(k * Math.PI) + (ty - cy) * k; ctx.globalAlpha = 1; ctx.fillStyle = GACHA_RANK_COL[Math.max(1, gachaRank(A.results[i]))]; ctx.beginPath(); ctx.arc(x, y, 4, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillRect(Math.round(x) - 1, Math.round(y) - 1, 2, 2); } } // 카드 자리로 날아가는 구슬
+  if (t > 1.75) { ctx.globalAlpha = Math.max(0, 1 - (t - 1.75) / 0.15) * 0.8; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); } // 섬광
+  ctx.restore(); ctx.globalAlpha = 1; ctx.lineWidth = 1;
+  hudText(ctx, '클릭 — 건너뛰기', W - 10, H - 14, '#665a80', 'right', 7);
+}
+function drawGachaCardBack(ctx, r, t, i, o) { // 2단계: 아직 안 뒤집힌 카드 (뒤집히는 중이면 가로로 접힘)
+  const A = o.anim, t0 = GACHA_ANIM.reveal + i * GACHA_ANIM.flip, k = (t - t0) / GACHA_ANIM.flipLen; if (k >= 0.5) return false; // 절반을 넘으면 앞면(실제 결과)이 보임
+  const sx = k <= 0 ? 1 : 1 - k * 2, rank = gachaRank(A.results[i]), col = GACHA_RANK_COL[Math.max(1, rank)];
+  ctx.save(); ctx.translate(r.x + r.w / 2, r.y + r.h / 2); ctx.scale(Math.max(0.02, sx), 1);
+  ctx.fillStyle = '#1e1630'; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h); ctx.strokeStyle = k > 0 ? col : '#8a7040'; ctx.lineWidth = 2; ctx.strokeRect(-r.w / 2 + 1, -r.h / 2 + 1, r.w - 2, r.h - 2); ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,216,74,0.45)'; ctx.strokeRect(-r.w / 2 + 6, -r.h / 2 + 6, r.w - 12, r.h - 12);
+  ctx.fillStyle = '#ffd84a'; ctx.beginPath(); for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4 - Math.PI / 2, rr = j % 2 ? 5 : 13; j ? ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.fill(); // 별 문장
+  if (k > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = k * 1.6; ctx.fillStyle = col; ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h); }
+  ctx.restore(); ctx.globalAlpha = 1; return true;
+}
+function drawGachaFlipFx(ctx, r, t, i, o) { // 뒤집힌 직후 반짝 (에픽 이상은 크게)
+  const t0 = GACHA_ANIM.reveal + i * GACHA_ANIM.flip + GACHA_ANIM.flipLen * 0.5, k = (t - t0) / 0.35; if (k < 0 || k > 1) return;
+  const rank = gachaRank(o.anim.results[i]), col = GACHA_RANK_COL[Math.max(1, rank)], cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (1 - k) * (rank >= 3 ? 0.9 : 0.5); ctx.strokeStyle = col; ctx.lineWidth = 2;
+  ctx.strokeRect(r.x - k * 6, r.y - k * 6, r.w + k * 12, r.h + k * 12);
+  if (rank >= 3) for (let j = 0; j < (rank >= 4 ? 16 : 8); j++) { const a = j * TAU / (rank >= 4 ? 16 : 8); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 30, cy + Math.sin(a) * 40); ctx.lineTo(cx + Math.cos(a) * (40 + k * 50), cy + Math.sin(a) * (50 + k * 60)); ctx.stroke(); }
+  ctx.restore(); ctx.lineWidth = 1;
+}
 function hudText(ctx, str, x, y, color = '#fff', align = 'left', size = 10) {
   ctx.font = HUD_FONTS[size] || (HUD_FONTS[size] = `bold ${size}px 'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif`); ctx.textAlign = align; ctx.textBaseline = 'top';
   ctx.fillStyle = '#000'; ctx.fillText(str, x + 1, y + 1);
@@ -338,10 +382,13 @@ class HUD {
       hudText(ctx, 'Esc / J 닫기', VIEW_W - 8, 6, '#999', 'right', 8);
       if (o.msg && o.msg.t > 0) hudText(ctx, o.msg.text, MW / 2, 24, o.msg.color, 'center', 9);
       // 결과 공개
+      const at = gachaAnimTime(o);
+      if (o.results && o.anim && at < GACHA_ANIM.reveal) { drawGachaSummon(ctx, o, at); return; } // 뽑기 연출 1단계
       if (o.results) {
         ctx.fillStyle = 'rgba(6,5,12,0.9)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
         const got = o.results.some((r) => r.type === 'skin');
         const gotEpic = !got && o.results.some((r) => r.type === 'common' && r.tier === 'epic');
+        if (o.anim) hudText(ctx, '두근두근…', VIEW_W / 2, 40, '#c8b8e0', 'center', 15); else // 다 뒤집기 전엔 결과를 미리 알리지 않음
         hudText(ctx, got ? '✦ 전설 스킨 획득! ✦' : gotEpic ? '◆ 에픽 스킨 획득! ◆' : '뽑기 결과', VIEW_W / 2, 40, got ? '#ffd84a' : gotEpic ? SKIN_RARITY.epic.color : '#ddd', 'center', 15);
         const n = o.results.length, cw = 86, gap = 8, x0 = (VIEW_W - (n * cw + (n - 1) * gap)) / 2;
         o.results.forEach((res, i) => { const x = x0 + i * (cw + gap), y = 80, h = 120;
@@ -357,8 +404,9 @@ class HUD {
           else if (isCommon) { const Cs = SKINS.find((p) => p.id === res.id), spr = typeof commonSprite === 'function' && commonSprite(Cs && Cs.sprite); if (spr) { const sc = 2, dw = spr.w * sc, dh = spr.h * sc; ctx.drawImage(spr.n, x + cw / 2 - dw / 2, y + 56 - dh, dw, dh); } hudText(ctx, Cs ? Cs.name : '', x + cw / 2, y + 66, '#fff', 'center', fitSize(Cs ? Cs.name : '', cw - 8)); hudText(ctx, `${RC.name} 획득`, x + cw / 2, y + 92, RC.color, 'center', 9); }
           else if (isSkin) { hudText(ctx, '완성 획득!', x + cw / 2, y + 88, '#ffd84a', 'center', 9); if (res.refund) hudText(ctx, `모은 조각 +${res.refund} M`, x + cw / 2, y + 102, GACHA.mileageColor, 'center', 6); }
           else if (isDupe) { hudText(ctx, '보유', x + cw / 2, y + 88, '#ffb0d8', 'center', 9); hudText(ctx, `+${res.mileage} M`, x + cw / 2, y + 102, GACHA.mileageColor, 'center', 8); }
-          else if (!isSupply && res.type !== 'shardDupe' && res.mileage) { hudText(ctx, `+${res.mileage}`, x + cw / 2, y + 48, GACHA.mileageColor, 'center', 13); hudText(ctx, GACHA.mileageName, x + cw / 2, y + 68, '#bbb', 'center', 7); } });
-        hudText(ctx, '아무 곳이나 클릭 / Enter — 닫기', VIEW_W / 2, VIEW_H - 30, '#999', 'center', 9);
+          else if (!isSupply && res.type !== 'shardDupe' && res.mileage) { hudText(ctx, `+${res.mileage}`, x + cw / 2, y + 48, GACHA.mileageColor, 'center', 13); hudText(ctx, GACHA.mileageName, x + cw / 2, y + 68, '#bbb', 'center', 7); }
+          if (o.anim) { const rr = { x, y, w: cw, h }; if (!drawGachaCardBack(ctx, rr, at, i, o)) drawGachaFlipFx(ctx, rr, at, i, o); } }); // 뽑기 연출 2단계: 한 장씩 뒤집힘
+        hudText(ctx, o.anim ? '클릭 — 건너뛰기' : '아무 곳이나 클릭 / Enter — 닫기', VIEW_W / 2, VIEW_H - 30, '#999', 'center', 9);
       }
       // 확률표 팝업
       if (o.rates) {

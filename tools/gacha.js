@@ -103,6 +103,8 @@ let pass = 0, fail = 0; const ok = (c, m) => { console.log((c ? '✓ ' : '✗ ')
   await click(await pg.evaluate(() => HUD.gachaPullBtn(1)));
   const ui1 = await pg.evaluate(() => { const g = window.__game, o = g.overlay; return { n: o.results && o.results.length, bank: g.save.bank }; });
   ok(ui1.n === 5 && ui1.bank === 3500, `5뽑 버튼 클릭 → 결과 5장 · 결정석 5000 → ${ui1.bank}`);
+  ok(await pg.evaluate(() => !!window.__game.overlay.anim), '뽑기 연출 시작 (소환진 → 카드 뒤집기)');
+  await click({ x: 250, y: 140, w: 4, h: 4 }); ok(await pg.evaluate(() => !window.__game.overlay.anim && !!window.__game.overlay.results), '연출 중 클릭 → 건너뛰고 결과');
   await pg.screenshot({ path: OUT + 'g_result.png' });
   await click({ x: 250, y: 140, w: 4, h: 4 }); ok(await pg.evaluate(() => !window.__game.overlay.results), '결과 화면 클릭 → 닫힘');
   await click(await pg.evaluate(() => HUD.gachaRatesBtn())); ok(await pg.evaluate(() => !!window.__game.overlay.rates), '확률 보기 열림');
@@ -111,7 +113,9 @@ let pass = 0, fail = 0; const ok = (c, m) => { console.log((c ? '✓ ' : '✗ ')
   await pg.evaluate(() => { window.__rnd = Math.random; Math.random = () => 0.005; });
   await click(await pg.evaluate(() => HUD.gachaPullBtn(0)));
   await pg.evaluate(() => { Math.random = window.__rnd; });
-  ok(await pg.evaluate(() => !!(window.__game.legendIntro && window.__game.legendIntro.K && window.__game.legendIntro.K.id === 'skin_leg_void')), '1뽑 버튼으로 전설 당첨 → 컷신 시작');
+  ok(await pg.evaluate(() => !window.__game.legendIntro && !!window.__game.overlay.anim && window.__game.overlay.anim.best === 5), '전설 당첨: 컷신은 뽑기 연출이 끝난 뒤로 미룸');
+  await pg.waitForTimeout(3200); // 연출이 저절로 끝날 때까지
+  ok(await pg.evaluate(() => !!(window.__game.legendIntro && window.__game.legendIntro.K && window.__game.legendIntro.K.id === 'skin_leg_void')), '1뽑 버튼으로 전설 당첨 → 연출 뒤 컷신 시작');
   await pg.waitForTimeout(1500); await pg.screenshot({ path: OUT + 'g_intro.png' });
   await click({ x: 250, y: 140, w: 4, h: 4 }); await click({ x: 250, y: 140, w: 4, h: 4 });
   ok(await pg.evaluate(() => !window.__game.legendIntro && (window.__game.overlay.results || [])[0].type === 'skin'), '컷신 클릭 두 번(건너뛰기 → 닫기) → 결과 화면 (완성 획득)');
