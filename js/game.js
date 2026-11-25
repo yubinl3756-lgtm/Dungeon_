@@ -387,6 +387,7 @@ class Game {
   startRhongoTrial(rank = 2) { this.startQuestTrial('rhongo', rank); }
   startQuestTrial(id, rank = 2) { /* rank: 고른 진화 단계 0~2 (1진·2진·3진) */
     const T = TRIALS[id] || RHONGO_TRIAL; this.trialId = T.id;
+    if (/^camelot/.test(T.id)) { const M = this.save.merlin = this.save.merlin || {}; if (!M.camelotEntered) { M.camelotEntered = true; writeSave(this.save); } } // 카멜롯에 들어가 봄 (탐험가의 대답이 이어짐)
     rank = clamp(rank | 0, 0, 2); this.trialRank = rank;
     this.mode = 'dungeon'; this.trialW = Object.assign({}, worldDef(T.world), T.W);
     this.worldIdx = T.world; this.levelIdx = STAGES_PER_WORLD - 1; this.gold = 0; this.kills = 0;
@@ -1575,7 +1576,7 @@ class Game {
       items.forEach((_, i) => { if (input.wasPressed('Digit' + (i + 1))) ch = i; });
       if (input.wasPressed('Mouse0')) { const m = input.mouse; items.forEach((_, i) => { const r = HUD.talkRect(i); if (m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h) ch = i; }); this.input.mouse.down = false; }
       if (ch < 0) return; const T = items[ch], npc = o.npc; this.overlay = null;
-      this.playCutscene(T.lines, { always: true, force: true, focus: npc ? { x: npc.x, y: npc.y } : null, done: () => { this.overlay = { type: 'explorer_talk', npc, msg: null }; } }); // 대답을 다 들으면 다시 질문 목록
+      this.playCutscene(typeof T.lines === 'function' ? T.lines(this.save) : T.lines, { always: true, force: true, focus: npc ? { x: npc.x, y: npc.y } : null, done: () => { this.overlay = { type: 'explorer_talk', npc, msg: null }; } }); // 대답을 다 들으면 다시 질문 목록
       return;
     } else if (o.type === 'travel') { // + 빠른 이동: 카멜롯(층 고르기) · 바빌로니아
       if (o.msg) o.msg.t -= STEP;
