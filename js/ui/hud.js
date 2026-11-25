@@ -253,7 +253,7 @@ class HUD {
   }
   overlay(ctx, game) {
     const o = game.overlay;
-    ctx.fillStyle = o.type === 'story' || o.type === 'treasure_pick' ? '#06050a' : o.type === 'codex' || o.type === 'armory' || o.type === 'treasures' || o.type === 'joblevel' || o.type === 'hero_info' || o.type === 'skins' || o.type === 'travel' || o.type === 'deep_saves' || o.type === 'archive' || o.type === 'guild' || o.type === 'hunt' || o.type === 'trade' || o.type === 'gamble' || o.type === 'trial_confirm' || o.type === 'trial_weapons' || o.type === 'admin' || o.type === 'details' || o.type === 'quests' || o.type === 'multi' || o.type === 'rank' ? 'rgba(8,6,14,0.94)' : 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    ctx.fillStyle = o.type === 'story' || o.type === 'treasure_pick' ? '#06050a' : o.type === 'codex' || o.type === 'armory' || o.type === 'treasures' || o.type === 'joblevel' || o.type === 'hero_info' || o.type === 'skins' || o.type === 'travel' || o.type === 'deep_saves' || o.type === 'explorer_talk' || o.type === 'archive' || o.type === 'guild' || o.type === 'hunt' || o.type === 'trade' || o.type === 'gamble' || o.type === 'trial_confirm' || o.type === 'trial_weapons' || o.type === 'admin' || o.type === 'details' || o.type === 'quests' || o.type === 'multi' || o.type === 'rank' ? 'rgba(8,6,14,0.94)' : 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     if (o.type === 'pause') { drawPauseMenu(ctx, game); // Esc 메뉴 (js/ui/pause_menu.js)
     } else if (o.type === 'keys') { /* 조작키 설정 */
       hudText(ctx, '조작키 설정', VIEW_W / 2, 20, '#fff', 'center', 14);
@@ -271,7 +271,7 @@ class HUD {
       const m = game.input.mouse, list = game.deepSaveList(), items = [null, ...list];
       hudText(ctx, '심층 입장 — 시작 지점 고르기', VIEW_W / 2, 30, '#9ad8ff', 'center', 14);
       hudText(ctx, '심층 10·20·30·40 보스를 깬 순간(50은 마을에 도착한 순간)의 캐릭터 그대로 시작합니다', VIEW_W / 2, 50, '#aaa', 'center', 7);
-      items.forEach((S, i) => { const r = HUD.travelRect(i, items.length), hov = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h, col = S ? '#9ad8ff' : '#c8b890';
+      items.forEach((S, i) => { const r = HUD.talkRect(i), hov = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h, col = S ? '#9ad8ff' : '#c8b890';
         ctx.fillStyle = hov ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.06)'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = col; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
         if (!S) { hudText(ctx, `${i + 1}. 심층 1부터 (10-4 기록으로 입장)`, r.x + 10, r.y + 10, col, 'left', 9); return; }
         const H = game.data.heroes.get(S.hero), ln = S.p.line && jobLines(S.hero).find((l) => l.id === S.p.line);
@@ -279,6 +279,14 @@ class HUD {
         hudText(ctx, townS ? `${i + 1}. 심층 ${S.depth} 개척자의 마을부터` : `${i + 1}. 심층 ${S.depth + 1}부터 — 심층 ${S.depth} 세이브`, r.x + 10, r.y + 5, townS ? '#ffd080' : col, 'left', 9);
         hudText(ctx, `${H ? H.name : ''}${ln ? ' · ' + ln.name : ''} · 무기 ${(S.p.weapons || []).length}개 · 축복 ${(S.p.buffs || []).length}개 · 골드 ${S.gold || 0}`, r.x + 10, r.y + 18, '#aaa', 'left', 7); });
       hudText(ctx, '번호 키 / 클릭: 선택   ·   Esc: 닫기', VIEW_W / 2, VIEW_H - 14, '#888', 'center', 7);
+    } else if (o.type === 'explorer_talk') { /* 최초의 탐험가에게 묻기 */
+      const m = game.input.mouse, items = game.explorerTalkList();
+      hudText(ctx, '최초의 탐험가', VIEW_W / 2, 30, '#e0b058', 'center', 14);
+      hudText(ctx, '「뭐든 물어봐라. 아는 만큼은 대답해 주지.」', VIEW_W / 2, 50, '#d8c8a8', 'center', 8);
+      items.forEach((T, i) => { const r = HUD.talkRect(i), hov = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
+        ctx.fillStyle = hov ? 'rgba(224,176,88,0.18)' : 'rgba(255,255,255,0.06)'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = '#e0b058'; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
+        hudText(ctx, `${i + 1}. ${T.q}`, r.x + 10, r.y + 8, hov ? '#ffe9a0' : '#e8dcc0', 'left', 9); });
+      hudText(ctx, '번호 키 / 클릭: 묻기   ·   Esc: 그만두기', VIEW_W / 2, VIEW_H - 14, '#888', 'center', 7);
     } else if (o.type === 'travel') { /* + 빠른 이동 */
       const m = game.input.mouse, cam = o.sub === 'camelot', items = cam ? game.camelotFloors() : ['camelot', 'babylon'];
       hudText(ctx, cam ? '카멜롯 — 층 고르기' : '빠른 이동', VIEW_W / 2, 30, '#ffd84a', 'center', 14);
@@ -884,6 +892,7 @@ class HUD {
   static jobRowRect(i) { return { x: 36, y: 36 + i * 27, w: VIEW_W - 72, h: 24 }; }
   static jobLineRowRect(i) { return { x: 12 + (i % 2) * 246, y: 47 + Math.floor(i / 2) * 25, w: 240, h: 23 }; }
   static jobLinePageRect(i, n) { const w = 58, gap = 8, total = n * w + (n - 1) * gap; return { x: (VIEW_W - total) / 2 + i * (w + gap), y: 250, w, h: 13 }; }
+  static talkRect(i) { const w = 300, h = 26; return { x: (VIEW_W - w) / 2, y: 64 + i * 30, w, h }; } // 최초의 탐험가에게 묻기 (질문 6개)
   static travelRect(i, n) { const w = 300, h = 30, x = (VIEW_W - w) / 2, y0 = 70; return { x, y: y0 + i * (h + 6), w, h }; }
   static skinHeroArrow(d) { return { x: d ? VIEW_W - 34 : 10, y: 6, w: 24, h: 20 }; } // 스킨창 직업 바꾸기
   static skinRect(i, n = 0) { const tiny = n > 15, small = n > 8, cols = tiny ? 6 : small ? 5 : 4, w = tiny ? 78 : small ? 92 : 112, h = tiny ? 70 : small ? 72 : 92, gap = tiny ? 4 : small ? 5 : 8, x0 = (VIEW_W - (cols * w + (cols - 1) * gap)) / 2; return { x: x0 + (i % cols) * (w + gap), y: (small ? 36 : 40) + Math.floor(i / cols) * (h + gap), w, h, small, tiny }; } // 16개 이상: 6열 (한 직업 최대 18개)

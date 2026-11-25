@@ -967,8 +967,9 @@ class Game {
       X.quest = 2; const id = 'skin_u_first_explorer'; sv.skins = sv.skins || []; if (!sv.skins.includes(id)) sv.skins.push(id); writeSave(sv);
       this.showBanner('고유 스킨 획득 — 최초의 탐험가', '검사 고유 외형 · 스킨 창에서 장착할 수 있습니다', '#e0b058'); this.legendIntroCheck([id]); } }); return; }
     if (X.quest === 1) { npc.bubble = { text: pick(['그 녀석의 소식은 아직인가.', '던전 어딘가를 걷고 있을 거다. 아무도 모르게.', '찾거든 꼭 알려 줘.']), t: 3.5 }; return; }
-    npc.bubble = { text: pick(['그 외투, 잘 어울리는군.', '지도에 빈칸이 아직 많군.', '그 녀석이 준비하는 거라… 나도 가만히 있을 순 없지.']), t: 3.5 };
+    this.overlay = { type: 'explorer_talk', npc, msg: null }; this.input.mouse.down = false; // 스킨을 받은 뒤: 질문 고르기
   }
+  explorerTalkList() { const sv = this.save; return EXPLORER_TALK.filter((T) => !T.need || (T.need === 'merlin' ? !!(sv.merlin && sv.merlin.revealed) : T.need === 'babylon' ? !!(sv.babylon && sv.babylon.visited) : true)); }
   placeGlitch(map) { // 글리치: 심층 1층부터 가끔 (솔로) · 심층 60은 방 몇 개가 오염되고 글리치가 늘 하나
     const W = this.W; if (!W.deep || W.trial || W.town || this.areaId) return;
     if (W.glitchFloor) { const rooms = map.rooms.filter((r) => r.type === 'combat'); rooms.forEach((r, i) => { if (i % 2 === 0 || Math.random() < 0.3) r.glitch = true; }); const br = map.roomOf('boss'); if (br) br.glitch = true; }
@@ -1567,6 +1568,14 @@ class Game {
       if (input.wasPressed('Mouse0')) { const m = input.mouse; items.forEach((_, i) => { const r = HUD.travelRect(i, items.length); if (m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h) ch = i; }); this.input.mouse.down = false; }
       if (ch < 0) return; const d = items[ch]; this.overlay = null;
       this.transition = { t: 0, swapped: false, action: () => (d ? this.startFromDeepSave(d) : this.startRun(true)) };
+      return;
+    } else if (o.type === 'explorer_talk') { // 최초의 탐험가에게 묻기
+      if (input.wasPressed('Escape') || input.wasPressed('KeyE')) { this.overlay = null; return; }
+      const items = this.explorerTalkList(); let ch = -1;
+      items.forEach((_, i) => { if (input.wasPressed('Digit' + (i + 1))) ch = i; });
+      if (input.wasPressed('Mouse0')) { const m = input.mouse; items.forEach((_, i) => { const r = HUD.talkRect(i); if (m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h) ch = i; }); this.input.mouse.down = false; }
+      if (ch < 0) return; const T = items[ch], npc = o.npc; this.overlay = null;
+      this.playCutscene(T.lines, { always: true, force: true, focus: npc ? { x: npc.x, y: npc.y } : null, done: () => { this.overlay = { type: 'explorer_talk', npc, msg: null }; } }); // 대답을 다 들으면 다시 질문 목록
       return;
     } else if (o.type === 'travel') { // + 빠른 이동: 카멜롯(층 고르기) · 바빌로니아
       if (o.msg) o.msg.t -= STEP;
