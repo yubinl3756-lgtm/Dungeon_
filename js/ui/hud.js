@@ -388,7 +388,7 @@ class HUD {
         ctx.fillStyle = 'rgba(6,5,12,0.9)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
         const got = o.results.some((r) => r.type === 'skin');
         const gotEpic = !got && o.results.some((r) => r.type === 'common' && r.tier === 'epic');
-        if (o.anim) hudText(ctx, '두근두근…', VIEW_W / 2, 40, '#c8b8e0', 'center', 15); else // 다 뒤집기 전엔 결과를 미리 알리지 않음
+        if (!o.anim) // 다 뒤집기 전엔 제목 없음 (결과를 미리 알리지 않음)
         hudText(ctx, got ? '✦ 전설 스킨 획득! ✦' : gotEpic ? '◆ 에픽 스킨 획득! ◆' : '뽑기 결과', VIEW_W / 2, 40, got ? '#ffd84a' : gotEpic ? SKIN_RARITY.epic.color : '#ddd', 'center', 15);
         const n = o.results.length, cw = 86, gap = 8, x0 = (VIEW_W - (n * cw + (n - 1) * gap)) / 2;
         o.results.forEach((res, i) => { const x = x0 + i * (cw + gap), y = 80, h = 120;
