@@ -2389,6 +2389,7 @@ class Game {
       const W = this.W, next = worldDef(this.worldIdx + 1);
       this.portalSpot = c;
       const after = () => {
+        if (W.deep && !W.trial && W.boss === 'boss_primordial') this.playCutscene(PRIMORDIAL_FALL_LINES, { id: 'primordial_fall', focus: { x: c.x, y: c.y } }); // 태고룡 처치: 천율과 네 분신의 진실 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 20 && W.boss === 'boss_nest_mother') this.playCutscene(PRIMORDIAL_HINT_LINES, { id: 'primordial_hint', focus: { x: c.x, y: c.y } }); // 태고룡의 떡밥 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 30) {
           this.playCutscene(ARCHIVIST_CLEAR_LINES, { id: 'archivist_clear', focus: { x: c.x, y: c.y }, done: () => {
