@@ -992,7 +992,7 @@ class Game {
     this.mode = 'dungeon'; this.trialW = null; this.areaId = null; this.runDeep = true;
     const townSave = !!worldDef(DEEP_START + depth - 1).town; // 마을 세이브: 마을부터 (그 밖: 다음 층부터)
     this.worldIdx = DEEP_START + depth - (townSave ? 1 : 0); this.levelIdx = townSave ? STAGES_PER_WORLD - 1 : 0; this.gold = S.gold || 0; this.kills = 0;
-    this.runStart = { stage: this.stageIndex, world: this.worldIdx }; this.save.runReviveUsed = false;
+    this.runStart = { stage: this.stageIndex, world: this.worldIdx, gold0: this.gold }; this.save.runReviveUsed = false; // 건너뛴 층의 스테이지·보스·들고 온 골드는 결정석에 들어가지 않음
     this.save.selected = hero.id; if (S.p.line) { this.save.lineChoice = this.save.lineChoice || {}; this.save.lineChoice[hero.id] = S.p.line; } writeSave(this.save);
     const tr = DATA_TREASURES.find((t) => t.id === this.save.treasureEquipped);
     this.player = this.playerFromSnapshot(hero, S.p); this.useCheckpoint(this.player, S.p, tr);
@@ -1023,6 +1023,7 @@ class Game {
     if (cp) { this.player = this.playerFromSnapshot(this.player.hero, cp); this.gold = cp.gold || 0; this.useCheckpoint(this.player, cp, tr); }
     else if (tr) { this.player.treasure = tr; if (tr.apply) tr.apply(this.player); }
     this.guild(); this.applySupplies();
+    this.runStart.gold0 = this.gold; // 10-4 기록 · 심층 기본 장비로 들고 시작한 골드는 결정석 보너스에서 뺌
     this.loadStage();
     if (cp) {
       this.showBanner(switched ? `심층 입장 — ${this.player.hero.name}(으)로 바꿈` : '심층 입장', `${switched ? '이 직업·진화 루트로 10-4를 깬 기록이 없어 가장 최근 10-4를 깬 캐릭터로 · ' : `${this.player.line ? this.player.line.name + ' 계열 · ' : ''}10-4를 깬 그대로 · `}${this.player.weapons.map((w) => w.def.name).join(' + ')} · 축복 ${this.player.buffs.length}개`, '#9ad8ff');
@@ -1275,7 +1276,7 @@ class Game {
     if (victory && !coopRun) { this.save.clears++; writeSave(this.save); }
   }
   runReward(victory, goldLeft = this.gold) { // 로비 재화: 이번 탐험에서 실제로 깬 스테이지·필드 보스 수 (로비에서 바로 심층에 들어간 탐험도 일반과 같은 기준) + 남은 골드
-    const gold = Math.max(0, Math.floor(goldLeft || 0)), goldBonus = goldCrystals(gold);
+    const gold = Math.max(0, Math.floor(goldLeft || 0)), g0 = Math.max(0, Math.floor((this.runStart && this.runStart.gold0) || 0)), goldBonus = Math.max(0, goldCrystals(gold) - goldCrystals(g0)); // 시작할 때 들고 온 골드(세이브 포인트 · 10-4 기록)는 결정석 보너스에서 뺌
     if (this.areaId) { const S = this.runStart || {}, f = this.zoneField || 0, stages = Math.max(0, f * STAGES_PER_WORLD + this.levelIdx - (S.zs || 0) + (victory ? 1 : 0)), bosses = Math.max(0, f - (S.zf || 0) + (victory ? 1 : 0)); /* 지하: 필드 번호로 셈 */
       return { stages, bosses, gold, goldBonus, reward: stages * CUR.perStage + bosses * CUR.perBoss + (victory ? CUR.victory : 0) + goldBonus }; }
     const S = this.runStart || { stage: 0, world: 0 }, stages = Math.max(0, this.stageIndex - S.stage + (victory ? 1 : 0)), bosses = Math.max(0, this.worldIdx - S.world + (victory ? 1 : 0));
