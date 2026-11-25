@@ -523,6 +523,21 @@ const DEEP_ARRIVAL_LINES = [
 ];
 // 탐험가 길드 '이야기 기록' 책장: 지금까지 본 이야기를 다시 보기 (unlocked: 볼 수 있는 조건)
 // 심층 30: 기록의 근원 — 기록관은 탐험가가 아닌 기록의 관리자다.
+// 심층 20 둥지의 어미 홍룡을 쓰러뜨린 뒤: 태고룡의 떡밥 [사용자 결정]
+const PRIMORDIAL_HINT_LINES = [
+  '쓰러진 어미 홍룡이 마지막 숨을 몰아쉰다. 그 눈은 당신이 아니라, 둥지의 훨씬 아래를 바라보고 있다.',
+  '「…우리는… 그분의 비늘에서 떨어져 나온… 불씨일 뿐…」',
+  '둥지 깊은 곳의 벽화. 하늘을 가릴 만큼 거대한 용 한 마리와, 그 아래 엎드린 수많은 용들.',
+  '벽화 아래 닳은 글귀: 「모든 용의 시작, 태고룡. 깊은 곳의 둥지에서 잠들어 다시 하늘을 기다린다.」',
+  '발밑 깊은 곳에서, 아주 느린 심장 소리가 한 번 울린 것 같다.'
+];
+// 심층 40 태고룡의 둥지: 처음 도착
+const ELDER_ARRIVAL_LINES = [
+  '계단이 끝나자 공기가 달라진다. 숨을 들이쉴 때마다 뜨거운 재가 폐를 긁는다.',
+  '위쪽은 동굴이 아니라 끝을 알 수 없는 하늘처럼 트여 있다.',
+  '그 하늘 한가운데, 산맥 같은 그림자가 천천히 날개를 접었다 편다.',
+  '「…아직 숨이 붙은 것이 여기까지 내려왔나.」'
+];
 // 심층 40 태고룡의 둥지: 보스 방 (보스전은 따로 만들 예정 — 지금은 잠든 기척만) [사용자 결정]
 const ELDER_NEST_LINES = [
   '둥지의 가장 깊은 곳. 산처럼 쌓인 비늘과 뼈 사이로 뜨거운 숨결이 새어 나온다.',
@@ -599,6 +614,8 @@ const STORY_ARCHIVE = [
   { id: 'deep30_arrival', name: '기록의 근원', kind: 'cut', lines: () => DEEP30_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('deep30_arrival') },
   { id: 'archivist_intro', name: '무명의 기록관', kind: 'cut', lines: () => ARCHIVIST_INTRO_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('archivist_intro') },
   { id: 'archivist_clear', name: '기록의 다음 장', kind: 'cut', lines: () => ARCHIVIST_CLEAR_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('archivist_clear') },
+  { id: 'primordial_hint', name: '용들의 벽화', kind: 'cut', lines: () => PRIMORDIAL_HINT_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_hint') },
+  { id: 'elder_arrival', name: '태고룡의 둥지', kind: 'cut', lines: () => ELDER_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('elder_arrival') },
   ...UNIQUE_RECORDS.map((R) => ({ id: 'urec_' + R.id, name: R.name, kind: 'cut', lines: () => R.lines, unlocked: (sv) => uniqueRecordFound(sv, R.id) })),
   { id: 'unique_records_all', name: '끊긴 이야기들', kind: 'cut', lines: () => UNIQUE_RECORDS_ALL_LINES, unlocked: (sv) => !!sv.uniqueQuest },
   { id: 'merlin', name: '후드를 쓴 마법사', kind: 'cut', lines: () => MERLIN_REVEAL_LINES, unlocked: (sv) => !!(sv.merlin && sv.merlin.revealed) },

@@ -185,7 +185,11 @@ const AI_BEHAVIORS = {
     const spd = [1, 1, 1.25, 1.5][phase] * (e.rampage ? def.rampage : 1) * (e.kingWeakT > 0 ? e.kingWeakSlow || 0.55 : 1); /* 벗의 사슬: 약해진 길가메시 */ /* 모드레드 '폭주': 모든 행동이 빨라짐 */
     const ratio = e.hp / e.maxHp, PA = def.phaseAt || [0.66, 0.33], want = ratio <= PA[1] ? 3 : ratio <= PA[0] ? 2 : 1; /* phaseAt: 페이즈가 바뀌는 체력 비율 (아서 왕: 체력바 3개째·마지막 1개) */
     const channeling = e.pd && ((e.pd.tower && e.pd.tower.alive) || e.pd.lock); /* 롱고미니아드(빛의 탑)가 서 있는 동안은 페이즈도 넘기지 않고 다른 행동 없음 — 탑이 무너진 뒤에 넘어감 */
+    if (def.colossal) { // 거대 보스(태고룡): 아레나 위 상공에서 천천히 좌우로 떠다님 — 급강하 중엔 패턴이 직접 움직임
+      if (!e.home) e.home = { x: e.x, y: e.y };
+      if (!e.swooping && e.state !== 'INTRO') { const t = world.time || 0; e.x = e.home.x + Math.sin(t * 0.45) * 46; e.y = e.home.y + Math.sin(t * 1.2) * 3; } }
     if (want > phase && e.state !== 'INTRO' && !channeling) {
+      if (def.colossal) { e.swooping = false; e.perched = false; e.swoopWarn = null; if (e.home) { e.x = e.home.x; e.y = e.home.y; } } // 페이즈가 바뀌면 상공으로 돌아감
       if (e.ult) { e.ult = false; e.damage = e.dmg0; }
       e.riposteT = 0; e.riposteHit = false; e.slashWarn = null; e.dashWarn = null; if (!channeling) e.fortress = null;
       e.phase = want; e.jumpH = 0; e.laser = null; e.fade = 1; e.finalCd = e.ultUsed ? Math.max(e.finalCd ?? 0, 1.5) : 1.5; /* 이미 궁극기를 썼으면 페이즈가 바뀌어도 쿨타임 유지 */
@@ -1326,6 +1330,36 @@ const BOSS_PATTERNS = {
       world.eachTarget((q) => { for (const [ex, ey] of segs) if (segmentCircleHit(e.x, e.y, ex, ey, q.x, q.y, P.width + q.half) >= 0) { world.damagePlayer(e.damage); break; } }); // 광선: 닿은 모두
       if (Math.floor(d.t * 10) !== Math.floor((d.t - dt) * 10)) SFX.play('beam', 0.08);
       return d.t >= P.duration;
+    }
+  },
+  // 급강하 (태고룡): 노릴 자리를 표시 → 그 자리로 내리꽂혀 충격파 → 잠시 내려앉아 약점 노출(받는 피해 +50%) → 상공으로 돌아감
+  swoop: {
+    begin(e) { const d = e.pd; d.n = 0; d.phase = 'aim'; d.pt = 0; e.swooping = true; e.hits = null; },
+    update(e, dt, world, ctx, enr) {
+      const d = e.pd, P = e.pat, p = world.player, r = e.room, home = e.home || { x: e.x, y: e.y };
+      d.pt += dt;
+      if (d.phase === 'aim') { // 표시: 노린 자리를 따라가다 마지막 0.3초는 고정
+        if (d.pt < 0.95 / enr) { d.tx = clamp(p.x, (r.x0 + 3) * TILE, (r.x0 + r.w - 3) * TILE); d.ty = clamp(p.y, (r.y0 + 6) * TILE, (r.y0 + r.h - 3) * TILE); }
+        e.swoopWarn = { x0: e.x, y0: e.y, x1: d.tx, y1: d.ty, k: Math.min(1, d.pt / (1.25 / enr)), color: P.color };
+        if (d.pt >= 1.25 / enr) { d.phase = 'dive'; d.pt = 0; e.hits = null; SFX.play('heavy', 0.7); }
+        return false;
+      }
+      if (d.phase === 'dive' || d.phase === 'rise') {
+        const tx = d.phase === 'dive' ? d.tx : home.x, ty = d.phase === 'dive' ? d.ty : home.y, dx = tx - e.x, dy = ty - e.y, dist = Math.hypot(dx, dy), step = P.speed * (d.phase === 'dive' ? 1 : 0.55) * dt;
+        if (d.phase === 'dive') { e.swoopWarn = null; world.eachTarget((q) => { if (Math.hypot(q.x - e.x, q.y - e.y) < e.radius + q.half + 6) world.hitOnce(e, 'hits', q, () => world.damagePlayer(Math.round(e.damage * 1.4))); });
+          if (Math.random() < 0.7) world.effects.part(e.x + (Math.random() - 0.5) * 30, e.y - 10, -dx / (dist || 1) * 60, -dy / (dist || 1) * 60, { color: P.color, life: 0.4, size: 2.5, size2: 0, drag: 3, add: true }); }
+        if (dist <= step) { e.x = tx; e.y = ty;
+          if (d.phase === 'dive') { // 착지: 충격파 + 약점 노출
+            d.phase = 'rest'; d.pt = 0; e.perched = true; world.addShake(0.45, 6); SFX.play('heavy');
+            world.effects.ring(e.x, e.y, 70, P.color); world.effects.ring(e.x, e.y, 46, '#ffffff'); world.effects.text(e.x, e.y - 46, '약점 노출!', '#ffd84a', true);
+            for (let i = 0; i < 18; i++) world.enemyShoot(e.x, e.y, i * TAU / 18 + Math.random() * 0.1, e.def.bulletSpeed * 0.9, e.damage, P.color, 3);
+          } else { d.n++; if (d.n >= P.dives) { e.swooping = false; return true; } d.phase = 'aim'; d.pt = 0; }
+        } else { e.x += dx / dist * step; e.y += dy / dist * step; }
+        return false;
+      }
+      if (d.phase === 'rest') { if (Math.random() < 0.4) world.effects.part(e.x + (Math.random() - 0.5) * 40, e.y - 6, 0, -30, { color: '#ffd08a', life: 0.6, size: 1.6, size2: 0, drag: 1, add: true });
+        if (d.pt >= P.rest / Math.max(1, enr * 0.9)) { d.phase = 'rise'; d.pt = 0; e.perched = false; } }
+      return false;
     }
   },
   // 격자 폭격: 방 전체에 장판, 가로·세로 한 줄씩만 안전

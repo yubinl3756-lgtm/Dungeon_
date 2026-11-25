@@ -316,6 +316,7 @@ class Enemy extends Entity {
     return null;
   }
   renderTelegraph(ctx) {
+    if (this.swoopWarn && typeof drawPrimordialWarn === 'function') drawPrimordialWarn(ctx, this); // 태고룡 급강하 예고
     const x = Math.round(this.x), y = Math.round(this.y), def = this.def;
     if (this.shockStacks > 0 && this.state !== 'DEAD' && Math.random() < 0.25 * this.shockStacks) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = this.shockStacks >= 2 ? '#bfe8ff' : '#7ac8ff'; ctx.lineWidth = 1; /* 감전 1·2중첩: 푸른 스파크 (2중첩은 더 자주·불규칙한 전류) */
       const r = this.radius + 2, a = Math.random() * TAU; ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * r, y - 4 + Math.sin(a) * r); ctx.lineTo(x + Math.cos(a + 0.4) * (r + 3), y - 4 + Math.sin(a + 0.4) * (r + 3)); if (this.shockStacks >= 2) ctx.lineTo(x + Math.cos(a + 0.9) * r, y - 4 + Math.sin(a + 0.9) * r); ctx.stroke(); ctx.restore(); }
@@ -420,6 +421,7 @@ class Enemy extends Entity {
   render(ctx) {
     if (this.state === 'SPAWN') return;
     const x = Math.round(this.x), y = Math.round(this.y), def = this.def;
+    if (def.colossal && typeof drawPrimordial === 'function') { drawPrimordial(ctx, this); return; } // 거대 보스(태고룡): 부위별 전용 그림
     if (this.negateT > 0 && this.state !== 'DEAD') { const R = this.radius + 8, t = performance.now() / 1000; ctx.save(); ctx.globalCompositeOperation = 'lighter'; /* 가레스의 부정: 하얀 빛의 막 */
       ctx.globalAlpha = 0.18; ctx.fillStyle = '#d8f0ff'; ctx.beginPath(); ctx.arc(x, y - 4, R, 0, TAU); ctx.fill();
       ctx.globalAlpha = 0.85; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y - 4, R + Math.sin(t * 12), 0, TAU); ctx.stroke(); ctx.restore(); ctx.lineWidth = 1; }

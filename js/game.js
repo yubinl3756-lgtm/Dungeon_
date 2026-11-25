@@ -1066,6 +1066,7 @@ class Game {
     const W = this.W;
     if (W.deep && !W.trial && !this.coopRunKey) this.save.bestDeep = Math.max(this.save.bestDeep || 0, W.depth); // 솔로 심층 기록만 갱신
     const map = W.trial ? generateDungeon({ roomCount: W.rooms || 2, specials: ['boss'], waves: W.waves || 0, palette: W.palette, bossSize: W.bossRoom }) // 시련: 시작 방 + 보스 방 (카멜롯은 전투 방도)
+      : W.bossOnly ? buildBossArena({ palette: W.palette, size: W.arena }) // 심층 40: 시작 방 + 바로 위 거대 아레나
       : this.isBossStage
       ? generateDungeon({ roomCount: 4, specials: ['boss'], waves: W.waves, palette: W.palette, bossSize: W.bossRoom })
       : generateDungeon({ roomCount: Math.min(15, 9 + this.worldIdx), specials: (this.areaId && !this.zoneRight('trade') ? ['exit', 'treasure'] : ['exit', 'treasure', 'shop']).concat(this.rollSpecialRoom()), waves: W.waves, palette: W.palette }); // 특수방 하나
@@ -1093,6 +1094,7 @@ class Game {
     if (W.finalField && this.isBossStage) this.playCutscene(GILGAMESH_UNDER_INTRO_LINES, { id: 'gilgamesh_under', always: true, focus: null }); /* 지구라트 4-4 왕좌의 방: 영웅왕 길가메시 */
     if (W.deep && !W.trial && W.depth === 1 && this.levelIdx === 0) this.playCutscene(DEEP_ARRIVAL_LINES, { id: 'deep_arrival', focus: null }); // 심층에 처음 들어설 때 (한 번만)
     if (W.deep && !W.trial && W.depth === 30 && this.levelIdx === 0) this.playCutscene(DEEP30_ARRIVAL_LINES, { id: 'deep30_arrival', focus: null }); // 기록의 근원에 처음 도착
+    if (W.bossOnly && !W.trial) this.playCutscene(ELDER_ARRIVAL_LINES, { id: 'elder_arrival', focus: null }); // 태고룡의 둥지에 처음 도착
     if (this.coop && this.coop.host) { this.coopOnStage(); this.coopSaveRun(); } // 멀티: 동료 배치·부활 + 파티 진행 저장·새 맵 보내기
     if (W.trial) { this.showBanner(W.name, this.trialDef.intro, this.trialDef.color); return; }
     this.showBanner(`${this.stageName()}  ${W.name}`, this.isBossStage ? '보스가 기다리고 있습니다' : W.deep && this.levelIdx === 0 ? `심층 ${W.depth}번째 필드 — 던전은 더 깊은 곳으로 이어진다` : '출구 포탈을 찾으세요', W.deep ? '#9ad8ff' : undefined);
@@ -1102,7 +1104,8 @@ class Game {
     this.levelIdx++;
     if (this.levelIdx >= STAGES_PER_WORLD) { this.levelIdx = 0;
       if (this.areaId) { this.zoneField = (this.zoneField || 0) + 1; if (this.zoneField >= ZONES[this.areaId].fields.length) { this.endRun(true); return; } this.worldIdx = this.W.scaleWorld; } /* 지하: 다음 필드 (세기는 필드마다 정해 둔 곡선) */
-      else this.worldIdx++; }
+      else this.worldIdx++;
+      if (!this.areaId && this.W.bossOnly) this.levelIdx = STAGES_PER_WORLD - 1; } // 보스만 있는 층: 곧바로 보스 스테이지
     this.loadStage();
   }
   rollSpecialRoom() { // 일반 스테이지마다 chance 확률로 특수방 하나 (전직의 방은 진화할 단계가 남았을 때 더 자주)
@@ -1244,6 +1247,7 @@ class Game {
     let fx = p.x + mx * 0.2, fy = p.y + my * 0.2;
     const cs = this.cutscene, focus = cs && cs.focus ? cs.focus : this.cinematic ? this.cinematic.boss : this.slowMo ? this.slowMo : null; // 컷신·보스 등장·처치 연출 중에는 그쪽을 비춤
     if (focus) { fx = focus.x; fy = focus.y; }
+    else { const C = this.enemies.find((e) => e.alive && e.def.colossal && e.state !== 'SPAWN'); if (C && C.home && this.activeRoom && this.activeRoom.arena) fy = C.home.y + 24; } // 거대 보스 아레나: 세로는 고정(상공의 보스 가슴부터 아레나 바닥까지 한 화면), 가로만 플레이어를 따라감
     return {
       x: clamp(fx - VIEW_W / 2, 0, this.map.width * TILE - VIEW_W),
       y: clamp(fy - VIEW_H / 2, 0, this.map.height * TILE - VIEW_H)
@@ -2265,7 +2269,7 @@ class Game {
     this.enemyBullets.length = 0;
     if (r.type === 'boss' && this.W.noBoss) { r.wavesLeft = 0; this.banner = null; this.input.mouse.down = false; SFX.play('door'); return; } // 심층 40: 보스 없음 → 다음 프레임에 clearRoom (보상 없이 장면 + 포탈)
     if (r.type === 'boss') {
-      const id = this.W.boss, c = this.map.tileCenter(r.cx, r.cy - 3);
+      const id = this.W.boss, c = this.W.bossOnly ? { x: this.map.tileCenter(r.cx, r.y0).x, y: r.y0 * TILE + 24 } : this.map.tileCenter(r.cx, r.cy - 3); // 거대 보스는 아레나 위쪽 가장자리 너머 상공에 (머리만 가장자리에 걸침)
       const boss = this.spawnEnemy(id, c.x, c.y, r);
       boss.setState('INTRO'); boss.jumpH = 160; boss.phase = 1;
       this.cinematic = { t: 0, boss, landed: false, roared: false, grand: !!(this.W.sanctum || this.W.trial) };
@@ -2380,6 +2384,7 @@ class Game {
       const W = this.W, next = worldDef(this.worldIdx + 1);
       this.portalSpot = c;
       const after = () => {
+        if (W.deep && !W.trial && W.depth === 20 && W.boss === 'boss_nest_mother') this.playCutscene(PRIMORDIAL_HINT_LINES, { id: 'primordial_hint', focus: { x: c.x, y: c.y } }); // 태고룡의 떡밥 (처음 한 번)
         if (W.deep && !W.trial && W.depth === 30) {
           this.playCutscene(ARCHIVIST_CLEAR_LINES, { id: 'archivist_clear', focus: { x: c.x, y: c.y }, done: () => {
             this.props.push(new Chest(c.x, c.y - 24, 'weapon'));

@@ -254,6 +254,24 @@ function generateDungeon(opts) {
   return map;
 }
 
+// 보스만 있는 층(심층 40 태고룡의 둥지): 시작 방 + 바로 위의 아주 넓은 보스 아레나 (잡몹방 없음)
+//  아레나 위쪽 가장자리 너머 상공에 거대한 보스가 떠 있음 — 가장자리에 부서진 기둥 몇 개
+function buildBossArena(opts) {
+  const map = new DungeonMap(GRID_W * CELL_W, GRID_H * CELL_H, opts.palette), [aw, ah] = opts.size || [49, 29], cx = (GRID_W * CELL_W) >> 1;
+  const by0 = 8, bx0 = cx - (aw >> 1), sw = 11, sh = 9, sy0 = by0 + ah + 6, sx0 = cx - (sw >> 1);
+  const boss = { type: 'boss', gx: 2, gy: 1, x0: bx0, y0: by0, w: aw, h: ah, cx, cy: by0 + (ah >> 1), doors: [], state: 'idle', visited: false, wavesLeft: 0, arena: true };
+  const start = { type: 'start', gx: 2, gy: 3, x0: sx0, y0: sy0, w: sw, h: sh, cx, cy: sy0 + (sh >> 1), doors: [], state: 'cleared', visited: true, wavesLeft: 0 };
+  map.carveRoom(bx0, by0, aw, ah); map.carveRoom(sx0, sy0, sw, sh);
+  const ys = by0 + ah, ye = sy0 - 1; // 아레나 아래 문 ↔ 시작 방 위 문
+  for (let y = ys; y <= ye; y++) { for (let d = -1; d <= 1; d++) map.set(cx + d, y, T_FLOOR); for (const d of [-2, 2]) if (map.get(cx + d, y) === T_VOID) map.set(cx + d, y, T_WALL); }
+  for (let d = -1; d <= 1; d++) { boss.doors.push({ x: cx + d, y: ys }); start.doors.push({ x: cx + d, y: ye }); }
+  const pillar = (x, y) => { for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) map.set(x + i, y + j, T_COVER); };
+  for (const [dx, dy] of [[-21, 4], [20, 4], [-12, 8], [11, 8]]) pillar(cx + dx, by0 + dy); // 부서진 기둥 (몸을 숨길 곳)
+  map.rooms.push(boss, start); map.edges.push([boss, start]);
+  map.startRoom = start; map.roomOf = (type) => map.rooms.find((r) => r.type === type) || null;
+  return map;
+}
+
 // 전투방 엄폐물 (문 통로를 막지 않고, 큰 적도 지나가도록 2칸 이상 틈 유지)
 function placeCover(map, r) {
   const block = (x, y, w, h) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) map.set(x + i, y + j, T_COVER); };

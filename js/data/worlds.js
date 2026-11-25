@@ -234,7 +234,7 @@ const DEEP_WORLDS = [
     enemies: [['enemy_ashpaladin_001', 3], ['enemy_choirghost_001', 3], ['enemy_silentmonk_001', 2], ['enemy_relicbell_001', 2]],
     palette: { style: 'frost', accent: '#e0e8ff', floor: ['#34363e', '#393b44'], corridor: ['#22242a', '#25272e'], wall: '#46485a', wallTop: '#5a5c72',
       wallFace: '#8a8ca4', faceLine: '#72748c', deco: 'rgba(224,232,255,0.38)' } },
-  { id: 'deep_elderdragon', name: '태고룡의 둥지', boss: null, noBoss: true, waves: 2, deep: true, // [사용자 결정] 심층 40: 보스전은 따로 만들 예정 — 보스 방은 비워 둠
+  { id: 'deep_elderdragon', name: '태고룡의 둥지', boss: 'boss_primordial', bossOnly: true, arena: [51, 12], waves: 0, deep: true, // [사용자 결정] 심층 40: 잡몹방 없이 시작 방 바로 위에 거대한 보스 방만 — 상공의 태고룡과 싸우는 새 방식의 보스전
     enemies: [['enemy_eldwyvern_001', 3], ['enemy_bonedrake_001', 3], ['enemy_dragonpriest_001', 2], ['enemy_ambershard_001', 2]],
     palette: { style: 'bone', accent: '#ffc040', floor: ['#2e2a26', '#322e2a'], corridor: ['#1e1c1a', '#201e1c'], wall: '#3e3830', wallTop: '#524a3e',
       wallFace: '#7a6e5a', faceLine: '#665c4a', deco: 'rgba(255,192,64,0.34)' } }
@@ -287,7 +287,7 @@ function zoneLabel(z, f, l) { const Z = ZONES[z], F = Z && Z.fields[Math.max(0, 
 function runLabel(r) { return r.zone && ZONES[r.zone] ? zoneLabel(r.zone, r.zf || 0, r.levelIdx) : stageLabel(r.worldIdx, r.levelIdx); } // 이어하기 표시용
 function runWorld(r) { return r.zone && ZONES[r.zone] ? zoneWorld(r.zone, r.zf || 0) : worldDef(r.worldIdx); }
 // 화면 표시용 스테이지 이름: 1-1 ~ 10-4, 심층은 '심층 1-1'
-function stageLabel(w, l) { return w >= DEEP_START ? `심층 ${w - DEEP_START + 1}-${l + 1}` : `${w + 1}-${l + 1}`; }
+function stageLabel(w, l) { return w >= DEEP_START ? (worldDef(w).bossOnly ? `심층 ${w - DEEP_START + 1}` : `심층 ${w - DEEP_START + 1}-${l + 1}`) : `${w + 1}-${l + 1}`; } // 보스만 있는 층(심층 40)은 스테이지 번호 없이
 const LOBBY_PALETTE = { style: 'wood', floor: ['#3a2e26', '#3d3129'], corridor: ['#3a2e26', '#3d3129'], wall: '#40354f', wallTop: '#4b3f5c',
   wallFace: '#6a5a82', faceLine: '#5a4c70', deco: null };
 const VAULT_PALETTE = { style: 'metal', floor: ['#2c3038', '#2f333c'], corridor: ['#2c3038', '#2f333c'], wall: '#33303e', wallTop: '#423e50',
