@@ -960,7 +960,7 @@ class Game {
     if (!X.met) { this.playCutscene(EXPLORER_MEET_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.met = true; X.quest = 1; X.kills = 0; writeSave(sv); this.showBanner('개척자의 시험', `마을을 나서 더 아래의 보스 처치 (0/${EXPLORER_TRIAL.bosses})`, '#e0b058'); } }); return; }
     if (X.quest === 1 && (X.kills || 0) >= EXPLORER_TRIAL.bosses) { this.playCutscene(EXPLORER_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { X.quest = 2; writeSave(sv); this.showBanner('개척자의 시험 완료', '개척자와 함께 길을 낼 자격을 얻었다 — 다음 이야기는 준비 중', '#e0b058'); } }); return; }
     if (X.quest === 1) { npc.bubble = { text: `시험: 마을 밖 보스 ${X.kills || 0}/${EXPLORER_TRIAL.bosses} — 강한 녀석을 쓰러뜨리고 와라`, t: 3.5 }; return; }
-    npc.bubble = { text: pick(['길은 같이 만드는 거다. 준비되면 말해라.', '지도에 빈칸이 아직 많군.', '천문 너머… 이번엔 끝까지 간다.']), t: 3.5 };
+    npc.bubble = { text: pick(['길은 같이 만드는 거다. 준비되면 말해라.', '지도에 빈칸이 아직 많군.', '이 아래… 이번엔 끝까지 간다.']), t: 3.5 };
   }
   explorerBossKill(W) { // 개척자의 시험: 마을(심층 50)을 지난 뒤의 심층 보스 처치 수 (솔로)
     const X = this.save.explorer; if (!X || X.quest !== 1 || !W.deep || W.trial || this.coopRunKey || W.depth <= 50) return;
