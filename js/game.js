@@ -445,6 +445,8 @@ class Game {
       { name: '다음 진화 단계로', ok: d && p.line && p.rank < 2, run: () => this.evolve() },
       { name: '이 필드의 보스 스테이지로', ok: d && !this.trialW && !this.isBossStage, run: () => { this.levelIdx = STAGES_PER_WORLD - 1; this.loadStage(); } },
       { name: `다음 필드로 (${stageLabel(this.worldIdx + 1, 0)})`, ok: d && !this.trialW, run: () => { this.worldIdx++; this.levelIdx = 0; this.loadStage(); } },
+      { name: '태고룡 보스전 바로 시작 (심층 40)', ok: !this.trialW, run: () => { const go = () => { this.worldIdx = DEEP_START + 39; this.levelIdx = STAGES_PER_WORLD - 1; this.loadStage(); };
+        this.transition = { t: 0, swapped: false, action: () => { if (this.mode !== 'dungeon') this.startRun(true); this.areaId = null; go(); } }; } },
       { name: '결정석 999,999로 채우기', run: () => { this.save.bank = 999999; writeSave(this.save); } },
       { name: '모든 스킨 해금 (미리보기용)', run: () => { this.save.skins = SKINS.map((k) => k.id); writeSave(this.save); } },
       { name: '롱고미니아드의 시련 바로 시작', ok: !this.trialW, run: () => { this.transition = { t: 0, swapped: false, action: () => this.startQuestTrial('rhongo') }; } },
@@ -1478,10 +1480,10 @@ class Game {
       if (o.msg) o.msg.t -= STEP;
       if (input.wasPressed('Escape') || input.wasPressed('Backquote')) { this.overlay = null; return; }
       const acts = this.adminActions(), m = input.mouse; let k = -1;
-      acts.forEach((_, i) => { const r = HUD.adminRow(i); if (input.wasPressed('Digit' + (i + 1)) || (input.wasPressed('Mouse0') && m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h)) k = i; });
+      acts.forEach((_, i) => { const r = HUD.adminCell(i); if ((i < 10 && input.wasPressed('Digit' + ((i + 1) % 10))) || (input.wasPressed('Mouse0') && m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h)) k = i; });
       if (k < 0) return; const a = acts[k]; this.input.mouse.down = false;
       if ('ok' in a && !a.ok) { o.msg = { text: '지금은 쓸 수 없습니다', color: '#ff9a9a', t: 1.5 }; return; }
-      const closes = /스테이지로|필드로|시련|진화/.test(a.name); a.run(); if (closes) this.overlay = null; else o.msg = { text: a.name.replace(/ \[.*\]/, '') + ' — 완료', color: '#ffd84a', t: 1.5 };
+      const closes = /스테이지로|필드로|시련|진화|바로 시작/.test(a.name); a.run(); if (closes) this.overlay = null; else o.msg = { text: a.name.replace(/ \[.*\]/, '') + ' — 완료', color: '#ffd84a', t: 1.5 };
     } else if (o.type === 'travel') { // + 빠른 이동: 카멜롯(층 고르기) · 바빌로니아
       if (o.msg) o.msg.t -= STEP;
       if (input.wasPressed('Escape') || input.wasPressed('Equal') || input.wasPressed('NumpadAdd')) { if (o.sub) { o.sub = null; return; } this.overlay = null; return; }

@@ -625,11 +625,11 @@ class HUD {
       hudText(ctx, 'E / Esc: 닫기', VIEW_W / 2, VIEW_H - 16, '#888', 'center', 8);
     } else if (o.type === 'admin') { // 관리자 메뉴
       const m = game.input.mouse; hudText(ctx, '👑 관리자 메뉴', VIEW_W / 2, 12, '#ffd84a', 'center', 12);
-      game.adminActions().forEach((a, i) => { const r = HUD.adminRow(i), ok = !('ok' in a) || !!a.ok, on = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
+      game.adminActions().forEach((a, i) => { const r = HUD.adminCell(i), ok = !('ok' in a) || !!a.ok, on = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
         ctx.fillStyle = on && ok ? 'rgba(255,216,74,0.16)' : 'rgba(255,255,255,0.05)'; ctx.fillRect(r.x, r.y, r.w, r.h);
-        hudText(ctx, `${i + 1}  ${a.name}`, r.x + 10, r.y + 5, ok ? (/\[켜짐\]/.test(a.name) ? '#9fe89f' : '#fff') : '#555', 'left', 10); });
+        hudText(ctx, `${i < 10 ? (i + 1) % 10 : '·'}  ${a.name}`, r.x + 6, r.y + 4, ok ? (/\[켜짐\]/.test(a.name) ? '#9fe89f' : /태고룡/.test(a.name) ? '#ffc040' : '#fff') : '#555', 'left', 8); });
       if (o.msg && o.msg.t > 0) hudText(ctx, o.msg.text, VIEW_W / 2, VIEW_H - 28, o.msg.color, 'center', 10);
-      hudText(ctx, '숫자 키 / 클릭: 실행   ·   ` / Esc: 닫기', VIEW_W / 2, VIEW_H - 12, '#888', 'center', 8);
+      hudText(ctx, '숫자 키(1~0) / 클릭: 실행   ·   ` / Esc: 닫기', VIEW_W / 2, VIEW_H - 12, '#888', 'center', 8);
     } else if (o.type === 'multi') { // 멀티 방
       const m = game.input.mouse, row = (i, s, en = true, col) => { const r = HUD.adminRow(i), on = en && m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
         ctx.fillStyle = on ? 'rgba(122,208,255,0.18)' : 'rgba(255,255,255,0.05)'; ctx.fillRect(r.x, r.y, r.w, r.h); hudText(ctx, s, r.x + 10, r.y + 5, en ? col || '#fff' : '#666', 'left', 10); };
@@ -860,6 +860,7 @@ class HUD {
   }
   static trialBtn(i) { return { x: VIEW_W / 2 - 214 + i * 108, y: 142, w: 100, h: 26 }; }
   static guildTab(i) { return { x: 60 + i * 134, y: 22, w: 126, h: 16 }; }
+  static adminCell(i) { const c = Math.floor(i / 11), w = (VIEW_W - 40) / 2; return { x: 16 + c * (w + 8), y: 28 + (i % 11) * 20, w, h: 17 }; } // 관리자 메뉴: 2열 (11줄씩)
   static adminRow(i) { return { x: 60, y: 32 + i * 24, w: VIEW_W - 120, h: 21 }; }
   static archiveRow(i) { return { x: 40, y: 32 + i * 21, w: VIEW_W - 80, h: 18 }; }
   static guildRow(i) { return { x: 40, y: 46 + i * 28, w: VIEW_W - 80, h: 25 }; }
