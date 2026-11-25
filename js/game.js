@@ -2263,6 +2263,7 @@ class Game {
     for (const q of this.allPlayers()) if (q.state !== 'DEAD') this.map.pushOffDoors(q, r); // [버그 수정] 문을 닫기 전에 문턱에 걸친 플레이어를 방 안쪽으로 밀어 애초에 끼지 않게
     this.map.setDoors(r, true);
     this.enemyBullets.length = 0;
+    if (r.type === 'boss' && this.W.noBoss) { r.wavesLeft = 0; this.banner = null; this.input.mouse.down = false; SFX.play('door'); return; } // 심층 40: 보스 없음 → 다음 프레임에 clearRoom (보상 없이 장면 + 포탈)
     if (r.type === 'boss') {
       const id = this.W.boss, c = this.map.tileCenter(r.cx, r.cy - 3);
       const boss = this.spawnEnemy(id, c.x, c.y, r);
@@ -2359,6 +2360,16 @@ class Game {
     const c0 = this.map.tileCenter(r.cx, r.cy), c = this.freeSpot(r, c0.x, c0.y, 8);
     if (r.type === 'boss' && this.trialW) { // 시련 승리: 인정을 받고 로비로
       this.playCutscene(this.trialDef.winLines(), { always: true, force: true, done: () => this.endTrial(true) }); return;
+    }
+    if (r.type === 'boss' && this.W.noBoss) { // 심층 40 태고룡의 둥지: 보스전은 따로 만들 예정 — 보상 없이 잠든 기척만 보여 주고 포탈
+      const next = worldDef(this.worldIdx + 1); this.portalSpot = c;
+      this.effects.rays(c.x, c.y - 20, '#ffc040', 14, 70, 1.2); this.addShake(0.5, 3); SFX.play('heavy');
+      this.playCutscene(ELDER_NEST_LINES, { id: 'elder_nest', always: true, focus: { x: c.x, y: c.y - 20 }, done: () => {
+        this.portals.push(new Portal(c.x + 26, c.y + 24, () => this.advanceStage(), `${stageLabel(this.worldIdx + 1, 0)} ${next.name}`, [120, 200, 255]));
+        this.portals.push(new Portal(c.x - 26, c.y + 24, () => this.endRun(true), '귀환 (탐험 종료)', [255, 210, 90]));
+        this.showBanner('태고룡의 둥지', '거대한 무언가가 잠들어 있다… (보스전 준비 중)', '#ffc040');
+      } });
+      return;
     }
     if (r.type === 'boss') {
       for (let i = 0; i < 12; i++) this.pickups.push(new Pickup('coin', c.x, c.y));

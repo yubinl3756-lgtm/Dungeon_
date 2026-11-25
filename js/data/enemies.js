@@ -781,6 +781,29 @@ const DATA_ENEMIES = [
       { type: 'wall', waves: 3, gap: 3, speed: 115, interval: 0.85, color: '#6aba4a' },
       { type: 'meteor', count: 6, delay: 0.85, stagger: 0.25, radius: 30, bullets: 6, color: '#8a8a72' }],
     finalPatterns: [{ type: 'vortex', name: '덩굴의 심판', duration: 3.5, pull: 44, arms: 4, interval: 0.1, spin: 2.0, color: '#6aba4a' }] },
+  // ── 심층 20: 드래곤의 둥지 — 수많은 용이 사는 화산 둥지 [사용자 결정] (정글 신전을 바꿈)
+  { id: 'enemy_whelp_001', name: '새끼 화룡', sprite: 'dragonwhelp', color: '#d04a2a', aiType: 'charger', traits: ['dashTrail'],
+    health: 180, damage: 22, moveSpeed: 96, hitboxHalf: 6, attackRange: 170, telegraphTime: 0.4,
+    dashSpeed: 410, dashDuration: 0.4, attackCooldown: 1.4, recoveryTime: 0.3, stunTime: 0.5, rewardGold: 6 },
+  { id: 'enemy_firewyvern_001', name: '불꽃 비룡', sprite: 'firewyvern', color: '#c06030', aiType: 'ranged_kite',
+    health: 160, damage: 21, moveSpeed: 70, hitboxHalf: 7, preferredRange: 130, attackRange: 260,
+    telegraphTime: 0.45, attackCooldown: 1.6, recoveryTime: 0.3, bulletSpeed: 230, bulletCount: 3, bulletSpread: 0.18, bulletColor: '#ff8a3a', rewardGold: 6 },
+  { id: 'enemy_stormdrake_001', name: '뇌운 드레이크', sprite: 'stormdrake', color: '#4a6aa0', aiType: 'caster',
+    health: 170, damage: 21, moveSpeed: 40, hitboxHalf: 7, attackRange: 300, telegraphTime: 0.65, attackCooldown: 2.2, recoveryTime: 0.35,
+    bulletSpeed: 150, bulletCount: 14, bulletColor: '#9ad8ff', rewardGold: 6 },
+  { id: 'enemy_scaledrake_001', name: '비늘 수호룡', sprite: 'scaledrake', color: '#7a3a2a', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 390, damage: 23, moveSpeed: 42, hitboxHalf: 9, attackRange: 28, telegraphTime: 0.6, attackCooldown: 1.4, recoveryTime: 0.5, knockbackResist: 0.95, rewardGold: 7 },
+  { id: 'boss_nest_mother', name: '둥지의 어미 홍룡', title: '천 개의 알을 품은 붉은 용', sprite: 'boss_nestmother', color: '#a02a1a', phaseColors: ['#a02a1a', '#d04a20', '#ffb030'],
+    boss: true, aiType: 'boss', health: 1400, damage: 23, moveSpeed: 34, hitboxHalf: 16, knockbackResist: 1, attackCooldown: 1.0, bulletSpeed: 155,
+    rewardGold: 500, patterns: [
+      { type: 'aimed', volleys: 3, count: 7, spread: 0.14, color: '#ff8a3a' },
+      { type: 'spiral', duration: 2.2, arms: 3, interval: 0.09, spin: 1.8, color: '#ffb030' },
+      { type: 'summon', enemyId: 'enemy_whelp_001', count: 2 }],
+    phase2Patterns: [{ type: 'charge', dashes: 3, speed: 330, color: '#ff6a2a' },
+      { type: 'ringOut', rings: 3, count: 22, gap: 5, speed: 110, interval: 0.55, color: '#ff8a3a' },
+      { type: 'meteor', count: 6, delay: 0.85, stagger: 0.25, radius: 30, bullets: 6, color: '#d04a20' },
+      { type: 'summon', enemyId: 'enemy_firewyvern_001', count: 2 }],
+    finalPatterns: [{ type: 'rain', name: '둥지를 태우는 숨결', duration: 3.4, interval: 0.05, speed: 180, slant: 0.35, color: '#ffb030' }] },
   // ── 심층: 잊힌 투기장 (임시 디자인)
   { id: 'enemy_gladghost_001', name: '검투사 망령', sprite: 'gladghost', color: '#8a9aa8', aiType: 'melee_chase',
     health: 330, damage: 21, moveSpeed: 52, hitboxHalf: 8, attackRange: 24, telegraphTime: 0.5, attackCooldown: 1.2, recoveryTime: 0.45, knockbackResist: 0.8, rewardGold: 7 },
@@ -1604,6 +1627,19 @@ const DATA_ENEMIES = [
       { type: 'teleport', bullets: 24, color: '#fff4d0' }],
     finalPatterns: [
       { type: 'ringIn', name: '마지막 성가', rings: 5, count: 52, gap: 5, speed: 96, interval: 0.78, color: '#e0e8ff' },
-      { type: 'spiral', name: '잿빛 축복', duration: 4.6, arms: 11, interval: 0.05, spin: 3.5, color: '#c8d0ff' }] }
+      { type: 'spiral', name: '잿빛 축복', duration: 4.6, arms: 11, interval: 0.05, spin: 3.5, color: '#c8d0ff' }] },
+  // ── 심층 40: 태고룡의 둥지 — 보스전은 따로 만들 예정 [사용자 결정] (지금은 보스 없음)
+  { id: 'enemy_eldwyvern_001', name: '태고의 비룡', sprite: 'eldwyvern', color: '#6a5a4a', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 330, damage: 31, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.6, attackCooldown: 1.85, recoveryTime: 0.36,
+    bulletSpeed: 210, bulletCount: 5, bulletSpread: 0.2, bulletColor: '#ffd08a', rewardGold: 16 },
+  { id: 'enemy_bonedrake_001', name: '용골 망령', sprite: 'bonedrake', color: '#d8ccb0', aiType: 'charger', traits: ['redash', 'deathBurst'],
+    health: 360, damage: 31, moveSpeed: 108, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.42, dashSpeed: 500, dashDuration: 0.5,
+    attackCooldown: 1.58, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 16 },
+  { id: 'enemy_dragonpriest_001', name: '용혈 사제', sprite: 'dragonpriest', color: '#8a2a3a', aiType: 'caster', traits: ['castMix'],
+    health: 310, damage: 31, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.66, attackCooldown: 2.04, recoveryTime: 0.38,
+    bulletSpeed: 160, bulletCount: 23, bulletColor: '#ff5a5a', rewardGold: 16 },
+  { id: 'enemy_ambershard_001', name: '호박 속 용알', sprite: 'ambershard', color: '#d0902a', aiType: 'turret', traits: ['turretRing'],
+    health: 400, damage: 31, moveSpeed: 0, hitboxHalf: 8, attackRange: 360, telegraphTime: 0.8, attackCooldown: 2.2, recoveryTime: 0.3,
+    bulletSpeed: 230, bulletCount: 12, bulletColor: '#ffc040', knockbackResist: 1, rewardGold: 16 }
 
 ];

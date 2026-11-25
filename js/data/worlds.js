@@ -126,10 +126,10 @@ const DEEP_WORLDS = [
     enemies: [['enemy_dreamsheep_001', 3], ['enemy_sleepknight_001', 3], ['enemy_candyfairy_001', 2], ['enemy_moonlamp_001', 2]],
     palette: { style: 'dream', accent: '#d8b8ff', floor: ['#4a3e6a', '#4d416e'], corridor: ['#382e52', '#3a3054'], wall: '#5a4a80', wallTop: '#6a5a94',
       wallFace: '#9a82c8', faceLine: '#8670b4', deco: 'rgba(216,184,255,0.35)' } },
-  { id: 'deep_jungle', name: '덩굴 삼킨 정글 신전', boss: 'boss_jungle_idol', waves: 2, deep: true,
-    enemies: [['enemy_vinesnake_001', 3], ['enemy_stoneguard_001', 3], ['enemy_dartshooter_001', 3], ['enemy_jungletotem_001', 2]],
-    palette: { style: 'jungle', accent: '#6aba4a', floor: ['#4a4a3a', '#4d4d3c'], corridor: ['#34342a', '#36362c'], wall: '#4a5040', wallTop: '#5a6050',
-      wallFace: '#7a806a', faceLine: '#6a705a', deco: 'rgba(106,186,74,0.35)' } }
+  { id: 'deep_dragonnest', name: '드래곤의 둥지', boss: 'boss_nest_mother', waves: 3, deep: true, // [사용자 결정] 심층 20: 수많은 용이 사는 곳 (웨이브 3 — 다른 층보다 한 번 더 몰려옴)
+    enemies: [['enemy_whelp_001', 4], ['enemy_firewyvern_001', 3], ['enemy_stormdrake_001', 2], ['enemy_scaledrake_001', 2]],
+    palette: { style: 'basalt', accent: '#ff7a2a', floor: ['#3a2a26', '#3e2c28'], corridor: ['#261a18', '#281c1a'], wall: '#4a2a22', wallTop: '#5e342a',
+      wallFace: '#8a4a34', faceLine: '#74402e', deco: 'rgba(255,122,42,0.38)' } }
 ,
   // ── 심층 21: 잊힌 왕릉
   { id: 'deep_crowncrypt', name: '잊힌 왕릉', boss: 'boss_crownless_king', waves: 2, deep: true,
@@ -233,7 +233,11 @@ const DEEP_WORLDS = [
   { id: 'deep_ashcathedral', name: '잿눈 내리는 대성당', boss: 'boss_silent_archbishop', waves: 2, deep: true,
     enemies: [['enemy_ashpaladin_001', 3], ['enemy_choirghost_001', 3], ['enemy_silentmonk_001', 2], ['enemy_relicbell_001', 2]],
     palette: { style: 'frost', accent: '#e0e8ff', floor: ['#34363e', '#393b44'], corridor: ['#22242a', '#25272e'], wall: '#46485a', wallTop: '#5a5c72',
-      wallFace: '#8a8ca4', faceLine: '#72748c', deco: 'rgba(224,232,255,0.38)' } }
+      wallFace: '#8a8ca4', faceLine: '#72748c', deco: 'rgba(224,232,255,0.38)' } },
+  { id: 'deep_elderdragon', name: '태고룡의 둥지', boss: null, noBoss: true, waves: 2, deep: true, // [사용자 결정] 심층 40: 보스전은 따로 만들 예정 — 보스 방은 비워 둠
+    enemies: [['enemy_eldwyvern_001', 3], ['enemy_bonedrake_001', 3], ['enemy_dragonpriest_001', 2], ['enemy_ambershard_001', 2]],
+    palette: { style: 'bone', accent: '#ffc040', floor: ['#2e2a26', '#322e2a'], corridor: ['#1e1c1a', '#201e1c'], wall: '#3e3830', wallTop: '#524a3e',
+      wallFace: '#7a6e5a', faceLine: '#665c4a', deco: 'rgba(255,192,64,0.34)' } }
 
 ];
 const DEEP_START = DATA_WORLDS.length; // 이 번호부터 심층
