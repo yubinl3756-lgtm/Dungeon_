@@ -237,7 +237,33 @@ const DEEP_WORLDS = [
   { id: 'deep_elderdragon', name: '태고룡의 둥지', boss: 'boss_primordial', bossOnly: true, arena: [51, 12], waves: 0, deep: true, // [사용자 결정] 심층 40: 잡몹방 없이 시작 방 바로 위에 거대한 보스 방만 — 상공의 태고룡과 싸우는 새 방식의 보스전
     enemies: [['enemy_eldwyvern_001', 3], ['enemy_bonedrake_001', 3], ['enemy_dragonpriest_001', 2], ['enemy_ambershard_001', 2]],
     palette: { style: 'bone', accent: '#ffc040', floor: ['#2e2a26', '#322e2a'], corridor: ['#1e1c1a', '#201e1c'], wall: '#3e3830', wallTop: '#524a3e',
-      wallFace: '#7a6e5a', faceLine: '#665c4a', deco: 'rgba(255,192,64,0.34)' } }
+      wallFace: '#7a6e5a', faceLine: '#665c4a', deco: 'rgba(255,192,64,0.34)' } },
+  // ── 심층 41~45: 천율에게 오르는 길 — 던전을 내려갈수록 신에게 가까워진다 (태고룡의 이야기 이후) [사용자 요청: 41~45층]
+  // ── 심층 41: 부서진 하늘계단
+  { id: 'deep_skystair', name: '부서진 하늘계단', boss: 'boss_stair_herald', waves: 2, deep: true,
+    enemies: [['enemy_cloudsentinel_001', 3], ['enemy_featherarcher_001', 3], ['enemy_stairwraith_001', 2], ['enemy_windbell_001', 2]],
+    palette: { style: 'sky', accent: '#bfe6ff', floor: ['#3a4256', '#3e465a'], corridor: ['#262c3a', '#282e3c'], wall: '#4e5a76', wallTop: '#64728e',
+      wallFace: '#a8b8d8', faceLine: '#8a9abc', deco: 'rgba(191,230,255,0.4)' } },
+  // ── 심층 42: 천칭의 법정
+  { id: 'deep_scalecourt', name: '천칭의 법정', boss: 'boss_heaven_judge', waves: 2, deep: true,
+    enemies: [['enemy_scalebearer_001', 3], ['enemy_verdictowl_001', 3], ['enemy_lawscribe_001', 2], ['enemy_sealpillar_001', 2]],
+    palette: { style: 'sanctum', accent: '#ffe08a', floor: ['#3c3628', '#41392b'], corridor: ['#28241a', '#2a261c'], wall: '#55492e', wallTop: '#6e5e3a',
+      wallFace: '#c8ac6a', faceLine: '#a88e52', deco: 'rgba(255,224,138,0.4)' } },
+  // ── 심층 43: 이상향의 견본정원
+  { id: 'deep_idealgarden', name: '이상향의 견본정원', boss: 'boss_ideal_gardener', waves: 2, deep: true,
+    enemies: [['enemy_gardenpuppet_001', 3], ['enemy_glasslily_001', 2], ['enemy_prunerdrone_001', 3], ['enemy_seedoracle_001', 2]],
+    palette: { style: 'moss', accent: '#b8ffd8', floor: ['#2c3a32', '#2f3e35'], corridor: ['#1c2620', '#1e2822'], wall: '#3a5244', wallTop: '#4c6a58',
+      wallFace: '#9ad0b0', faceLine: '#7ab494', deco: 'rgba(184,255,216,0.38)' } },
+  // ── 심층 44: 걸러진 자들의 묘역
+  { id: 'deep_siftedgrave', name: '걸러진 자들의 묘역', boss: 'boss_sieve_warden', waves: 2, deep: true,
+    enemies: [['enemy_siftedshade_001', 3], ['enemy_sieveknight_001', 3], ['enemy_ashmourner_001', 2], ['enemy_gravelantern_001', 2]],
+    palette: { style: 'void', accent: '#c8b8ff', floor: ['#26242e', '#292732'], corridor: ['#18171e', '#1a1920'], wall: '#36334a', wallTop: '#46425e',
+      wallFace: '#7e78a0', faceLine: '#68628a', deco: 'rgba(200,184,255,0.36)' } },
+  // ── 심층 45: 천문의 계단참
+  { id: 'deep_heavengate', name: '천문의 계단참', boss: 'boss_gate_seraph', waves: 2, deep: true,
+    enemies: [['enemy_haloseraph_001', 3], ['enemy_gatelion_001', 2], ['enemy_hymnorb_001', 2], ['enemy_lightlancer_001', 3]],
+    palette: { style: 'starfall', accent: '#fff4c0', floor: ['#3a3a4a', '#3e3e50'], corridor: ['#26263a', '#28283c'], wall: '#50506e', wallTop: '#68688c',
+      wallFace: '#d8d4f0', faceLine: '#b8b4d8', deco: 'rgba(255,244,192,0.42)' } }
 
 ];
 const DEEP_START = DATA_WORLDS.length; // 이 번호부터 심층

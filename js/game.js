@@ -1119,6 +1119,7 @@ class Game {
     if (W.ziggurat && this.levelIdx === 0) this.playCutscene(BABYLON_ZIGGURAT_LINES, { id: 'babylon_ziggurat', focus: null }); /* 지구라트 첫 단 */
     if (W.finalField && this.isBossStage) this.playCutscene(GILGAMESH_UNDER_INTRO_LINES, { id: 'gilgamesh_under', always: true, focus: null }); /* 지구라트 4-4 왕좌의 방: 영웅왕 길가메시 */
     if (W.deep && !W.trial && W.depth === 1 && this.levelIdx === 0) this.playCutscene(DEEP_ARRIVAL_LINES, { id: 'deep_arrival', focus: null }); // 심층에 처음 들어설 때 (한 번만)
+    if (W.deep && !W.trial && W.depth === 41 && this.levelIdx === 0) this.playCutscene(DEEP41_ARRIVAL_LINES, { id: 'deep41_arrival', focus: null }); // 태고룡 너머, 하늘계단에 처음 도착
     if (W.deep && !W.trial && W.depth === 30 && this.levelIdx === 0) this.playCutscene(DEEP30_ARRIVAL_LINES, { id: 'deep30_arrival', focus: null }); // 기록의 근원에 처음 도착
     if (W.bossOnly && !W.trial) this.playCutscene(ELDER_ARRIVAL_LINES, { id: 'elder_arrival', focus: null }); // 태고룡의 둥지에 처음 도착
     if (this.coop && this.coop.host) { this.coopOnStage(); this.coopSaveRun(); } // 멀티: 동료 배치·부활 + 파티 진행 저장·새 맵 보내기

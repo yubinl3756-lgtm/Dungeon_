@@ -96,3 +96,9 @@ function drawPrimordialWarn(ctx, e) {
   ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd0a0'; ctx.fillRect(0, -1, len * W.k, 2); ctx.restore();
   ctx.save(); ctx.globalAlpha = 0.25 + 0.4 * W.k; ctx.strokeStyle = W.color || '#ffc040'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(W.x1, W.y1, 56 * W.k + 10, (56 * W.k + 10) * 0.6, 0, 0, TAU); ctx.stroke(); ctx.restore(); ctx.lineWidth = 1;
 }
+// 작은 대체 그림 (32×32 머리): 전용 그림을 쓰지 않는 곳(도감·멀티 등)에서 getSprite('boss_primordial')를 불러도 오류가 나지 않게
+PIX.boss_primordial = { tint: '#3a3028', w: 32, h: 32, pal: { y: '#ffc040', e: '#fff4c0', h: '#e8dcc0', d: '#1a1410' }, proc: (P) => {
+  P.ell(16, 18, 11, 9, 'a'); P.ell(16, 24, 8, 5, 'b'); P.tri(7, 12, 2, 0, 11, 9, 'h'); P.tri(25, 12, 30, 0, 21, 9, 'h');
+  P.ell(11, 16, 2, 2, 'y'); P.ell(21, 16, 2, 2, 'y'); P.px(11, 16, 'e'); P.px(21, 16, 'e'); P.rect(10, 26, 12, 2, 'd');
+  for (const x of [11, 14, 18, 21]) P.tri(x, 26, x + 1, 30, x + 2, 26, 'h'); P.ell(16, 10, 3, 2, 'c'); P.px(16, 20, 'y');
+} };

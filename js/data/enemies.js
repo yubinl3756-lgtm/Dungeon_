@@ -1655,6 +1655,137 @@ const DATA_ENEMIES = [
     bulletSpeed: 160, bulletCount: 23, bulletColor: '#ff5a5a', rewardGold: 16 },
   { id: 'enemy_ambershard_001', name: '호박 속 용알', sprite: 'ambershard', color: '#d0902a', aiType: 'turret', traits: ['turretRing'],
     health: 400, damage: 31, moveSpeed: 0, hitboxHalf: 8, attackRange: 360, telegraphTime: 0.8, attackCooldown: 2.2, recoveryTime: 0.3,
-    bulletSpeed: 230, bulletCount: 12, bulletColor: '#ffc040', knockbackResist: 1, rewardGold: 16 }
+    bulletSpeed: 230, bulletCount: 12, bulletColor: '#ffc040', knockbackResist: 1, rewardGold: 16 },
+  // ── 심층 41: 부서진 하늘계단 — 구름과 깃털, 끊어진 계단
+  { id: 'enemy_cloudsentinel_001', name: '구름 파수병', sprite: 'cloudsentinel', color: '#a8b8d8', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 420, damage: 31, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.52,
+    attackCooldown: 1.3, recoveryTime: 0.46, knockbackResist: 0.8, rewardGold: 17 },
+  { id: 'enemy_featherarcher_001', name: '깃털 궁수', sprite: 'featherarcher', color: '#d8e4f4', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 340, damage: 31, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.6, attackCooldown: 1.85, recoveryTime: 0.36,
+    bulletSpeed: 214, bulletCount: 5, bulletSpread: 0.2, bulletColor: '#bfe6ff', rewardGold: 17 },
+  { id: 'enemy_stairwraith_001', name: '계단의 망령', sprite: 'stairwraith', color: '#6a7a9a', aiType: 'teleporter', traits: ['afterimage'],
+    health: 320, damage: 31, moveSpeed: 66, hitboxHalf: 8, preferredRange: 160, attackRange: 340, telegraphTime: 0.56, attackCooldown: 1.95, recoveryTime: 0.36,
+    bulletSpeed: 220, bulletCount: 11, bulletSpread: 0.18, bulletColor: '#9ad8ff', rewardGold: 17 },
+  { id: 'enemy_windbell_001', name: '바람 풍경', sprite: 'windbell', color: '#8aa8c8', aiType: 'turret', traits: ['turretRing'],
+    health: 410, damage: 31, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.85, attackCooldown: 2.25, recoveryTime: 0.32,
+    bulletSpeed: 232, bulletCount: 12, bulletColor: '#e0f4ff', knockbackResist: 1, rewardGold: 17 },
+  // ── 심층 42: 천칭의 법정 — 생명의 무게를 다는 곳
+  { id: 'enemy_scalebearer_001', name: '천칭 집행관', sprite: 'scalebearer', color: '#c8ac6a', aiType: 'charger', traits: ['redash'],
+    health: 380, damage: 32, moveSpeed: 108, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.42, dashSpeed: 510, dashDuration: 0.5,
+    attackCooldown: 1.55, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 17 },
+  { id: 'enemy_verdictowl_001', name: '판결의 올빼미', sprite: 'verdictowl', color: '#8a7448', aiType: 'ranged_kite',
+    health: 345, damage: 32, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.6, attackCooldown: 1.85, recoveryTime: 0.36,
+    bulletSpeed: 216, bulletCount: 6, bulletSpread: 0.2, bulletColor: '#ffe08a', rewardGold: 17 },
+  { id: 'enemy_lawscribe_001', name: '율법 서기', sprite: 'lawscribe', color: '#6a5a3a', aiType: 'caster', traits: ['castMix'],
+    health: 320, damage: 32, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.64, attackCooldown: 2.0, recoveryTime: 0.38,
+    bulletSpeed: 162, bulletCount: 24, bulletColor: '#ffd06a', rewardGold: 17 },
+  { id: 'enemy_sealpillar_001', name: '봉인 기둥', sprite: 'sealpillar', color: '#a89060', aiType: 'turret', traits: ['turretSweep'],
+    health: 420, damage: 32, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.85, attackCooldown: 2.25, recoveryTime: 0.32,
+    bulletSpeed: 258, bulletCount: 18, bulletColor: '#fff0b0', knockbackResist: 1, rewardGold: 17 },
+  // ── 심층 43: 이상향의 견본정원 — 천율이 그리는 세계의 시험작
+  { id: 'enemy_gardenpuppet_001', name: '정원지기 인형', sprite: 'gardenpuppet', color: '#7ab494', aiType: 'melee_chase', traits: ['deathBurst'],
+    health: 430, damage: 32, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.52,
+    attackCooldown: 1.3, recoveryTime: 0.46, knockbackResist: 0.8, rewardGold: 17 },
+  { id: 'enemy_glasslily_001', name: '유리 백합', sprite: 'glasslily', color: '#c8f4e0', aiType: 'turret', traits: ['turretRing'],
+    health: 410, damage: 32, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.85, attackCooldown: 2.25, recoveryTime: 0.32,
+    bulletSpeed: 232, bulletCount: 14, bulletColor: '#b8ffd8', knockbackResist: 1, rewardGold: 17 },
+  { id: 'enemy_prunerdrone_001', name: '가지치기 날개', sprite: 'prunerdrone', color: '#4c6a58', aiType: 'charger', traits: ['dashTrail'],
+    health: 370, damage: 32, moveSpeed: 108, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.42, dashSpeed: 510, dashDuration: 0.5,
+    attackCooldown: 1.55, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 17 },
+  { id: 'enemy_seedoracle_001', name: '씨앗 예언자', sprite: 'seedoracle', color: '#5a8a6a', aiType: 'caster', traits: ['zoneCast'],
+    health: 320, damage: 32, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.64, attackCooldown: 2.0, recoveryTime: 0.38,
+    bulletSpeed: 162, bulletCount: 24, bulletColor: '#9affc0', rewardGold: 17 },
+  // ── 심층 44: 걸러진 자들의 묘역 — 체에 걸러져 떨어진 생명들
+  { id: 'enemy_siftedshade_001', name: '걸러진 그림자', sprite: 'siftedshade', color: '#46425e', aiType: 'teleporter', traits: ['afterimage'],
+    health: 330, damage: 33, moveSpeed: 66, hitboxHalf: 8, preferredRange: 160, attackRange: 340, telegraphTime: 0.56, attackCooldown: 1.95, recoveryTime: 0.36,
+    bulletSpeed: 220, bulletCount: 11, bulletSpread: 0.18, bulletColor: '#c8b8ff', rewardGold: 18 },
+  { id: 'enemy_sieveknight_001', name: '체의 기사', sprite: 'sieveknight', color: '#68628a', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 440, damage: 33, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.52,
+    attackCooldown: 1.3, recoveryTime: 0.46, knockbackResist: 0.8, rewardGold: 18 },
+  { id: 'enemy_ashmourner_001', name: '재의 조문객', sprite: 'ashmourner', color: '#7e78a0', aiType: 'caster', traits: ['castMix'],
+    health: 325, damage: 33, moveSpeed: 32, hitboxHalf: 7, attackRange: 345, telegraphTime: 0.64, attackCooldown: 2.0, recoveryTime: 0.38,
+    bulletSpeed: 162, bulletCount: 24, bulletColor: '#d8c8ff', rewardGold: 18 },
+  { id: 'enemy_gravelantern_001', name: '묘등', sprite: 'gravelantern', color: '#5a5070', aiType: 'turret', traits: ['turretRing'],
+    health: 420, damage: 33, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.85, attackCooldown: 2.25, recoveryTime: 0.32,
+    bulletSpeed: 232, bulletCount: 12, bulletColor: '#e0d0ff', knockbackResist: 1, rewardGold: 18 },
+  // ── 심층 45: 천문의 계단참 — 천율에게 이르는 문 앞
+  { id: 'enemy_haloseraph_001', name: '광륜 천사병', sprite: 'haloseraph', color: '#d8d4f0', aiType: 'ranged_kite', traits: ['afterimage'],
+    health: 350, damage: 33, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.6, attackCooldown: 1.85, recoveryTime: 0.36,
+    bulletSpeed: 222, bulletCount: 6, bulletSpread: 0.19, bulletColor: '#fff4c0', rewardGold: 18 },
+  { id: 'enemy_gatelion_001', name: '천문의 사자상', sprite: 'gatelion', color: '#b8b4d8', aiType: 'charger', traits: ['pounce'],
+    health: 400, damage: 33, moveSpeed: 108, hitboxHalf: 8, attackRange: 220, telegraphTime: 0.42, dashSpeed: 510, dashDuration: 0.5,
+    attackCooldown: 1.55, recoveryTime: 0.32, stunTime: 0.5, knockbackResist: 0.6, rewardGold: 18 },
+  { id: 'enemy_hymnorb_001', name: '찬가의 구슬', sprite: 'hymnorb', color: '#e8e4ff', aiType: 'turret', traits: ['turretSweep'],
+    health: 420, damage: 33, moveSpeed: 0, hitboxHalf: 9, attackRange: 380, telegraphTime: 0.85, attackCooldown: 2.25, recoveryTime: 0.32,
+    bulletSpeed: 262, bulletCount: 18, bulletColor: '#fff4c0', knockbackResist: 1, rewardGold: 18 },
+  { id: 'enemy_lightlancer_001', name: '빛창 기사', sprite: 'lightlancer', color: '#9894c0', aiType: 'melee_chase', traits: ['shockwave'],
+    health: 450, damage: 33, moveSpeed: 60, hitboxHalf: 9, attackRange: 26, telegraphTime: 0.52,
+    attackCooldown: 1.3, recoveryTime: 0.46, knockbackResist: 0.8, rewardGold: 18 },
+  // ── 심층 41 보스: 계단의 전령 — 날개 달린 나팔수, 오르는 자의 이름을 하늘에 알린다
+  { id: 'boss_stair_herald', name: '계단의 전령', title: '오르는 자의 이름을 하늘에 알리는 자', sprite: 'boss_stairherald', color: '#4e5a76', phaseColors: ['#4e5a76', '#8aa8d8', '#ffffff'],
+    boss: true, aiType: 'boss', health: 2400, damage: 31, moveSpeed: 46, hitboxHalf: 17, knockbackResist: 1, attackCooldown: 0.9, bulletSpeed: 170,
+    rewardGold: 1100, patterns: [
+      { type: 'aimed', volleys: 5, count: 13, spread: 0.14, color: '#bfe6ff' },
+      { type: 'rain', duration: 2.4, interval: 0.065, speed: 176, slant: 0.35, color: '#e0f4ff' },
+      { type: 'summon', enemyId: 'enemy_featherarcher_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'teleport', bullets: 24, color: '#ffffff' },
+      { type: 'wall', waves: 5, gap: 4, speed: 146, interval: 0.64, color: '#9ad8ff' }],
+    finalPatterns: [
+      { type: 'spiral', name: '하늘을 여는 나팔', duration: 4.6, arms: 11, interval: 0.05, spin: 3.5, color: '#bfe6ff' },
+      { type: 'lances', name: '깃털의 비', count: 22, delay: 0.55, speed: 324, color: '#ffffff' }] },
+  // ── 심층 42 보스: 천칭의 재판관 — 눈을 가린 거인, 양손의 천칭
+  { id: 'boss_heaven_judge', name: '천칭의 재판관', title: '모든 생명의 무게를 다는 자', sprite: 'boss_heavenjudge', color: '#55492e', phaseColors: ['#55492e', '#a88e52', '#ffe08a'],
+    boss: true, aiType: 'boss', health: 2460, damage: 32, moveSpeed: 34, hitboxHalf: 19, knockbackResist: 1, attackCooldown: 0.9, bulletSpeed: 170,
+    rewardGold: 1140, patterns: [
+      { type: 'cross', waves: 5, len: 12, step: 22, radius: 16, delay: 0.64, interval: 0.36, bullets: 0, color: '#ffe08a' },
+      { type: 'slam', radius: 76, color: '#ffd06a' },
+      { type: 'summon', enemyId: 'enemy_scalebearer_001', count: 2 }],
+    phase2Patterns: [
+      { type: 'reverse', rings: 4, count: 46, gap: 5, speed: 162, flip: 0.7, interval: 0.38, color: '#ffe08a' },
+      { type: 'zones', count: 11, radius: 30, delay: 0.76, bullets: 7, spreadAround: 135, stagger: 0.07, color: '#fff0b0' }],
+    finalPatterns: [
+      { type: 'grid', name: '최후의 판결', spacing: 3, delay: 0.76, radius: 31, bullets: 4, color: '#ffe08a' },
+      { type: 'orbit', name: '기울어지는 천칭', count: 30, radius: 80, spinTime: 1.2, spin: 3.2, speed: 188, color: '#ffd06a' }] },
+  // ── 심층 43 보스: 이상향의 정원사 — 가위 손을 가진 하얀 정원사
+  { id: 'boss_ideal_gardener', name: '이상향의 정원사', title: '알맞지 않은 가지를 잘라내는 손', sprite: 'boss_idealgardener', color: '#3a5244', phaseColors: ['#3a5244', '#7ab494', '#b8ffd8'],
+    boss: true, aiType: 'boss', health: 2520, damage: 32, moveSpeed: 48, hitboxHalf: 17, knockbackResist: 1, attackCooldown: 0.88, bulletSpeed: 172,
+    rewardGold: 1180, patterns: [
+      { type: 'split', volleys: 5, count: 5, spread: 0.3, speed: 194, splitAfter: 0.5, splitN: 10, color: '#b8ffd8' },
+      { type: 'charge', dashes: 3, speed: 460, color: '#9affc0' },
+      { type: 'summon', enemyId: 'enemy_glasslily_001', count: 2 }],
+    phase2Patterns: [
+      { type: 'radial', rings: 4, count: 26, color: '#c8f4e0' },
+      { type: 'zones', count: 11, radius: 30, delay: 0.74, bullets: 7, spreadAround: 135, stagger: 0.07, color: '#9affc0' }],
+    finalPatterns: [
+      { type: 'vortex', name: '가지치기', duration: 5.4, pull: 74, arms: 10, interval: 0.06, spin: 3.5, color: '#b8ffd8' },
+      { type: 'spiral', name: '완벽한 정원', duration: 4.6, arms: 12, interval: 0.05, spin: -3.5, color: '#ffffff' }] },
+  // ── 심층 44 보스: 거름망의 파수꾼 — 거대한 체를 등에 진 해골 수도사
+  { id: 'boss_sieve_warden', name: '거름망의 파수꾼', title: '떨어진 자들을 끝까지 지키는 자', sprite: 'boss_sievewarden', color: '#36334a', phaseColors: ['#36334a', '#68628a', '#c8b8ff'],
+    boss: true, aiType: 'boss', health: 2580, damage: 33, moveSpeed: 38, hitboxHalf: 18, knockbackResist: 1, attackCooldown: 0.88, bulletSpeed: 172,
+    rewardGold: 1220, patterns: [
+      { type: 'meteor', count: 11, delay: 0.75, stagger: 0.18, radius: 32, bullets: 7, color: '#c8b8ff' },
+      { type: 'ringIn', rings: 4, count: 44, gap: 5, speed: 98, interval: 0.76, color: '#d8c8ff' },
+      { type: 'summon', enemyId: 'enemy_siftedshade_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'lances', count: 22, delay: 0.55, speed: 326, color: '#e0d0ff' },
+      { type: 'ringOut', rings: 4, count: 54, gap: 5, speed: 160, interval: 0.4, color: '#c8b8ff' }],
+    finalPatterns: [
+      { type: 'rain', name: '걸러지는 비', duration: 3.4, interval: 0.045, speed: 196, slant: 0.1, color: '#d8c8ff' },
+      { type: 'vortex', name: '떨어진 자들의 소용돌이', duration: 5.4, pull: 76, arms: 10, interval: 0.06, spin: -3.6, color: '#c8b8ff' }] },
+  // ── 심층 45 보스: 천문의 수호천사 — 여섯 날개, 빛의 창, 문 모양 광륜
+  { id: 'boss_gate_seraph', name: '천문의 수호천사', title: '천율에게 이르는 문을 지키는 여섯 날개', sprite: 'boss_gateseraph', color: '#50506e', phaseColors: ['#50506e', '#b8b4d8', '#fff4c0'],
+    boss: true, aiType: 'boss', health: 2660, damage: 33, moveSpeed: 44, hitboxHalf: 18, knockbackResist: 1, attackCooldown: 0.86, bulletSpeed: 174,
+    rewardGold: 1300, patterns: [
+      { type: 'laser', beams: 2, spreadAng: 0.6, sweep: 1.8, duration: 2.4, width: 9, telegraph: 1.0, color: '#fff4c0' },
+      { type: 'orbit', count: 28, radius: 76, spinTime: 1.2, spin: 3.2, speed: 186, color: '#ffffff' },
+      { type: 'summon', enemyId: 'enemy_haloseraph_001', count: 3 }],
+    phase2Patterns: [
+      { type: 'teleport', bullets: 26, color: '#fff4c0' },
+      { type: 'cross', waves: 6, len: 12, step: 22, radius: 16, delay: 0.62, interval: 0.34, bullets: 0, color: '#d8d4f0' },
+      { type: 'lances', count: 24, delay: 0.54, speed: 330, color: '#ffffff' }],
+    finalPatterns: [
+      { type: 'laser', name: '여섯 날개의 빛', beams: 6, spreadAng: 1.05, sweep: 1.4, duration: 3.0, width: 9, telegraph: 1.2, color: '#fff4c0' },
+      { type: 'ringIn', name: '닫히는 천문', rings: 5, count: 56, gap: 5, speed: 100, interval: 0.74, color: '#d8d4f0' }] }
 
 ];

@@ -585,6 +585,14 @@ const PRIMORDIAL_FALL_LINES = [
   '태고룡의 눈빛이 천천히 꺼진다.',
   '아레나를 덮던 열기가 걷히고, 더 아래로 이어지는 길이 드러난다.'
 ];
+// 심층 41 부서진 하늘계단: 태고룡 너머 — 내려갈수록 신에게 가까워진다는 말이 눈앞에서 드러남 [사용자 요청: 41~45층]
+const DEEP41_ARRIVAL_LINES = [
+  '계단을 내려왔는데, 발밑이 아니라 머리 위로 빛이 쏟아진다.',
+  '벽도 천장도 없다. 구름 사이로 부서진 돌계단만이 위로, 위로 이어져 있다.',
+  '분명 아래로 내려왔다. 그런데 이곳은 어떤 층보다 하늘에 가깝다.',
+  '「한 층 내려갈 때마다, 천율에게 한 걸음씩 가까워진다.」 — 태고룡의 말이 떠오른다.',
+  '계단 끝, 아주 먼 곳에서 닫힌 문 하나가 희미하게 빛나고 있다.'
+];
 const DEEP30_ARRIVAL_LINES = [
   '돌바닥이 끝나고, 끝없이 이어지는 책장이 모습을 드러낸다.',
   '벽에는 수많은 탐험 기록이 꽂혀 있다. 완성된 기록도, 중간에 끊긴 기록도 있다.',
@@ -656,6 +664,7 @@ const STORY_ARCHIVE = [
   { id: 'archivist_clear', name: '기록의 다음 장', kind: 'cut', lines: () => ARCHIVIST_CLEAR_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('archivist_clear') },
   { id: 'primordial_hint', name: '용들의 벽화', kind: 'cut', lines: () => PRIMORDIAL_HINT_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_hint') },
   { id: 'elder_arrival', name: '태고룡의 둥지', kind: 'cut', lines: () => ELDER_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('elder_arrival') },
+  { id: 'deep41_arrival', name: '부서진 하늘계단', kind: 'cut', lines: () => DEEP41_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('deep41_arrival') },
   { id: 'primordial_fall', name: '천율과 네 분신', kind: 'cut', lines: () => PRIMORDIAL_FALL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_fall') },
   ...UNIQUE_RECORDS.map((R) => ({ id: 'urec_' + R.id, name: R.name, kind: 'cut', lines: () => R.lines, unlocked: (sv) => uniqueRecordFound(sv, R.id) })),
   { id: 'unique_records_all', name: '끊긴 이야기들', kind: 'cut', lines: () => UNIQUE_RECORDS_ALL_LINES, unlocked: (sv) => !!sv.uniqueQuest },

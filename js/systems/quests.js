@@ -33,8 +33,8 @@ function questBook(game) {
     { title: '기원의 성역', desc: '무명의 문지기를 쓰러뜨리고 성역 깊은 곳으로', prog: '', done: !!sv.sanctumReached },
     { title: '지도에 없는 곳', desc: '성역보다 더 아래, 심층으로 내려가기', prog: '', done: deep >= 1 || seen('deep_arrival') },
     { title: '기록의 근원', desc: '심층 30층 — 무명의 기록관을 쓰러뜨리기', prog: `${Math.min(deep, 30)}/30 층`, done: archivist },
-    { title: '태고룡의 둥지', desc: `심층 ${maxDeep}층 — 모든 용의 시작, 태고룡을 쓰러뜨리기`, prog: `${Math.min(deep, maxDeep)}/${maxDeep} 층`, done: seen('primordial_fall') },
-    { title: '천율을 향해', desc: '천율의 네 분신이 머무는 더 깊은 곳으로 (이야기는 준비 중)', prog: '', done: false }
+    { title: '태고룡의 둥지', desc: '심층 40층 — 모든 용의 시작, 태고룡을 쓰러뜨리기', prog: `${Math.min(deep, 40)}/40 층`, done: seen('primordial_fall') },
+    { title: '천율을 향해', desc: `하늘계단을 올라 천문으로 — 심층 ${maxDeep}층까지 (그 너머 이야기는 준비 중)`, prog: `${Math.min(deep, maxDeep)}/${maxDeep} 층`, done: false }
   ];
   const main = []; let cur = false;
   for (const q of chain) {
