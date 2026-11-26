@@ -2676,6 +2676,7 @@ class Game {
   damageEnemy(enemy, src, kx, ky, opts = {}) {
     if (enemy.negateT > 0) { if (!(enemy.negMsgT > this.time)) { this.effects.text(enemy.x, enemy.y - enemy.radius - 8, enemy.fortress ? '막힘' : '부정', enemy.fortress ? '#e8ecff' : '#d8f0ff'); enemy.negMsgT = this.time + 0.35; } return; } /* 가레스의 부정: 모든 피해 무효 */
     let base = src.damage;
+    if (enemy.def.colossal) { const own = src.owner instanceof Player ? src.owner : this.player; if (own && COLOSSAL_MELEE.heroes.includes(own.hero.id)) { base *= COLOSSAL_MELEE.dmg; if (!(enemy.weakMsgT > this.time)) { enemy.weakMsgT = this.time + 2.5; this.effects.text(enemy.x, enemy.y - 34, '약점 강타', '#ffd84a'); } } } // 근접 직업: 태고룡에게 주는 피해 증가
     { const wid = src.weaponId || (src.wdef && src.wdef.id) || (src.srcId && String(src.srcId).startsWith('weapon_') ? src.srcId : null); if (wid) enemy.lastWeapon = wid; } /* 마지막으로 때린 무기 (칭호 '근본' 집계) */
     if (src.trap) { if (enemy.preyT > 0 && !src.corpse && !src.pct) base *= 1 + BALANCE.TRAP.prey.bonus; if (enemy.def.boss) base *= src.equip ? BALANCE.TRAP.equipBossMult : BALANCE.TRAP.bossMult; } /* 덫 장비·망자의 파수기: 사냥터 각인 +20% · 보스에게는 배율 (보스전 최강 방지) */
     if (src.treasure) base *= this.treasureBossMult(enemy); /* 공격형 보구: 심층 보스는 절반 */
@@ -3126,6 +3127,7 @@ class Game {
   damagePlayer(amount) {
     const p = this.player, hp0 = p.hp;
     if (this.admin && this.admin.god) return false; // 관리자 무적
+    { const C = COLOSSAL_MELEE; if (C.heroes.includes(p.hero.id)) { const B = this.enemies.find((e) => e.alive && e.def.colossal); if (B && Math.hypot(B.x - p.x, B.y - p.y) < C.range) amount = Math.round(amount * C.guard); } } // 근접 직업: 태고룡 품에 파고들면 받는 피해 감소
     if (p.feast && p.line && p.line.id === 'feast') { const F = BALANCE.feast; amount = Math.round(amount * (1 - Math.min(F.guardCap, p.feast / 10 * F.guardPer10))); } /* 소울 이터 포식: 받는 피해 감소 (상한) */
     if (p.takeDamage(amount)) {
       if (p.endured) { p.endured = false; this.effects.text(p.x, p.y - 26, '황금 양털이 버텨 냈다!', '#ffd870', true); this.effects.ring(p.x, p.y, 30, '#ffd870'); this.effects.heal(p.x, p.y); this.screenFlash = 0.15; this.flashColor = '255,216,112'; SFX.play('solomon', 0.2); return true; }

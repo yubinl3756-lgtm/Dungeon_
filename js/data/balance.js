@@ -127,3 +127,6 @@ const BALANCE = {
   // 에너지가 모자랄 때 나가는 아주 약한 공격 (피해는 깊이에 따라 조금씩 커짐)
   weakAttack: { damage: 5, interval: 0.4 }
 };
+
+// [사용자 결정] 태고룡(거대 보스)전 근접 직업 이득: 주는 피해 ×dmg, 머리에서 range 안이면 받는 피해 ×guard
+const COLOSSAL_MELEE = { heroes: ['hero_swordsman', 'hero_assassin', 'hero_berserker'], dmg: 1.5, guard: 0.65, range: 110 };
