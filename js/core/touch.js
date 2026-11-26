@@ -44,10 +44,14 @@ function setupTouch(input) {
         const B = touchBtns(T.game).find((b) => hitBtn(p, b));
         if (B) { hold(B.code); T.ids.set(t.identifier, { kind: 'btn', code: B.code }); continue; }
         if (p.x < VIEW_W * 0.55 && !T.stick) { T.stick = { id: t.identifier, ox: p.x, oy: p.y, x: p.x, y: p.y, kx: 0, ky: 0 }; T.ids.set(t.identifier, { kind: 'stick' }); setStick(T.stick); continue; }
+        const G = T.game, onNotice = G && G.mode === 'lobby' && typeof HUD !== 'undefined' && HUD.noticeBtn && (() => { const r = HUD.noticeBtn(); return p.x >= r.x - 4 && p.x <= r.x + r.w + 4 && p.y >= r.y - 4 && p.y <= r.y + r.h + 4; })();
+        if (G && (onNotice || (G.minimapTarget && G.minimapTarget(p)))) { input.mouse.x = p.x; input.mouse.y = p.y; input.pressed.add('Mouse0'); input.raw.push('Mouse0'); } // 미니맵 · 공지 (공격은 안 함)
         T.ids.set(t.identifier, { kind: 'none' });
       } else {
         if (hitBtn(p, TOUCH_UI_BACK)) { input.pressed.add('Escape'); T.ids.set(t.identifier, { kind: 'none' }); continue; }
-        input.mouse.x = p.x; input.mouse.y = p.y; input.raw.push('Mouse0'); hold('Mouse0'); T.ids.set(t.identifier, { kind: 'ui' });
+        const U = touchUiButtons(T.game).find((b) => p.x >= b.x - 3 && p.x <= b.x + b.w + 3 && p.y >= b.y - 3 && p.y <= b.y + b.h + 3); // 창 전용 버튼 (휴대폰에 없는 키 대신)
+        if (U) { if (U.prompt) T.ids.set(t.identifier, { kind: 'prompt', U }); else { input.pressed.add(U.code); input.raw.push(U.code); T.ids.set(t.identifier, { kind: 'none', code: U.code }); } T.pressT = performance.now(); continue; }
+        input.mouse.x = p.x; input.mouse.y = p.y; input.raw.push('Mouse0'); hold('Mouse0'); T.ids.set(t.identifier, { kind: 'ui', ly: p.y });
       }
     }
   }, { passive: false });
@@ -57,7 +61,8 @@ function setupTouch(input) {
       if (v.kind === 'stick' && T.stick && T.stick.id === t.identifier) { T.stick.x = p.x; T.stick.y = p.y;
         const dx = p.x - T.stick.ox, dy = p.y - T.stick.oy, d = Math.hypot(dx, dy); if (d > TOUCH_STICK.r * 1.6) { T.stick.ox = p.x - dx / d * TOUCH_STICK.r * 1.6; T.stick.oy = p.y - dy / d * TOUCH_STICK.r * 1.6; } // 손가락을 따라오는 조이스틱
         setStick(T.stick); }
-      else if (v.kind === 'ui') { input.mouse.x = p.x; input.mouse.y = p.y; }
+      else if (v.kind === 'ui') { input.mouse.x = p.x; input.mouse.y = p.y; // 위아래로 끌면 스크롤 (퀘스트·상점 등 휠 대신)
+        const dy = p.y - v.ly; if (Math.abs(dy) >= 14) { const k = dy < 0 ? 'WheelDown' : 'WheelUp'; input.pressed.add(k); input.raw.push(k); v.ly = p.y; v.dragged = true; } }
     }
   }, { passive: false });
   const end = (e) => {
@@ -65,7 +70,8 @@ function setupTouch(input) {
     for (const t of e.changedTouches) { const v = T.ids.get(t.identifier); T.ids.delete(t.identifier); if (!v) continue;
       if (v.kind === 'stick') { for (const c of DIRS) input.down.delete(c); T.stick = null; }
       else if (v.kind === 'btn') drop(v.code);
-      else if (v.kind === 'ui') drop('Mouse0'); }
+      else if (v.kind === 'ui') drop('Mouse0');
+      else if (v.kind === 'prompt') touchPrompt(T.game, input, v.U); }
     if (!T.fsTried) { T.fsTried = true; const el = document.documentElement; // 첫 터치 뒤 전체 화면 + 가로 고정 (지원하는 브라우저만)
       try { const r = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (r && r.then) r.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (_) {} }).catch(() => {}); } catch (_) {} }
   };
@@ -97,6 +103,8 @@ function drawTouchControls(ctx, game) {
     const p = game.player; if (p && p.skillCooldown > 0 && p.skillCdMax) { const k = Math.min(1, p.skillCooldown / p.skillCdMax), B = TOUCH_BTNS[2]; ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.arc(B.x, B.y, B.r, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.closePath(); ctx.fill(); } // 스킬 쿨타임
     if (guide) drawTouchGuideLabels(ctx, game);
   } else {
+    for (const U of touchUiButtons(game)) { ctx.globalAlpha = 0.92; ctx.fillStyle = '#1e1830'; ctx.fillRect(U.x, U.y, U.w, U.h); ctx.globalAlpha = 1; ctx.strokeStyle = U.color || '#ffd84a'; ctx.lineWidth = 1; ctx.strokeRect(U.x + 0.5, U.y + 0.5, U.w - 1, U.h - 1);
+      hudText(ctx, U.label, U.x + U.w / 2, U.y + U.h / 2 - 5, U.color || '#ffd84a', 'center', 9, U.w - 6); }
     ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(TOUCH_UI_BACK.x, TOUCH_UI_BACK.y, TOUCH_UI_BACK.r, 0, TAU); ctx.fill(); ctx.globalAlpha = 0.9; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(TOUCH_UI_BACK.x, TOUCH_UI_BACK.y, TOUCH_UI_BACK.r, 0, TAU); ctx.stroke();
     hudText(ctx, '✕', TOUCH_UI_BACK.x, TOUCH_UI_BACK.y - 5, '#fff', 'center', 9);
   }
@@ -110,6 +118,24 @@ const TOUCH_GUIDE = [ // [버튼 id 또는 'stick', 설명] — 버튼마다 번
   ['stick', '이동 — 왼쪽 아무 곳이나 누르고 끌기'], ['attack', '공격 — 누르고 있으면 가까운 적 자동 조준'], ['skill', '스킬'], ['dash', '대시 (잠깐 무적)'],
   ['treasure', '보구'], ['swap', '무기 교체'], ['interact', 'E — 상자·포탈·사람과 상호작용'], ['menu', '메뉴 — 퀘스트·스킨·조작 안내']
 ];
+// 창마다 휴대폰에 없는 키를 대신하는 버튼 (Enter·N·S·J·숫자 키·글자 입력)
+function touchUiButtons(game) {
+  const o = game && game.overlay; if (!IS_MOBILE || !o) return []; let L = [], cy = null, w = 60;
+  if (o.type === 'trial_weapons' && o.picked && o.picked.length) L = [['시작', 'Enter']];
+  else if (o.type === 'resume') { L = [['새로 시작', 'KeyN', '#aaaaaa'], ['이어하기', 'Enter']]; cy = 158; w = 80; }
+  else if (o.type === 'result') { L = [['로비로', 'Enter']]; cy = o.trial ? 144 : 154; w = 80; }
+  else if (o.type === 'evolve') { L = [['1 시련', 'Digit1'], ['2 대가', 'Digit2']]; cy = 196; w = 80; }
+  else if (o.type === 'hero_info') L = [['스킨', 'KeyS'], ['직업 레벨', 'KeyJ']];
+  else if (o.type === 'gift') L = [['코드 입력', 'prompt', '#7ad0ff'], ['받기', 'Enter']];
+  else if (o.type === 'multi' && o.mode === 'code') L = [['코드 입력', 'prompt', '#7ad0ff'], ['참가', 'Enter']];
+  const h = 18, gap = 6, tot = L.length * w + (L.length - 1) * gap, x0 = cy != null ? Math.round(VIEW_W / 2 - tot / 2) : VIEW_W - 6 - tot;
+  return L.map(([label, code, color], i) => ({ label, code, color, prompt: code === 'prompt', x: x0 + i * (w + gap), y: cy != null ? cy : VIEW_H - 22, w, h }));
+}
+function touchPrompt(game, input, U) { // 휴대폰 자판으로 코드 입력 (선물 코드 16자 · 방 코드 4자)
+  const o = game && game.overlay; if (!o) return; const room = o.type === 'multi';
+  let s = null; try { s = window.prompt(room ? '방 코드 4글자 (영문)' : '선물 코드 (영문·숫자)', o.code || ''); } catch (e) { s = null; }
+  if (s == null) return; o.code = ''; input.pasted += String(s).toUpperCase().replace(room ? /[^A-Z]/g : /[^A-Z0-9]/g, '').slice(0, room ? 4 : 16);
+}
 function touchHasTreasure(game) { const p = game && game.player; return !!(p && p.treasure); } // 보구는 얻기 전까지 버튼 숨김
 function touchBtns(game) { return touchHasTreasure(game) ? TOUCH_BTNS : TOUCH_BTNS.filter((b) => b.id !== 'treasure'); }
 function touchGuide(game) { return touchHasTreasure(game) ? TOUCH_GUIDE : TOUCH_GUIDE.filter(([id]) => id !== 'treasure'); }

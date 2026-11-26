@@ -350,7 +350,7 @@ class HUD {
       ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(bx + 24, by + 34, bw - 48, 20);
       hudText(ctx, (o.code || '') + (Math.floor(game.time * 2) % 2 ? '_' : ' '), VIEW_W / 2, by + 39, '#ffffff', 'center', 11);
       if (o.msg && o.msg.t > 0) hudText(ctx, o.msg.text, VIEW_W / 2, by + 64, o.msg.color, 'center', 8);
-      hudText(ctx, '영문·숫자 입력 (Ctrl+V 붙여넣기) · Enter 받기 · Backspace 지우기 · Esc 돌아가기', VIEW_W / 2, by + bh - 16, '#999', 'center', 7);
+      hudText(ctx, IS_MOBILE ? '코드 입력 → 받기   ·   ✕ 돌아가기' : '영문·숫자 입력 (Ctrl+V 붙여넣기) · Enter 받기 · Backspace 지우기 · Esc 돌아가기', VIEW_W / 2, by + bh - 16, '#999', 'center', 7);
     } else if (o.type === 'gacha') { /* 스킨 뽑기: 왼쪽=선택 배너 + 1뽑/5뽑, 오른쪽 사이드바=배너 선택 + 마일리지 상점 */
       const sv = game.save, pool = gachaPool(), m = game.input.mouse, hit = (r) => m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
       const SBW = HUD.gachaSideW(), MW = HUD.gachaMainW(), sx = VIEW_W - SBW, K = pool[o.banner] || pool[0];
@@ -679,10 +679,10 @@ class HUD {
       hudText(ctx, st, VIEW_W / 2, VIEW_H - 44, Net.status === 'online' ? '#9fe89f' : '#c8b890', 'center', 8);
       if (Net.error) hudText(ctx, Net.error, VIEW_W / 2, VIEW_H - 30, '#ff9a9a', 'center', 8);
       if (o.mode === 'code') {
-        hudText(ctx, '방 코드 4글자를 입력하세요', VIEW_W / 2, 70, '#ddd', 'center', 10);
+        hudText(ctx, IS_MOBILE ? '오른쪽 아래 코드 입력을 눌러 방 코드 4글자를 넣으세요' : '방 코드 4글자를 입력하세요', VIEW_W / 2, 70, '#ddd', 'center', 10);
         for (let i = 0; i < 4; i++) { const x = VIEW_W / 2 - 66 + i * 34; ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(x, 92, 28, 34); ctx.strokeStyle = i === o.code.length ? '#7ad0ff' : '#555'; ctx.strokeRect(x + 0.5, 92.5, 27, 33);
           if (o.code[i]) hudText(ctx, o.code[i], x + 14, 100, '#fff', 'center', 18); }
-        hudText(ctx, '알파벳 입력 · Backspace 지우기 · Enter 참가 · Esc 뒤로', VIEW_W / 2, 142, '#888', 'center', 8);
+        hudText(ctx, IS_MOBILE ? '코드 입력 → 참가   ·   ✕ 뒤로' : '알파벳 입력 · Backspace 지우기 · Enter 참가 · Esc 뒤로', VIEW_W / 2, 142, '#888', 'center', 8);
       } else if (!Net.inRoom) {
         row(0, '1  방 만들기 (내가 방장)'); row(1, '2  방 코드로 참가');
         hudText(ctx, '같은 방 사람들과 로비에서 서로 보입니다 · 함께 던전 들어가기는 다음 단계에서 열립니다', VIEW_W / 2, 100, '#888', 'center', 8);
@@ -774,8 +774,9 @@ class HUD {
         hudText(ctx, `체력 ${Math.round(r.p.hp)}/${r.p.maxHp}   ·   무기 ${r.p.weapons.map((id) => (game.data.weapons.get(id) || { name: '?' }).name).join(', ')}   ·   골드 ${r.gold}`, VIEW_W / 2, 118, '#ccc', 'center', 9);
         hudText(ctx, '그 스테이지의 시작 지점부터 다시 시작합니다', VIEW_W / 2, 134, '#888', 'center', 8);
       }
-      hudText(ctx, 'Enter: 이어하기', VIEW_W / 2, 164, '#ffd84a', 'center', 11);
-      hudText(ctx, 'N: 새로 시작 (저장된 탐험은 사라집니다)   ·   Esc: 로비에 머무르기', VIEW_W / 2, 182, '#aaa', 'center', 9);
+      if (IS_MOBILE) hudText(ctx, '새로 시작하면 저장된 탐험은 사라집니다   ·   ✕: 로비에 머무르기', VIEW_W / 2, 184, '#aaa', 'center', 8); /* 버튼은 touch.js */
+      else { hudText(ctx, 'Enter: 이어하기', VIEW_W / 2, 164, '#ffd84a', 'center', 11);
+      hudText(ctx, 'N: 새로 시작 (저장된 탐험은 사라집니다)   ·   Esc: 로비에 머무르기', VIEW_W / 2, 182, '#aaa', 'center', 9); }
     } else if (o.type === 'story') {
       if (o.sanctum) { // 형체 없는 빛 (전설의 존재의 외형은 미정)
         const k = Math.min(1, (o.i + o.t) / 3), cx = VIEW_W / 2, cy = 92, R = 30 + 50 * k;
@@ -834,7 +835,7 @@ class HUD {
       const TR = TRIALS[o.trialId] || RHONGO_TRIAL;
       hudText(ctx, o.victory ? TR.winText : '시련 실패', VIEW_W / 2, 90, o.victory ? TR.color : '#ff7070', 'center', 16);
       hudText(ctx, o.victory ? TR.winSub : '잃은 것은 없습니다. 멀린에게 말을 걸면 다시 도전할 수 있습니다', VIEW_W / 2, 116, '#ddd', 'center', 9);
-      hudText(ctx, 'Enter: 로비로', VIEW_W / 2, 150, '#fff', 'center', 10);
+      if (!IS_MOBILE) hudText(ctx, 'Enter: 로비로', VIEW_W / 2, 150, '#fff', 'center', 10);
     } else if (o.type === 'result') {
       hudText(ctx, o.victory ? '던전 정복!' : '사망했습니다', VIEW_W / 2, 70, o.victory ? '#ffd84a' : '#ff7070', 'center', 18);
       if (o.after) hudText(ctx, o.after, VIEW_W / 2, 92, '#ffe9a0', 'center', 10);
@@ -842,7 +843,7 @@ class HUD {
       hudText(ctx, `도달: ${game.stageName()}   ·   처치 ${game.kills}   ·   스테이지 ${o.stages}개 · 보스 ${o.bosses}마리`, VIEW_W / 2, 110, '#ddd', 'center', 10);
       hudText(ctx, `${CUR.name} +${o.reward}   (보유 ${game.save.bank} → ${game.save.bank + o.reward})`, VIEW_W / 2, 128, CUR.color, 'center', 10);
       hudText(ctx, o.gold != null ? `남은 골드 ${o.gold.toLocaleString()} → ${CUR.name} +${o.goldBonus || 0}   (골드 ${CUR.goldPer || 25}마다 1 · 골드 자체는 로비로 가져가지 않음)` : '던전 골드는 로비로 가져가지 않습니다', VIEW_W / 2, 142, '#c8b070', 'center', 8);
-      hudText(ctx, 'Enter: 로비로', VIEW_W / 2, 160, '#fff', 'center', 10);
+      if (!IS_MOBILE) hudText(ctx, 'Enter: 로비로', VIEW_W / 2, 160, '#fff', 'center', 10);
     }
   }
   // 보구 획득 알림: 오른쪽 아래에서 아이콘과 함께 미끄러져 들어와 6초 동안 표시

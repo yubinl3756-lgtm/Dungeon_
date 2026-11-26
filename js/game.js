@@ -1416,7 +1416,7 @@ class Game {
       } else if (p.moving) { this.effects.dust(p.x, p.y + 6); this.fxT = 0.22; }
     }
     if (p.state !== 'DEAD' && p.hp < p.maxHp * 0.3) { this.heartT -= dt; if (this.heartT <= 0) { SFX.play('heart'); this.heartT = 0.9; } }
-    if (input.wasPressed('Mouse0') && this.minimapClick(input.mouse)) input.mouse.down = false;
+    if (input.wasPressed('Mouse0') && this.minimapClick(input.mouse)) { input.mouse.down = false; input.pressed.delete('Mouse0'); }
     if (this.mode === 'lobby' && input.wasPressed('Mouse0') && typeof NOTICE !== 'undefined' && NOTICE.lines && NOTICE.lines.length) { // 공지 접기/펼치기 (그 클릭은 공격하지 않음)
       const r = HUD.noticeBtn(), m = input.mouse; if (m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h) { this.save.noticeFolded = !this.save.noticeFolded; writeSave(this.save); input.mouse.down = false; input.pressed.delete('Mouse0'); SFX.play('ui'); } } // 미니맵: 이미 간 방으로 이동 (그 클릭은 공격하지 않음)
     this.weaponSystem.update(p, dt, input);
