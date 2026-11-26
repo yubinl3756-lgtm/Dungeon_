@@ -689,6 +689,24 @@ const EXPLORER_TALK = [
 ];
 // 마을의 미기록자 (심층 60에서 만난 뒤) — 말을 걸면 한마디 [임시 대사: 사용자가 정해 주면 교체]
 const UNRECORDED_TOWN_LINES = ['…또 왔네. 내 얼굴, 이번엔 기억나?', '개척자 녀석, 잔소리 많지?', '일그러짐은 아직 늘리는 중이야. 방해만 하지 마.'];
+// 미기록자의 부탁 '틈을 넓혀라' [사용자 결정: 글리치 씨앗 3개를 심층 보스 자리에 — 태고룡의 둥지(40)·개척자의 마을(50) 제외] → 완료하면 미기록자 스킨 + 글리치 조각
+const UNRECORDED_SEED = { need: 3, banned: [40, 50] };
+const UNRECORDED_QUEST_LINES = [
+  '「…또 왔네. 이번엔 부탁 하나 하려고.」',
+  '「던전 곳곳의 일그러짐, 내가 만든 거라고 했지? 근데 혼자서는 손이 모자라.」',
+  '「이 씨앗을 받아. 기록되지 않는 틈을 심는 거야.」',
+  '「심층의 보스를 쓰러뜨린 자리에 심어 줘. 세 군데면 충분해.」',
+  '「단, 태고룡의 둥지랑 이 마을엔 심지 마. 거긴 눈에 띄면 곤란하거든.」',
+  '「심은 곳엔 틈이 더 자주 벌어질 거야. 천율의 체에 구멍이 하나씩 늘어나는 거지.」'
+];
+const UNRECORDED_REPORT_LINES = [
+  '「…세 군데 다 심었네. 틈이 벌어지는 소리가 여기까지 들려.」',
+  '「생각보다 쓸 만하잖아, 너.」',
+  '「앞으로 잘해 보자.」',
+  '「아, 그리고— 던전에서 글리치 조각이 보이면 근처로 가 봐.」',
+  '「내가 남겨 둔 틈의 부스러기야. 조금은 힘이 될 거야.」',
+  '미기록자가 무언가를 건넨다. 손에 쥐었는데도, 무엇을 받았는지 잘 기억나지 않는다.'
+];
 const TOWN_FOLK = [ /* [x(광장 가운데 기준 칸), y(광장 위 기준 칸), 모습, 이름, 대사] */
   [-15, 9, 't_lancer', '은퇴한 창기사', ['여기까지 온 녀석은 오랜만이군.', '나는 수정 동굴에서 무릎을 꿇었다. 그 뒤로는 여기서 창만 닦고 있지.', '마을 안에서는 몬스터 걱정은 하지 마라.']],
   [13, 9, 't_mage', '백발의 마도사', ['별이 아래에서 뜨는 곳은 이 던전뿐이야.', '더 깊은 곳에서 무언가 거대한 것이 지나가는 걸 본 적이 있어. …다시는 보고 싶지 않아.', '촌장님은 위쪽 큰 집에 계셔. 지도에 파묻혀서.']],
@@ -771,6 +789,8 @@ const STORY_ARCHIVE = [
   { id: 'town_arrival', name: '개척자의 마을', kind: 'cut', lines: () => TOWN_ARRIVAL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('town_arrival') },
   { id: 'explorer_meet', name: '최초의 탐험가', kind: 'cut', lines: () => EXPLORER_MEET_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.met) },
   { id: 'explorer_report', name: '개척자의 외투', kind: 'cut', lines: () => EXPLORER_REPORT_LINES, unlocked: (sv) => !!(sv.explorer && sv.explorer.quest >= 2 && sv.explorer.v3) },
+  { id: 'unrecorded_quest', name: '틈을 넓혀라', kind: 'cut', lines: () => UNRECORDED_QUEST_LINES, unlocked: (sv) => !!(sv.unrec && sv.unrec.quest >= 1) },
+  { id: 'unrecorded_report', name: '앞으로 잘해 보자', kind: 'cut', lines: () => UNRECORDED_REPORT_LINES, unlocked: (sv) => !!(sv.unrec && sv.unrec.quest >= 2) },
   { id: 'unrecorded_meet', name: '꽤 강하구나', kind: 'cut', lines: () => UNRECORDED_MEET_LINES, unlocked: (sv) => !!sv.unrecordedMet },
   { id: 'primordial_fall', name: '천율과 네 분신', kind: 'cut', lines: () => PRIMORDIAL_FALL_LINES, unlocked: (sv) => (sv.scenesSeen || []).includes('primordial_fall') },
   ...UNIQUE_RECORDS.map((R) => ({ id: 'urec_' + R.id, name: R.name, kind: 'cut', lines: () => R.lines, unlocked: (sv) => uniqueRecordFound(sv, R.id) })),

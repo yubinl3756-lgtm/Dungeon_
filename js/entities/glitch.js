@@ -127,6 +127,10 @@ Object.assign(AI_BEHAVIORS, {
 // 매 프레임: 오염된 적의 순간이동
 function glitchTick(game, dt) {
   if (!game.W || game.mode !== 'dungeon') return;
+  const p = game.player; // 글리치 조각: 가까이 가면 체력·에너지 +50
+  if (p && p.state !== 'DEAD') for (const o of game.props) if (o instanceof GlitchShard && !o.taken && Math.hypot(o.x - p.x, o.y - p.y) < 22) { o.taken = true;
+    const h = Math.min(50, p.maxHp - p.hp), en = Math.min(50, p.maxEnergy - p.energy); p.hp = Math.min(p.maxHp, p.hp + 50); p.energy = Math.min(p.maxEnergy, p.energy + 50);
+    game.effects.heal(p.x, p.y); game.effects.burst(o.x, o.y - 6, '#48eaff', 14); game.effects.text(p.x, p.y - 22, `+${Math.round(h)} 체력 · +${Math.round(en)} 에너지`, '#48eaff', true); SFX.play('heal'); }
   for (const e of game.enemies) { if (!e.alive || e.def.boss || e.state === 'SPAWN' || !(e.def.glitchy || e.glitchy) || e.def.glitchCore || e.def.mirrorDouble) continue;
     e.blinkT = (e.blinkT == null ? 1.5 + Math.random() * 2 : e.blinkT) - dt;
     if (e.blinkT <= 0) { e.blinkT = 2.5 + Math.random() * 2; const a = Math.random() * TAU, d = 26 + Math.random() * 20, x0 = e.x, y0 = e.y;
@@ -140,4 +144,29 @@ function drawMirrorDouble(ctx, e) {
   ctx.save(); ctx.globalAlpha = 0.55 * k; ctx.fillStyle = '#3affe0'; ctx.fillRect(x - 8, y - 20 + (Math.floor(t * 24) % 20), 16, 1); ctx.fillStyle = '#ff3af0'; ctx.fillRect(x - 6, y - 8 - (Math.floor(t * 17) % 12), 12, 1); ctx.restore();
   glitchNoise(ctx, x - 9, y - 22, 18, 24, 10, t, k);
   if (e.hurtFlash > 0) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(x - 6, y - 18, 12, 18); }
+}
+
+// 글리치 씨앗 심을 자리 (미기록자의 부탁 · 심층 보스를 쓰러뜨린 방)
+class GlitchSeedSpot {
+  constructor(x, y, depth) { this.x = x; this.y = y; this.depth = depth; this.radius = 22; this.done = false; this.t = 0; }
+  label(game) { return this.done ? null : `[E] 글리치 씨앗 심기 (${((game.save.unrec || {}).planted || []).length}/${UNRECORDED_SEED.need})`; }
+  get labelColor() { return '#48eaff'; }
+  interact(game) { game.plantGlitchSeed(this); }
+  render(ctx, game) {
+    const x = Math.round(this.x), y = Math.round(this.y), t = (this.t += 1 / 60);
+    if (this.done) { glitchNoise(ctx, x - 8, y - 6, 16, 8, 8, t, 0.7); return; }
+    ctx.save(); ctx.globalAlpha = 0.35 + 0.2 * Math.sin(t * 3); ctx.strokeStyle = '#48eaff'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y, 14, 6, 0, 0, TAU); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = '#48eaff'; ctx.fillRect(x - 1, y - 8 - Math.round(Math.sin(t * 2) * 2), 3, 3); ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y - 7 - Math.round(Math.sin(t * 2) * 2), 1, 1);
+  }
+}
+// 글리치 조각 (미기록자의 부탁을 마친 뒤 맵에 가끔): 가까이 가면 체력·에너지 +50
+class GlitchShard {
+  constructor(x, y) { this.x = x; this.y = y; this.radius = 0; this.taken = false; this.t = Math.random() * 5; }
+  label() { return null; }
+  render(ctx, game) {
+    if (this.taken) return; const x = Math.round(this.x), y = Math.round(this.y), t = (this.t += 1 / 60), b = Math.round(Math.sin(t * 3) * 2);
+    ctx.save(); ctx.globalAlpha = 0.3 + 0.15 * Math.sin(t * 4); ctx.fillStyle = '#48eaff'; ctx.beginPath(); ctx.ellipse(x, y + 4, 9, 3, 0, 0, TAU); ctx.fill(); ctx.restore();
+    ctx.fillStyle = OUTLINE; ctx.fillRect(x - 4, y - 10 + b, 8, 9); ctx.fillStyle = '#48eaff'; ctx.fillRect(x - 3, y - 9 + b, 6, 7); ctx.fillStyle = '#ff3af0'; ctx.fillRect(x - 3, y - 6 + b, 3, 2); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 1, y - 9 + b, 1, 2);
+    glitchNoise(ctx, x - 9, y - 16 + b, 18, 16, 5, t, 0.8);
+  }
 }

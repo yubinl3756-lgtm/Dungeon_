@@ -69,6 +69,10 @@ function questBook(game) {
   else if (xq === 1) sub.push(sv.unrecordedMet ? { title: '무명객을 찾아라', desc: '심층 50 개척자의 마을로 돌아가 최초의 탐험가에게 알리기', prog: '보고하기', state: 'ready' } : { title: '무명객을 찾아라', desc: '던전을 탐사하며 무명객의 행방 찾기', prog: '???', state: 'now' });
   else if (deep >= 50) sub.push({ title: '마을의 큰 집', desc: '개척자의 마을 가장 안쪽 큰 집의 사람에게 말 걸기', prog: '', state: 'ready' });
   else hidden++;
+  const U = sv.unrec || {}, UN = typeof UNRECORDED_SEED !== 'undefined' ? UNRECORDED_SEED.need : 3, up = (U.planted || []).length;
+  if (U.quest >= 2) sub.push({ title: '틈을 넓혀라', desc: '미기록자와 손을 잡았다 · 던전의 글리치 조각에 가까이 가면 체력·에너지 +50', prog: '완료', state: 'done' });
+  else if (U.quest === 1) sub.push(up >= UN ? { title: '틈을 넓혀라', desc: '개척자의 마을로 돌아가 미기록자에게 보고하기', prog: '보고하기', state: 'ready' } : { title: '틈을 넓혀라', desc: '심층 보스를 쓰러뜨린 자리에 글리치 씨앗 심기 (태고룡의 둥지·개척자의 마을 제외)', prog: `${up}/${UN}`, state: 'now' });
+  else if (sv.unrecordedMet) sub.push({ title: '마을의 미기록자', desc: '개척자의 마을에 나타난 미기록자에게 말 걸기', prog: '', state: 'ready' });
   // ── 수락한 임무: 토벌 의뢰 → 오늘 · 이번 주 길드 퀘스트
   const tasks = [];
   const G = game.guild ? game.guild() : null;

@@ -97,8 +97,11 @@ class TownSign {
 class TownUnrecorded extends TownResident {
   constructor(x, y) { super(x, y, 'unrecorded', '미기록자', UNRECORDED_TOWN_LINES, -1); }
   get labelColor() { return '#48eaff'; }
+  label(game) { const U = game.save.unrec || {}; return `[E] 미기록자${U.quest === 1 && (U.planted || []).length >= UNRECORDED_SEED.need ? '  (보고하기)' : ''}`; }
+  interact(game) { this.face = game.player.x < this.x ? -1 : 1; game.talkUnrecorded(this); }
   render(ctx, game) {
-    const x = Math.round(this.x), y = Math.round(this.y), t = game.time;
+    const x = Math.round(this.x), y = Math.round(this.y), t = game.time, U = game.save.unrec || {};
+    if ((!U.quest || (U.quest === 1 && (U.planted || []).length >= UNRECORDED_SEED.need)) && Math.floor(t * 3) % 2 === 0) hudText(ctx, U.quest ? '?' : '!', x, y - 34, '#48eaff', 'center', 14);
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x, y + 5, 7, 2.5, 0, 0, TAU); ctx.fill();
     if (!uniqueNpcDraw(ctx, 'skin_u_unrecorded', x, y - 2, this.face, game)) npcDraw(ctx, 'unrecorded', x, y - 2, this.face, game);
     if (Math.floor(t * 3) % 9 === 0 && typeof glitchNoise === 'function') glitchNoise(ctx, x - 8, y - 22, 16, 22, 5, t); // 가끔 스치는 노이즈

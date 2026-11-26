@@ -976,9 +976,29 @@ class Game {
     const W = this.W; if (!W.deep || W.trial || W.town || this.areaId) return;
     if (W.glitchFloor) { const rooms = map.rooms.filter((r) => r.type === 'combat'); rooms.forEach((r, i) => { if (i % 2 === 0 || Math.random() < 0.3) r.glitch = true; }); const br = map.roomOf('boss'); if (br) br.glitch = true; }
     if (this.coopRunKey) return;
-    const rooms = map.rooms.filter((r) => r.type === 'combat' || r.type === 'start'); if (!rooms.length || (!W.glitchFloor && Math.random() >= 0.3)) return;
+    const rooms = map.rooms.filter((r) => r.type === 'combat' || r.type === 'start'); const seeded = this.save.unrec && (this.save.unrec.planted || []).includes(W.depth); if (!rooms.length || (!W.glitchFloor && Math.random() >= (seeded ? 0.6 : 0.3))) return; // 씨앗을 심은 층은 글리치가 두 배로
     const r = pick(rooms.filter((x) => x.type === 'combat').length ? rooms.filter((x) => x.type === 'combat') : rooms), c = map.tileCenter(r.cx, r.cy);
     this.props.push(new GlitchRift(c.x + (Math.random() < 0.5 ? -28 : 28), c.y + 18));
+  }
+  talkUnrecorded(npc) { // 마을의 미기록자: 부탁(글리치 씨앗 3개) → 보고하면 미기록자 스킨 + 글리치 조각
+    const sv = this.save, U = sv.unrec = sv.unrec || { quest: 0, planted: [] }; U.planted = U.planted || []; const N = UNRECORDED_SEED.need;
+    if (!U.quest) { this.playCutscene(UNRECORDED_QUEST_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => { U.quest = 1; writeSave(sv); this.showBanner('틈을 넓혀라', `심층 보스를 쓰러뜨린 자리에 글리치 씨앗 심기 (0/${N}) · 태고룡의 둥지·개척자의 마을 제외`, '#48eaff'); } }); return; }
+    if (U.quest === 1 && U.planted.length >= N) { this.playCutscene(UNRECORDED_REPORT_LINES, { always: true, force: true, focus: { x: npc.x, y: npc.y }, done: () => {
+      U.quest = 2; const id = 'skin_u_unrecorded'; sv.skins = sv.skins || []; if (!sv.skins.includes(id)) sv.skins.push(id); writeSave(sv);
+      this.showBanner('고유 스킨 획득 — 미기록자', '기술자 고유 외형 · 이제 던전에 글리치 조각이 나타납니다 (가까이 가면 체력·에너지 +50)', '#48eaff'); this.legendIntroCheck([id]); } }); return; }
+    if (U.quest === 1) { npc.bubble = { text: `씨앗 ${U.planted.length}/${N} — 심층 보스를 쓰러뜨린 자리에 심어 줘 (태고룡의 둥지·이 마을은 빼고)`, t: 3.5 }; return; }
+    npc.bubble = { text: UNRECORDED_TOWN_LINES[(npc.k = (npc.k || 0) + 1) % UNRECORDED_TOWN_LINES.length], t: 3.5 };
+  }
+  plantGlitchSeed(spot) {
+    const sv = this.save, U = sv.unrec; if (!U || U.quest !== 1 || spot.done) return; U.planted = U.planted || []; if (U.planted.includes(spot.depth)) { spot.done = true; return; }
+    spot.done = true; U.planted.push(spot.depth); writeSave(sv); const N = UNRECORDED_SEED.need;
+    this.effects.ring(spot.x, spot.y, 26, '#48eaff'); this.effects.burst(spot.x, spot.y - 6, '#ff3af0', 16); this.addShake(0.15, 2); SFX.play('gate', 0.4);
+    this.showBanner(`글리치 씨앗 ${U.planted.length}/${N}`, U.planted.length >= N ? '개척자의 마을로 돌아가 미기록자에게 보고하기' : `심층 ${spot.depth}에 틈을 심었다 — 이 층엔 글리치가 더 자주 나타난다`, '#48eaff');
+  }
+  placeGlitchShard(map) { // 글리치 조각: 미기록자의 부탁을 마친 뒤 던전 맵에 가끔 (마을·시련 제외)
+    const W = this.W, U = this.save.unrec; if (!U || U.quest < 2 || W.trial || W.town || Math.random() >= 0.35) return;
+    const rooms = map.rooms.filter((r) => r.type === 'combat'); if (!rooms.length) return;
+    const r = pick(rooms), c = map.tileCenter(r.cx + (Math.random() < 0.5 ? -3 : 3), r.cy + (Math.random() < 0.5 ? -2 : 2)); this.props.push(new GlitchShard(c.x, c.y));
   }
   investigateGlitch(g) {
     if (g.done) return; g.done = true; const sv = this.save, N = GLITCH_GATE.need; sv.glitches = (sv.glitches || 0) + 1; writeSave(sv);
@@ -1151,6 +1171,7 @@ class Game {
     if (shop) this.stockShop(shop);
     this.stockSpecialRooms(map);
     this.placeGlitch(map); // 글리치 (심층 1층부터 가끔 · 심층 60 오염된 방)
+    this.placeGlitchShard(map); // 글리치 조각 (미기록자의 부탁 이후)
     const ex = map.roomOf('exit');
     if (ex) { const c = map.tileCenter(ex.cx, ex.cy); this.portals.push(new Portal(c.x, c.y, () => this.advanceStage(), '다음 스테이지')); }
     if (!W.trial) {
@@ -2482,6 +2503,7 @@ class Game {
       this.portalSpot = c;
       const after = () => {
         if (W.deep && !W.trial) this.recordDeepSave(W.depth); // 심층 10·20·30·40: 세이브 포인트
+        { const U = this.save.unrec; if (W.deep && !W.trial && !this.coopRunKey && U && U.quest === 1 && (U.planted || []).length < UNRECORDED_SEED.need && !UNRECORDED_SEED.banned.includes(W.depth) && !(U.planted || []).includes(W.depth)) this.props.push(new GlitchSeedSpot(c.x - 40, c.y - 10, W.depth)); } // 미기록자의 부탁: 씨앗 심을 자리
         if (W.deep && !W.trial && W.boss === 'boss_formless') { const fig = new UnrecordedFigure(c.x, c.y - 30); this.props.push(fig); // 무형의 오류 처치: 무명객 등장
           this.playCutscene(UNRECORDED_MEET_LINES, { id: 'unrecorded_meet', always: true, focus: { x: fig.x, y: fig.y - 10 }, done: () => { fig.leave = 0.01; this.save.unrecordedMet = true; writeSave(this.save);
             const X = this.save.explorer; if (X && X.met && X.quest === 1) this.showBanner('무명객을 찾아라', '개척자의 마을로 돌아가 최초의 탐험가에게 알리기', '#48eaff'); } }); }
