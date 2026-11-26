@@ -86,7 +86,7 @@ function drawPauseMenu(ctx, game) {
   // ② 조작
   { const y0 = card(58, '조작'), B = game.input.binds, k = (id) => (B[id] || []).filter(Boolean).map(keyLabel).join('/') || '없음';
     if (IS_MOBILE) { // 모바일: 터치 조작 (두 칸씩)
-      [['이동', '왼쪽 누르고 끌기'], ['공격', '공격 버튼 · 자동 조준'], ['대시·스킬·보구', '각 버튼'], ['무기 교체', '교체 버튼'], ['상호작용', 'E 버튼'], ['메뉴', '≡ (조작 안내: 메뉴)']].forEach(([what, how], i) => { const cx = CX + 10 + (i % 2) * Math.floor((CW - 16) / 2), cy = y0 + 16 + Math.floor(i / 2) * 13;
+      [['이동', '왼쪽 누르고 끌기'], ['공격', '공격 버튼 · 자동 조준'], ['대시·스킬·보구', '각 버튼'], ['무기 교체', '교체 버튼'], ['상호작용', 'E 버튼'], ['메뉴', '메뉴 버튼 (오른쪽 위)']].forEach(([what, how], i) => { const cx = CX + 10 + (i % 2) * Math.floor((CW - 16) / 2), cy = y0 + 16 + Math.floor(i / 2) * 13;
         hudText(ctx, what, cx, cy, '#ffd84a', 'left', 8); hudText(ctx, how, cx + 64, cy, '#c8c0d8', 'left', 7, Math.floor((CW - 16) / 2) - 68); }); }
     const rows = IS_MOBILE ? []
       : [[`${k('up')}${k('left')}${k('down')}${k('right')}`, '이동'], [k('attack'), '공격'], [k('dash'), '대시'], [k('skill'), '스킬'], [k('interact'), '상호작용'], [`${k('swap')}/휠`, '무기 교체']];

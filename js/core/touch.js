@@ -16,7 +16,7 @@ const TOUCH_BTNS = [ // x, y, r = 화면(512×288) 좌표 · code = 게임 키 (
   { id: 'treasure', label: '보구', x: 436, y: 167, r: 12, code: 'KeyR', color: '#ffb0d8' },
   { id: 'swap', label: '교체', x: 478, y: 170, r: 12, code: 'KeyQ', color: '#c8c0d8' },
   { id: 'interact', label: 'E', x: 352, y: 234, r: 14, code: 'KeyE', color: '#9fe89f' },
-  { id: 'menu', label: '≡', x: 498, y: 68, r: 11, code: 'Escape', color: '#ffffff' }
+  { id: 'menu', label: '메뉴', x: 496, y: 68, r: 13, code: 'Escape', color: '#ffffff' }
 ];
 const TOUCH_UI_BACK = { x: 16, y: 272, r: 11, code: 'Escape' }; // 창·대사 화면의 ✕ (Esc)
 const TOUCH_STICK = { r: 30, dead: 0.3 };
@@ -155,7 +155,7 @@ function maybeTouchGuide(game) { // 모바일에서 처음 플레이할 때 한 
 // ── 모바일에서 PC 안내 문구 바꾸기: 클릭 → 터치 · Esc → ✕ · 휴대폰에 없는 키 단축키는 빼기
 const _mobileTextCache = new Map();
 const MOBILE_TEXT_FIX = [
-  [/F\/우클릭 스킬 · E 상호작용 · Esc 조작법/, '스킬 버튼 · E 상호작용 · ≡ 메뉴'], [/\(Esc → K로 켜기\/끄기\)/, '(≡ 메뉴 → 스킨에서 켜기/끄기)'], [/로비 Esc → J /, '로비 ≡ 메뉴 → '],
+  [/F\/우클릭 스킬 · E 상호작용 · Esc 조작법/, '스킬 버튼 · E 상호작용 · 메뉴 버튼'], [/\(Esc → K로 켜기\/끄기\)/, '(메뉴 → 스킨에서 켜기/끄기)'], [/로비 Esc → J /, '로비 메뉴 → '],
   [/↑↓ · 클릭 · Enter 선택/, '터치로 선택'], [/(숫자 키(\(1~0\))?|번호 키|1~\d|1·2·3|\d)\s*\/\s*클릭/g, '터치'], [/클릭\s*\/\s*(숫자|번호) 키/g, '터치'], [/숫자 키\s*\/\s*클릭/g, '터치'],
   [/Enter\s*·\s*클릭/g, '터치'], [/클릭 또는 1 \/ 2 \/ 3/g, '터치해서 고르기'], [/\s*\/\s*Enter\s*—/g, ' —'], [/좌클릭/g, '공격 버튼'], [/우클릭/g, '스킬 버튼'], [/마우스를 올리면/g, '터치하면'],
   [/([A-Z`+]|\d)\s*\/\s*(Enter\s*\/\s*)?Esc/g, 'Esc'], [/\bEsc\b/g, '✕'], [/클릭/g, '터치'], [/\s*\((?:[A-Z]|[A-Z] 키)\)/g, ''], [/\[[A-Z]\]\s*/g, '']
