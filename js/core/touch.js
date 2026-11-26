@@ -38,22 +38,23 @@ function updateTouchLayout(game, input) { // 버튼을 끌어서 옮기기 · �
   if (input.wasPressed('Mouse0')) {
     const ai = TOUCH_LAYOUT_ACTS.findIndex((_, i) => { const r = touchLayoutActRect(i); return m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h; });
     if (ai >= 0) { const [, kind, d] = TOUCH_LAYOUT_ACTS[ai]; SFX.play('ui'); input.mouse.down = false;
-      if (kind === 'size') { const L = TOUCH_LAYOUT.c[o.sel] = TOUCH_LAYOUT.c[o.sel] || {}; L.s = Math.max(0.7, Math.min(1.7, Math.round(((L.s || 1) + d) * 10) / 10)); saveTouchLayout(); }
+      if (kind === 'size') { const L = TOUCH_LAYOUT.c[o.sel] = TOUCH_LAYOUT.c[o.sel] || {}; L.s = Math.max(0.7, Math.min(1.7, Math.round(((L.s || 1) + d) * 10) / 10)); applyTouchLayout(); const B = touchCtl(o.sel), f = touchFreeSpot(B, [...touchBtns(game).filter((b) => b.id !== o.sel), ...(o.sel === 'stick' ? [] : [TOUCH_STICK])]); L.x = f.x; L.y = f.y; saveTouchLayout(); }
       else if (kind === 'alpha') { TOUCH_LAYOUT.a = Math.max(0.3, Math.min(1.6, Math.round((TOUCH_LAYOUT.a + d) * 100) / 100)); saveTouchLayout(); }
       else if (kind === 'reset') resetTouchLayout(); else if (kind === 'done') { saveTouchLayout(); game.overlay = { type: 'pause' }; }
       return; }
-    let best = null, bd = 1e9; for (const id in TOUCH_DEF) { const B = touchCtl(id); if (!B || (id === 'treasure' && false)) continue; const d = Math.hypot(m.x - B.x, m.y - B.y); if (d <= B.r + 8 && d < bd) { bd = d; best = id; } }
+    let best = null, bd = 1e9; for (const id in TOUCH_DEF) { const B = touchCtl(id); if (!B || (id === 'treasure' && !touchHasTreasure(game))) continue; const d = Math.hypot(m.x - B.x, m.y - B.y); if (d <= B.r + 8 && d < bd) { bd = d; best = id; } }
     if (best) { const B = touchCtl(best); o.sel = best; o.drag = { id: best, dx: B.x - m.x, dy: B.y - m.y }; }
   }
   if (o.drag && m.down) { const B = touchCtl(o.drag.id), L = TOUCH_LAYOUT.c[o.drag.id] = TOUCH_LAYOUT.c[o.drag.id] || {};
     L.x = Math.round(Math.max(B.r, Math.min(VIEW_W - B.r, m.x + o.drag.dx))); L.y = Math.round(Math.max(B.r + 56, Math.min(VIEW_H - B.r, m.y + o.drag.dy))); applyTouchLayout(); }
-  else if (o.drag) { o.drag = null; saveTouchLayout(); }
+  else if (o.drag) { const id = o.drag.id, B = touchCtl(id), others = [...touchBtns(game).filter((b) => b.id !== id), ...(id === 'stick' ? [] : [TOUCH_STICK])].map((b) => (b.id === 'treasure' ? touchTreasureBtn() : b));
+    const f = touchFreeSpot(B, others), L = TOUCH_LAYOUT.c[id] = TOUCH_LAYOUT.c[id] || {}; L.x = f.x; L.y = f.y; o.drag = null; saveTouchLayout(); } // 다른 버튼 위에 놓으면 옆 빈자리로
 }
 function drawTouchLayout(ctx, game) {
   const o = game.overlay; hudText(ctx, '조작 버튼 설정', VIEW_W / 2, 8, '#ffd84a', 'center', 12);
   hudText(ctx, `버튼을 끌어서 옮기기 · 고른 버튼: ${TOUCH_LAYOUT_NAMES[o.sel || 'attack']} (크기 ${Math.round(((TOUCH_LAYOUT.c[o.sel || 'attack'] || {}).s || 1) * 100)}%) · 진하기 ${Math.round(TOUCH_LAYOUT.a * 100)}%`, VIEW_W / 2, 22, '#c8c0d8', 'center', 7, VIEW_W - 40);
   TOUCH_LAYOUT_ACTS.forEach(([label, kind], i) => { const r = touchLayoutActRect(i); ctx.globalAlpha = 0.92; ctx.fillStyle = '#1e1830'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.globalAlpha = 1; ctx.strokeStyle = kind === 'done' ? '#9fe89f' : kind === 'reset' ? '#ff9a9a' : '#ffd84a'; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1); hudText(ctx, label, r.x + r.w / 2, r.y + 4, ctx.strokeStyle, 'center', 8, r.w - 4); });
-  const B = touchCtl(o.sel || 'attack'); if (B) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(game.time * 6); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(B.x, B.y, B.r + 5, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 1; }
+  const B = o.sel === 'treasure' ? touchTreasureBtn() : touchCtl(o.sel || 'attack'); if (B) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(game.time * 6); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(B.x, B.y, B.r + 5, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 1; }
 }
 function touchStickFixed() { try { return localStorage.getItem('pd_stick_free') !== '1'; } catch (e) { return true; } } // 기본: 고정 ([사용자 요청])
 function setTouchStickFixed(on) { try { localStorage.setItem('pd_stick_free', on ? '0' : '1'); } catch (e) {} }
@@ -134,7 +135,7 @@ function drawTouchControls(ctx, game) {
     ctx.globalAlpha = Math.min(1, TA * (S ? 0.5 : 0.22)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.stroke();
     ctx.globalAlpha = Math.min(1, TA * (S ? 0.8 : 0.3)); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx + (S ? S.kx : 0) * TOUCH_STICK.r, by + (S ? S.ky : 0) * TOUCH_STICK.r, 11, 0, TAU); ctx.fill();
     const held = new Set([...T.ids.values()].filter((v) => v.kind === 'btn').map((v) => v.code));
-    for (const B of (layout ? TOUCH_BTNS : touchBtns(game))) { const on = held.has(B.code); ctx.globalAlpha = Math.min(1, TA * (on ? 0.75 : 0.42)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.fill();
+    for (const B of touchBtns(game)) { const on = held.has(B.code); ctx.globalAlpha = Math.min(1, TA * (on ? 0.75 : 0.42)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.fill();
       ctx.globalAlpha = Math.min(1, TA * (on ? 1 : 0.7)); ctx.strokeStyle = B.color; ctx.lineWidth = on ? 2.5 : 1.5; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.stroke();
       ctx.globalAlpha = Math.min(1, TA * (0.9)); hudText(ctx, B.label, B.x, B.y - (B.r > 20 ? 6 : 4), B.color, 'center', B.r > 20 ? 11 : 8); }
     const p = game.player; if (p && p.skillCooldown > 0 && p.skillCdMax) { const k = Math.min(1, p.skillCooldown / p.skillCdMax), B = TOUCH_BTNS[2]; ctx.globalAlpha = Math.min(1, TA * (0.55)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.arc(B.x, B.y, B.r, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.closePath(); ctx.fill(); } // 스킬 쿨타임
@@ -175,10 +176,23 @@ function touchPrompt(game, input, U) { // 휴대폰 자판으로 코드 입력 (
   if (s == null) return; o.code = ''; input.pasted += String(s).toUpperCase().replace(room ? /[^A-Z]/g : /[^A-Z0-9]/g, '').slice(0, room ? 4 : 16);
 }
 function touchHasTreasure(game) { const p = game && game.player; return !!(p && p.treasure); } // 보구는 얻기 전까지 버튼 숨김
-function touchBtns(game) { return touchHasTreasure(game) ? TOUCH_BTNS : TOUCH_BTNS.filter((b) => b.id !== 'treasure'); }
+// 버튼끼리 겹치지 않게: 겹치면 가장 가까운 빈자리로 (보구 버튼이 나중에 생겨도 다른 버튼과 충돌 X)
+function touchOverlaps(x, y, r, others) { return others.some((o) => Math.hypot(x - o.x, y - o.y) < r + o.r + 3); }
+function touchFreeSpot(B, others) {
+  const inb = (x, y) => x >= B.r && x <= VIEW_W - B.r && y >= B.r + 56 && y <= VIEW_H - B.r;
+  if (inb(B.x, B.y) && !touchOverlaps(B.x, B.y, B.r, others)) return { x: B.x, y: B.y };
+  for (let d = 4; d < 400; d += 4) for (let k = 0; k < 24; k++) { const a = k / 24 * TAU, x = Math.round(B.x + Math.cos(a) * d), y = Math.round(B.y + Math.sin(a) * d); if (inb(x, y) && !touchOverlaps(x, y, B.r, others)) return { x, y }; }
+  return { x: B.x, y: B.y };
+}
+let _touchTrCache = { key: '', B: null };
+function touchTreasureBtn() { // 보구 버튼 자리: 저장된 자리 → 다른 버튼과 겹치면 근처 빈자리
+  const T = TOUCH_BTNS.find((b) => b.id === 'treasure'), others = [...TOUCH_BTNS.filter((b) => b.id !== 'treasure'), TOUCH_STICK], key = [T, ...others].map((b) => b.x + ',' + b.y + ',' + b.r).join('|');
+  if (_touchTrCache.key !== key) { const f = touchFreeSpot(T, others); _touchTrCache = { key, B: Object.assign({}, T, f) }; } return _touchTrCache.B;
+}
+function touchBtns(game) { const L = TOUCH_BTNS.filter((b) => b.id !== 'treasure'); if (touchHasTreasure(game)) L.splice(3, 0, touchTreasureBtn()); return L; }
 function touchGuide(game) { return touchHasTreasure(game) ? TOUCH_GUIDE : TOUCH_GUIDE.filter(([id]) => id !== 'treasure'); }
 function drawTouchGuideLabels(ctx, game) {
-  touchGuide(game).forEach(([id], i) => { const B = id === 'stick' ? TOUCH_STICK : TOUCH_BTNS.find((b) => b.id === id); if (!B) return;
+  touchGuide(game).forEach(([id], i) => { const B = id === 'stick' ? TOUCH_STICK : touchBtns(game).find((b) => b.id === id); if (!B) return;
     const bx = Math.round(B.x - B.r * 0.75), by = Math.round(B.y - B.r * 0.75); ctx.globalAlpha = 1; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(bx, by, 6, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), bx, by - 4, '#1a1206', 'center', 8); });
   const G = touchGuide(game), x0 = 140, y0 = 62, w = 196, h = 16 + G.length * 13; ctx.globalAlpha = 0.9; ctx.fillStyle = '#120e1c'; ctx.fillRect(x0, y0, w, h); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
   ctx.globalAlpha = 1; G.forEach(([, text], i) => { const y = y0 + 8 + i * 13; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(x0 + 12, y + 4, 5, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), x0 + 12, y, '#1a1206', 'center', 7); hudText(ctx, text, x0 + 22, y, '#ffe9a0', 'left', 7, w - 28); });
