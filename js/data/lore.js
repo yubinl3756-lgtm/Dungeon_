@@ -690,7 +690,7 @@ const EXPLORER_TALK = [
 // 마을의 미기록자 (심층 60에서 만난 뒤) — 말을 걸면 한마디 [임시 대사: 사용자가 정해 주면 교체]
 const UNRECORDED_TOWN_LINES = ['…또 왔네. 내 얼굴, 이번엔 기억나?', '개척자 녀석, 잔소리 많지?', '일그러짐은 아직 늘리는 중이야. 방해만 하지 마.'];
 // 미기록자의 부탁 '틈을 넓혀라' [사용자 결정: 글리치 씨앗 3개를 심층 보스 자리에 — 태고룡의 둥지(40)·개척자의 마을(50) 제외] → 완료하면 미기록자 스킨 + 글리치 조각
-const UNRECORDED_SEED = { need: 3, banned: [40, 50] };
+const UNRECORDED_SEED = { need: 3, banned: [40, 50], time: 18, decay: 6, radius: 46, every: 2.2, per: 2, maxAlive: 9, elite: 0.25, pool: ['enemy_brokenshade_001', 'enemy_noisewisp_001', 'enemy_damagedknight_001', 'enemy_errorturret_001'] }; // [사용자 결정: 어렵게] 심는 데 18초(원 밖이면 6초에 걸쳐 줄어듦), 그동안 오염된 적이 2.2초마다 2마리(정예 25%)
 const UNRECORDED_QUEST_LINES = [
   '「…또 왔네. 이번엔 부탁 하나 하려고.」',
   '「던전 곳곳의 일그러짐, 내가 만든 거라고 했지? 근데 혼자서는 손이 모자라.」',

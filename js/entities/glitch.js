@@ -127,6 +127,13 @@ Object.assign(AI_BEHAVIORS, {
 // 매 프레임: 오염된 적의 순간이동
 function glitchTick(game, dt) {
   if (!game.W || game.mode !== 'dungeon') return;
+  for (const sp of game.props) if (sp instanceof GlitchSeedSpot && sp.planting && !sp.done) { // 씨앗 심기: 원 안에서 버티는 동안 오염된 적이 몰려옴
+    const S = UNRECORDED_SEED, pl = game.player, inside = pl.state !== 'DEAD' && Math.hypot((pl.x - sp.x) / S.radius, (pl.y - sp.y) / (S.radius * 0.55)) <= 1;
+    sp.prog = inside ? Math.min(1, sp.prog + dt / S.time) : Math.max(0, sp.prog - dt / S.decay);
+    sp.spawned = sp.spawned.filter((e) => e.alive); sp.spawnT -= dt;
+    if (sp.spawnT <= 0 && sp.spawned.length < S.maxAlive) { sp.spawnT = S.every; const room = game.map.roomOf('boss') || game.map.rooms.find((r) => r.type === 'combat');
+      for (let i = 0; i < S.per; i++) { const pt = room ? game.findSpawnPoint(room, 60) : { x: sp.x + 80, y: sp.y }, e = game.spawnEnemy(pick(S.pool), pt.x, pt.y, room); e.glitchy = true; if (Math.random() < S.elite) e.makeElite(BALANCE.elite); sp.spawned.push(e); game.effects.burst(pt.x, pt.y, '#ff3af0', 8); } }
+    if (sp.prog >= 1) { sp.planting = false; for (const e of sp.spawned) if (e.alive) { e.alive = false; e.hp = 0; e.setState('DEAD'); e.rewardGiven = true; game.effects.burst(e.x, e.y, '#48eaff', 8); } game.plantGlitchSeed(sp); } }
   const p = game.player; // 글리치 조각: 가까이 가면 체력·에너지 +50
   if (p && p.state !== 'DEAD') for (const o of game.props) if (o instanceof GlitchShard && !o.taken && Math.hypot(o.x - p.x, o.y - p.y) < 22) { o.taken = true;
     const h = Math.min(50, p.maxHp - p.hp), en = Math.min(50, p.maxEnergy - p.energy); p.hp = Math.min(p.maxHp, p.hp + 50); p.energy = Math.min(p.maxEnergy, p.energy + 50);
@@ -149,12 +156,17 @@ function drawMirrorDouble(ctx, e) {
 // 글리치 씨앗 심을 자리 (미기록자의 부탁 · 심층 보스를 쓰러뜨린 방)
 class GlitchSeedSpot {
   constructor(x, y, depth) { this.x = x; this.y = y; this.depth = depth; this.radius = 22; this.done = false; this.t = 0; }
-  label(game) { return this.done ? null : `[E] 글리치 씨앗 심기 (${((game.save.unrec || {}).planted || []).length}/${UNRECORDED_SEED.need})`; }
+  label(game) { return this.done ? null : this.planting ? `씨앗을 심는 중… ${Math.floor(this.prog * 100)}% — 원 안에서 버티기` : `[E] 글리치 씨앗 심기 (${((game.save.unrec || {}).planted || []).length}/${UNRECORDED_SEED.need}) — 심는 동안 오염된 적이 몰려옴`; }
   get labelColor() { return '#48eaff'; }
-  interact(game) { game.plantGlitchSeed(this); }
+  interact(game) { if (this.done || this.planting) return; this.planting = true; this.prog = 0; this.spawnT = 0.8; this.spawned = []; game.addShake(0.2, 3); SFX.play('gate', 0.5);
+    game.showBanner('글리치 씨앗 심기', `${UNRECORDED_SEED.time}초 동안 원 안에서 버티세요 — 벗어나면 진행도가 줄어듭니다`, '#48eaff'); }
   render(ctx, game) {
     const x = Math.round(this.x), y = Math.round(this.y), t = (this.t += 1 / 60);
     if (this.done) { glitchNoise(ctx, x - 8, y - 6, 16, 8, 8, t, 0.7); return; }
+    if (this.planting) { const R = UNRECORDED_SEED.radius; ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#48eaff'; ctx.beginPath(); ctx.ellipse(x, y, R, R * 0.55, 0, 0, TAU); ctx.fill();
+      ctx.globalAlpha = 0.9; ctx.strokeStyle = '#48eaff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y, R, R * 0.55, 0, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = '#ff3af0'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y - 22, 9, -Math.PI / 2, -Math.PI / 2 + TAU * this.prog); ctx.stroke(); ctx.restore(); ctx.lineWidth = 1;
+      glitchNoise(ctx, x - R, y - R * 0.55, R * 2, R * 1.1, 14, t, 0.6); }
     ctx.save(); ctx.globalAlpha = 0.35 + 0.2 * Math.sin(t * 3); ctx.strokeStyle = '#48eaff'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y, 14, 6, 0, 0, TAU); ctx.stroke(); ctx.restore();
     ctx.fillStyle = '#48eaff'; ctx.fillRect(x - 1, y - 8 - Math.round(Math.sin(t * 2) * 2), 3, 3); ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y - 7 - Math.round(Math.sin(t * 2) * 2), 1, 1);
   }
