@@ -1104,14 +1104,14 @@ class BloodStorm {
     if (!this.fired) { // 폭발: 한 번 크게 후려치고 회오리 돌입 (이후 시전자는 자유 이동 — 폭풍이 따라다님)
       this.fired = true; this.next = 0; p.castLock = 0;
       for (const e of world.enemies) if (e.targetable && Math.hypot(e.x - p.x, e.y - p.y) < this.r + e.radius)
-        world.damageEnemy(e, { damage: world.skillDmg(this.bigDmg), mods: p.mods, knockback: this.kb, feast: this.feast }, (e.x - p.x) / 50, (e.y - p.y) / 50);
+        world.damageEnemy(e, { damage: world.skillDmg(this.bigDmg), mods: p.mods, knockback: this.kb, feast: this.feast, capHp: this.bigCapHp, execute: this.execute }, (e.x - p.x) / 50, (e.y - p.y) / 50);
       for (let i = 0; i < 60; i++) { const a = Math.random() * TAU, s = 130 + Math.random() * 280, tx = -Math.sin(a), ty = Math.cos(a);
         E.part(p.x, p.y, Math.cos(a) * s + tx * 160, (Math.sin(a) * s + ty * 115) * 0.7, { color: i % 3 ? '#3e0a14' : '#d02338', life: 0.5 + Math.random() * 0.5, size: 2 + Math.random() * 2.5, size2: 0, drag: 2, add: !(i % 3) }); }
       world.addShake(0.6, 9); world.hitStop(0.08); world.screenFlash = 0.15; world.flashColor = '80,18,34'; SFX.play('gate');
     }
     this.next -= dt;
     if (this.next <= 0) { this.next = this.tick; let hit = 0; // 회오리 지속 피해 + 흡혈 + 쿵쿵 울리는 진동
-      for (const e of world.enemies) if (e.targetable && Math.hypot(e.x - p.x, e.y - p.y) < this.r + e.radius) { world.damageEnemy(e, { damage: world.skillDmg(this.dmg), mods: p.mods, knockback: 1, feast: this.feast }, 0, 0, { quiet: true }); hit++; }
+      for (const e of world.enemies) if (e.targetable && Math.hypot(e.x - p.x, e.y - p.y) < this.r + e.radius) { world.damageEnemy(e, { damage: world.skillDmg(this.dmg), mods: p.mods, knockback: 1, feast: this.feast, capHp: this.capHp, execute: this.execute }, 0, 0, { quiet: true }); hit++; }
       if (this.lifesteal && hit) p.hp = Math.min(p.maxHp, p.hp + Math.min(4, hit * this.lifesteal));
       world.addShake(0.14, 2); if (hit) SFX.play('react', 0.1);
     }

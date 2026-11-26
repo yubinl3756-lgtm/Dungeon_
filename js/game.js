@@ -2225,7 +2225,7 @@ class Game {
         /* 주변 적을 중심으로 빨아들임 (보스 제외) */
         for (const e of this.enemies) if (e.targetable && !e.def.boss && Math.hypot(e.x - p.x, e.y - p.y) < R + 50) { const d = Math.hypot(e.x - p.x, e.y - p.y) || 1, k = Math.min(1, 100 / d); e.x += (p.x - e.x) * k * 0.7; e.y += (p.y - e.y) * k * 0.7; }
         this.effects.text(p.x, p.y - 26, '만혼 강림', '#a84674', true); SFX.play('gate', 0.5);
-        this.zones.push(new BloodStorm(p, { r: R, gather: 0.55, life: fx ? 3.8 : 3, tick: 0.3, dmg: 42, bigDmg: 200, lifesteal: 0.2, feast: true, kb: 10 }));
+        this.zones.push(new BloodStorm(p, { r: R, gather: 0.55, life: fx ? 3.8 : 3, tick: 0.3, dmg: 32, bigDmg: 150, lifesteal: 0.2, feast: true, kb: 10, capHp: 0.04, bigCapHp: 0.12, execute: 0.6 })); /* [사용자 요청] 막타용: 체력 35% 넘는 적에게는 대폭발 최대 12% · 틱당 최대 4% / 빈사 적에게는 피해 +60% */
         break; }
       case 'ancientroot': { const fx = p.jobSkillFx === 'ancientroot'; nova(fx ? 170 : 140, 170, { color: '#7adf4a', root: fx ? 4.5 : 3, kb: 0, status: { type: 'poison', chance: 1, duration: fx ? 7 : 5, dps: 36 } }); this.addShake(0.3, 5); break; } /* [숙련] 고대 결박: 범위·속박↑ */
       case 'bearform': case 'bearform2': case 'primal': { const C = { bearform: [10, 0.45, 0.45, 0], bearform2: [12, 0.4, 0.48, 16], primal: [11, 0.7, 0.52, 24] }[p.skillId]; // [밸런스 조정] 원시의 군주 공격력 증가 +95% → +80% → +70%, 변신시간 14초 → 11초 · [변신 너프] 공격력 +55/60/80% → +45/40/70% (1차 진화는 한 번 더 너프), 받는 피해 감소 55/58/62% → 45/48/52% (대신 베기 사거리 40 → 52)
@@ -2706,7 +2706,8 @@ class Game {
     if (enemy.avalonUntil > this.time) base *= 1 + (enemy.avalonVuln || 0.2);        // 아발론의 꽃밭: 받는 피해 증가
     if (src.mods && Number.isFinite(src.mods.damageMult)) base *= src.mods.damageMult; // 소울 이터 시작 기본 공격력 약화
     const wasFrozen = enemy.slow > 0; // 이 타격 '이전'의 빙결 상태 (산산조각 판정용)
-    const { amount, crit } = rollDamage(base, src.mods);
+    let { amount, crit } = rollDamage(base, src.mods);
+    if (src.capHp && enemy.hp > enemy.maxHp * (src.capAbove || 0.35)) amount = Math.min(amount, enemy.maxHp * src.capHp); // 막타용 스킬: 체력이 많은 적에게는 한 번에 최대 체력의 일부까지만
     if (!enemy.takeHit(amount)) return;
     if (src.prey) enemy.preyT = BALANCE.TRAP.prey.dur; /* 사냥터 각인 (중첩 없이 시간만 갱신) */
     if (src.shockStack && enemy.alive) this.applyShock(enemy); /* 감전 누적 */
