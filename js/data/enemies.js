@@ -1634,15 +1634,16 @@ const DATA_ENEMIES = [
     rewardGold: 1400, patterns: [
       { type: 'laser', beams: 1, spreadAng: 0, sweep: 2.2, duration: 2.4, width: 10, telegraph: 1.1, color: '#ffb030' },
       { type: 'meteor', count: 9, delay: 0.95, stagger: 0.18, radius: 30, bullets: 6, color: '#d08a30' },
-      { type: 'ringOut', rings: 2, count: 22, gap: 5, speed: 105, interval: 0.6, color: '#ffc040' },
+      { type: 'wingGust', name: '날개 충격파', telegraph: 1.1, duration: 2.6, push: 48, interval: 0.75, gap: 56, speed: 105, dmgMult: 0.8, color: '#ffe9a0' },
       { type: 'aimed', volleys: 4, count: 9, spread: 0.13, color: '#ffd08a' }],
     phase2Patterns: [{ type: 'wall', waves: 3, gap: 3, speed: 120, interval: 0.8, color: '#ffd08a' },
+      { type: 'roar', name: '용의 포효', telegraph: 1.6, mult: 1.6, color: '#ff9a4a' },
       { type: 'laser', beams: 2, spreadAng: 0.7, sweep: 1.6, duration: 2.6, width: 10, telegraph: 1.1, color: '#ff8a30' },
-      { type: 'ringOut', rings: 3, count: 28, gap: 5, speed: 115, interval: 0.5, color: '#ffb030' },
       { type: 'summon', enemyId: 'enemy_bonedrake_001', count: 2 }],
     finalPatterns: [
       { type: 'laser', name: '태초의 숨결', beams: 3, spreadAng: 0.55, sweep: 1.8, duration: 3.2, width: 11, telegraph: 1.3, color: '#ffd060' },
-      { type: 'meteor', name: '하늘이 무너지는 날', count: 18, delay: 1.0, stagger: 0.12, radius: 32, bullets: 7, color: '#ff8a30' }] },
+      { type: 'meteor', name: '하늘이 무너지는 날', count: 18, delay: 1.0, stagger: 0.12, radius: 32, bullets: 7, color: '#ff8a30' },
+      { type: 'coreBurst', name: '태초의 핵', noFinale: true, telegraph: 0.3, charge: 2.4, safe: 64, mult: 2.0, bullets: 30, color: '#ffd060' }] },
   // ── 심층 40: 태고룡의 둥지 — 태고룡이 부르는 용골 망령 (잡몹방은 없음)
   { id: 'enemy_eldwyvern_001', name: '태고의 비룡', sprite: 'eldwyvern', color: '#6a5a4a', aiType: 'ranged_kite', traits: ['afterimage'],
     health: 330, damage: 31, moveSpeed: 66, hitboxHalf: 8, preferredRange: 200, attackRange: 380, telegraphTime: 0.6, attackCooldown: 1.85, recoveryTime: 0.36,

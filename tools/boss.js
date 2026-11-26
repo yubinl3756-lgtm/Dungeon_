@@ -1,6 +1,6 @@
 // 보스전 측정: 보스별 처치 시간, 사망률, 패턴별 받은 피해
 // 해당 월드 진행도에 맞는 무기 2개와 버프를 들고 보스방에서 시작
-// 사용: node tools/boss.js [보스당 횟수=8]
+// 사용: node tools/boss.js [보스당 횟수=8]   · HEROES=all: 모든 직업 · FROM_W/DEEP: 측정할 월드 범위 (예: 태고룡 = FROM_W=49 DEEP=40)
 const { chromium } = require('playwright');
 const path = require('path');
 const RUNS = +(process.argv[2] || 8);
@@ -14,7 +14,8 @@ const RUNS = +(process.argv[2] || 8);
   await pg.addScriptTag({ path: path.resolve(__dirname, 'bot.js') });
   if (process.env.FROM_W) await pg.evaluate((w) => { window.__fromW = w; }, process.env.FROM_W);
   if (process.env.DEEP) await pg.evaluate((d) => { window.__deep = d; }, process.env.DEEP);
-  if (process.env.POWER) await pg.evaluate(() => { window.__power = true; }); // 심층 필드 수만큼 추가 측정
+  if (process.env.POWER) await pg.evaluate(() => { window.__power = true; });
+  if (process.env.HEROES === 'all') await pg.evaluate(() => { window.__allHeroes = true; }); // 직업 전체를 번갈아 (기본: 앞 4직업) // 심층 필드 수만큼 추가 측정
   const out = await pg.evaluate(async (RUNS) => {
     const g = window.__game; g.render = () => {};
     // 피해 출처 추적
@@ -35,7 +36,7 @@ const RUNS = +(process.argv[2] || 8);
     const LOAD = [[['uncommon'], ['uncommon', 'rare']], [['rare'], ['rare', 'epic']], [['rare', 'epic'], ['epic']], [['epic'], ['epic']]];
     const res = [];
     for (let w = +(window.__fromW || 0); w < DATA_WORLDS.length + (+window.__deep || 0); w++) for (let run = 0; run < RUNS; run++) {
-      g.save.unlocked = DATA_HEROES.map((h) => h.id); g.save.selected = DATA_HEROES[run % 4].id; g.save.loadout = null;
+      g.save.unlocked = DATA_HEROES.map((h) => h.id); g.save.selected = DATA_HEROES[run % (window.__allHeroes ? DATA_HEROES.length : 4)].id; g.save.loadout = null;
       g.startRun(); g.worldIdx = w; g.levelIdx = STAGES_PER_WORLD - 1; g.loadStage(); g.banner = null;
       const p = g.player;
       p.weapons = LOAD[Math.min(w, LOAD.length - 1)].map((r) => new WeaponInstance(pickW(r))); p.slot = 0;
@@ -69,7 +70,7 @@ const RUNS = +(process.argv[2] || 8);
     return res;
   }, RUNS);
   const to = await pg.evaluate(() => window.__timeouts || []); if (to.length) console.log('TIMEOUTS', JSON.stringify(to));
-  for (let w = 0; w < 32; w++) {
+  for (let w = 0; w < 200; w++) { // (심층 포함)
     const r = out.filter((x) => x.world === w); if (!r.length) continue;
     const won = r.filter((x) => x.won), died = r.filter((x) => x.died);
     const led = {}; let tot = 0;
@@ -77,6 +78,11 @@ const RUNS = +(process.argv[2] || 8);
     const avg = (a, f) => (a.length ? (a.reduce((s, x) => s + f(x), 0) / a.length).toFixed(1) : '-');
     console.log(`\n[${r[0].boss}] 승리 ${won.length}/${r.length}  사망 ${died.length}  처치시간(승리) ${avg(won, (x) => x.time)}초  2페이즈 진입 ${avg(r.filter((x) => x.enrageAt), (x) => x.enrageAt)}초  패배 시 남은 보스체력 ${avg(died, (x) => x.bossHpLeft * 100)}%`);
     console.log('  받은 피해 비중: ' + Object.entries(led).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(v / tot * 100).toFixed(0)}%`).join(' · ') + `  (판당 ${(tot / r.length).toFixed(0)})`);
+  }
+  if (process.env.HEROES === 'all') { // 직업별: 승률 · 처치 시간 · 패배 시 남은 보스 체력
+    const H = {}; for (const x of out) (H[x.hero] = H[x.hero] || []).push(x);
+    console.log('\n직업별:'); for (const [h, r] of Object.entries(H)) { const won = r.filter((x) => x.won), lost = r.filter((x) => !x.won);
+      console.log(`  ${h.padEnd(8)} 승리 ${won.length}/${r.length}  처치 ${won.length ? (won.reduce((s, x) => s + x.time, 0) / won.length).toFixed(0) + '초' : '-'}  패배 시 보스 체력 ${lost.length ? Math.round(lost.reduce((s, x) => s + x.bossHpLeft, 0) / lost.length * 100) + '%' : '-'}`); }
   }
   if (errs.length) console.log('ERR', errs.slice(0, 3));
   await b.close();

@@ -316,7 +316,8 @@ class Enemy extends Entity {
     return null;
   }
   renderTelegraph(ctx) {
-    if (this.swoopWarn && typeof drawPrimordialWarn === 'function') drawPrimordialWarn(ctx, this); // 태고룡 급강하 예고
+    if (this.swoopWarn && typeof drawPrimordialWarn === 'function') drawPrimordialWarn(ctx, this);
+    if (this.primWarn && typeof drawPrimordialWarn2 === 'function') drawPrimordialWarn2(ctx, this); // 태고룡 신규 패턴 예고 // 태고룡 급강하 예고
     const x = Math.round(this.x), y = Math.round(this.y), def = this.def;
     if (this.shockStacks > 0 && this.state !== 'DEAD' && Math.random() < 0.25 * this.shockStacks) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = this.shockStacks >= 2 ? '#bfe8ff' : '#7ac8ff'; ctx.lineWidth = 1; /* 감전 1·2중첩: 푸른 스파크 (2중첩은 더 자주·불규칙한 전류) */
       const r = this.radius + 2, a = Math.random() * TAU; ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * r, y - 4 + Math.sin(a) * r); ctx.lineTo(x + Math.cos(a + 0.4) * (r + 3), y - 4 + Math.sin(a + 0.4) * (r + 3)); if (this.shockStacks >= 2) ctx.lineTo(x + Math.cos(a + 0.9) * r, y - 4 + Math.sin(a + 0.9) * r); ctx.stroke(); ctx.restore(); }

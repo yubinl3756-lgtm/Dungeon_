@@ -50,8 +50,8 @@ function headProc(P, open) { // 머리: 앞을 내려다보는 각도 · 큰 뿔
   else { P.line(19, 35, 33, 35, 'd'); P.rect(19, 36, 14, 3, 's'); for (let x = 20; x <= 32; x += 4) P.px(x, 35, 'w'); }
 }
 
-// 그리기: 머리(판정 위치 = e.x, e.y)를 기준으로 목 → 몸통 → 날개 → 꼬리를 위쪽(상공)으로 배치
-function drawPrimordial(ctx, e) {
+// (예비) 도형으로 그린 예전 모습 — 부품 시트를 아직 못 불러왔을 때만 씀
+function drawPrimordialProc(ctx, e) {
   const S = 1.5, t = performance.now() / 1000, hx = Math.round(e.x), hy = Math.round(e.y - (e.jumpH || 0));
   const want = e.perched || (e.swooping && e.pd && e.pd.phase !== 'aim') ? 1 : 0; e._fold = (e._fold || 0) + (want - (e._fold || 0)) * 0.12; const fold = e._fold;
   const flash = e.hurtFlash > 0, dead = e.state === 'DEAD', breath = !!e.laser || (e.pat && e.pat.type === 'laser' && (e.state === 'TELEGRAPH' || e.state === 'ATTACK'));
@@ -102,3 +102,120 @@ PIX.boss_primordial = { tint: '#3a3028', w: 32, h: 32, pal: { y: '#ffc040', e: '
   P.ell(11, 16, 2, 2, 'y'); P.ell(21, 16, 2, 2, 'y'); P.px(11, 16, 'e'); P.px(21, 16, 'e'); P.rect(10, 26, 12, 2, 'd');
   for (const x of [11, 14, 18, 21]) P.tri(x, 26, x + 1, 30, x + 2, 26, 'h'); P.ell(16, 10, 3, 2, 'c'); P.px(16, 20, 'y');
 } };
+
+// ════════════════════════════════════════════
+// 태고룡 외형 리메이크 [사용자 제공 부품 시트: assets/primordial_parts.png]
+//  윗줄 = 1·2페이즈 (봉인된 태고룡) · 아랫줄 = 3페이즈 (태초의 재앙, 각성)
+//  2페이즈: 날개 손상(찢긴 구멍) · 핵 과충전: 레이저 충전·핵 폭발 동안 심핵이 부풀어 오름
+// ════════════════════════════════════════════
+const PRIM_SHEET = { src: 'assets/primordial_parts.png',
+  p1: { wingL: [19, 16, 87, 84], wingR: [112, 16, 85, 83], body: [210, 7, 78, 86], head: [296, 29, 58, 49], headOpen: [356, 30, 48, 48], tail: [411, 26, 23, 67] },
+  p3: { wingL: [20, 116, 88, 97], wingR: [113, 116, 86, 97], body: [204, 114, 88, 92], head: [293, 128, 50, 72], headOpen: [355, 127, 47, 73], tail: [408, 121, 30, 85], spark: [445, 146, 29, 31], spark2: [478, 156, 11, 10] } };
+let _primImg = null, _primReady = false; const _primCache = {};
+function primLoad() { if (_primImg) return; _primImg = new Image(); _primImg.onload = () => { _primReady = true; }; _primImg.src = PRIM_SHEET.src; }
+function primPart(set, name, mode = 'n') { // 부품 캔버스 (n: 그대로 · w: 흰 실루엣(피격) · dmg: 찢긴 날개)
+  const key = set + name + mode; if (_primCache[key]) return _primCache[key];
+  const [sx, sy, w, h] = PRIM_SHEET[set][name], c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+  g.drawImage(_primImg, sx, sy, w, h, 0, 0, w, h);
+  if (mode === 'w') { g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h); }
+  if (mode === 'dmg') { // 날개막에 찢긴 구멍 몇 개 + 그 가장자리 금빛 (날개 뼈 쪽은 피함)
+    const holes = name === 'wingL' ? [[0.22, 0.62, 7], [0.4, 0.78, 6], [0.12, 0.42, 5], [0.55, 0.66, 4]] : [[0.78, 0.62, 7], [0.6, 0.78, 6], [0.88, 0.42, 5], [0.45, 0.66, 4]];
+    for (const [fx, fy, r] of holes) { const x = fx * w, y = fy * h; g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.moveTo(x - r, y - r * 0.4); g.lineTo(x + r * 0.3, y - r); g.lineTo(x + r, y + r * 0.2); g.lineTo(x - r * 0.2, y + r); g.closePath(); g.fill();
+      g.globalCompositeOperation = 'source-atop'; g.strokeStyle = '#ffb030'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - r - 1, y - r * 0.4); g.lineTo(x + r * 0.3, y - r - 1); g.lineTo(x + r + 1, y + r * 0.2); g.stroke(); }
+    g.globalCompositeOperation = 'source-over'; }
+  return (_primCache[key] = c);
+}
+function drawPrimordial(ctx, e) {
+  primLoad(); if (!_primReady) { drawPrimordialProc(ctx, e); return; }
+  const t = performance.now() / 1000, ph = e.phase || 1, P3 = ph >= 3, set = P3 ? 'p3' : 'p1', K = 1.28, hx = Math.round(e.x), hy = Math.round(e.y - (e.jumpH || 0));
+  const flash = e.hurtFlash > 0, dead = e.state === 'DEAD', pt = e.pat && e.pat.type, act = e.state === 'TELEGRAPH' || e.state === 'ATTACK';
+  const charging = pt === 'laser' && e.state === 'TELEGRAPH', breath = !!e.laser || (pt === 'laser' && e.state === 'ATTACK') || (e.roaring && !dead);
+  const core = Math.min(1.6, (e.coreCharge || 0) * 1.2 + (charging ? 0.5 : 0) + (P3 ? 0.35 : 0)); // 핵 과충전
+  const part = (n, mode) => primPart(set, n, flash ? 'w' : mode || 'n'), PS = PRIM_SHEET[set];
+  const bx = hx + Math.sin(t * 0.9) * 3, by = hy - 66, gust = e.pd && pt === 'wingGust' && e.pd.phase === 'blow';
+  const flap = 0.5 + 0.5 * Math.sin(t * (gust ? 9 : act ? 3.4 : 2.2));
+  ctx.save(); ctx.imageSmoothingEnabled = false; if (dead) ctx.globalAlpha = Math.max(0, 1 - e.stateTime * 0.8);
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(hx, hy + 44, 120, 18, 0, 0, TAU); ctx.fill(); // 아레나 바닥 그림자
+  { const T = part('tail'), [, , tw, th] = PS.tail; ctx.save(); ctx.translate(bx, by - PS.body[3] * K * 0.38); ctx.rotate(Math.sin(t * 0.7) * 0.12); // 꼬리: 몸통 뒤에서 위로 뻗어 흔들림
+    ctx.drawImage(T, Math.round(-tw * K / 2), Math.round(-th * K + 6), Math.round(tw * K), Math.round(th * K)); ctx.restore(); }
+  for (const side of [-1, 1]) { // 날개: 어깨를 축으로 위아래로 펄럭임 (2페이즈는 찢긴 날개)
+    const n = side < 0 ? 'wingL' : 'wingR', W = part(n, ph === 2 ? 'dmg' : 'n'), [, , ww, wh] = PS[n], sy = 0.76 + 0.24 * flap + (gust ? 0.08 : 0);
+    ctx.save(); ctx.translate(bx + side * 16 * K, by - 22 * K); ctx.scale(1, sy); ctx.drawImage(W, side < 0 ? -ww * K : 0, -wh * K * 0.28, ww * K, wh * K); ctx.restore(); }
+  { const B = part('body'), [, , bw, bh] = PS.body; ctx.drawImage(B, Math.round(bx - bw * K / 2), Math.round(by - bh * K / 2), Math.round(bw * K), Math.round(bh * K)); }
+  if (!dead) { const cy = by - PS.body[3] * K * 0.04, R = 14 + core * 22 + Math.sin(t * (4 + core * 8)) * 3; // 심핵 빛 (과충전일수록 크고 빠르게 고동)
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.35 + 0.25 * Math.min(1, core); const cg = ctx.createRadialGradient(bx, cy, 0, bx, cy, R * 2);
+    cg.addColorStop(0, '#fff4c0'); cg.addColorStop(0.35, '#ffc040'); cg.addColorStop(1, 'rgba(255,120,30,0)'); ctx.fillStyle = cg; ctx.fillRect(bx - R * 2, cy - R * 2, R * 4, R * 4);
+    if (core > 0.8) { ctx.globalAlpha = (core - 0.8) * 0.6; for (let i = 0; i < 8; i++) { const a = i * TAU / 8 + t * 2; ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx + Math.cos(a) * R * 0.6, cy + Math.sin(a) * R * 0.6); ctx.lineTo(bx + Math.cos(a) * R * 1.8, cy + Math.sin(a) * R * 1.8); ctx.stroke(); } }
+    ctx.restore(); ctx.lineWidth = 1; }
+  { const hn = breath ? 'headOpen' : 'head', H = part(hn), [, , w, h] = PS[hn], ay = P3 ? 0.36 : 0.45; ctx.drawImage(H, Math.round(hx - w * K / 2), Math.round(hy - h * K * ay), Math.round(w * K), Math.round(h * K));
+    if (!dead) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.45 + 0.3 * Math.sin(t * 5); ctx.fillStyle = P3 ? '#ffe060' : '#ffb030';
+      for (const ex of [-9, 9]) { ctx.beginPath(); ctx.arc(hx + ex, hy - 6, 3.5, 0, TAU); ctx.fill(); } // 눈빛
+      if (charging) { const k = Math.min(1, e.stateTime / 1.1); ctx.globalAlpha = 0.8; ctx.strokeStyle = '#ffe9a0'; // 레이저 충전: 빛이 입으로 빨려 들어감
+        for (let i = 0; i < 10; i++) { const a = i * TAU / 10 + t * 3, r0 = 60 - ((t * 90 + i * 13) % 50); ctx.beginPath(); ctx.moveTo(hx + Math.cos(a) * r0, hy + 14 + Math.sin(a) * r0); ctx.lineTo(hx + Math.cos(a) * (r0 - 8), hy + 14 + Math.sin(a) * (r0 - 8)); ctx.stroke(); }
+        const mg = ctx.createRadialGradient(hx, hy + 14, 0, hx, hy + 14, 8 + k * 14); mg.addColorStop(0, '#ffffff'); mg.addColorStop(1, 'rgba(255,170,40,0)'); ctx.fillStyle = mg; ctx.fillRect(hx - 24, hy - 10, 48, 48); }
+      if (breath) { ctx.globalAlpha = 0.65 + 0.3 * Math.sin(t * 20); const mg = ctx.createRadialGradient(hx, hy + 16, 0, hx, hy + 16, 20); mg.addColorStop(0, '#fff4c0'); mg.addColorStop(1, 'rgba(255,90,26,0)'); ctx.fillStyle = mg; ctx.fillRect(hx - 20, hy - 4, 40, 40); }
+      ctx.restore(); } }
+  if (P3 && !dead) { const S1 = primPart('p3', 'spark'), S2 = primPart('p3', 'spark2'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; // 각성: 날개 끝·몸 주위로 피어오르는 불티
+    for (let i = 0; i < 9; i++) { const f = (t * 0.45 + i / 9) % 1, side = i % 2 ? 1 : -1, x = bx + side * (30 + (i * 37) % 110), y = by + 20 - f * 120; ctx.globalAlpha = (1 - f) * 0.8; const S = i % 3 ? S2 : S1, sc = i % 3 ? 1 : 0.6; ctx.drawImage(S, Math.round(x - S.width * sc / 2), Math.round(y - S.height * sc / 2), Math.round(S.width * sc), Math.round(S.height * sc)); }
+    ctx.restore(); }
+  ctx.restore();
+}
+
+// ── 신규 패턴 예고 (renderTelegraph에서): 날개 충격파 · 용의 포효 · 태초의 핵
+function drawPrimordialWarn2(ctx, e) {
+  const W = e.primWarn, r = e.room; if (!W || !r) return; const t = performance.now() / 1000, x0 = r.x0 * TILE, y0 = r.y0 * TILE, w = r.w * TILE, h = r.h * TILE;
+  ctx.save();
+  if (W.type === 'gust' || W.type === 'gustOn') { // 아래로 부는 바람: 흐르는 화살표 줄
+    ctx.globalAlpha = W.type === 'gust' ? 0.15 + 0.35 * W.k : 0.35; ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 1;
+    for (let i = 0; i < 16; i++) { const x = x0 + 20 + (i * (w - 40)) / 15, yy = y0 + 40 + ((t * (W.type === 'gustOn' ? 160 : 50) + i * 37) % (h - 50));
+      ctx.beginPath(); ctx.moveTo(x, yy - 10); ctx.lineTo(x, yy + 6); ctx.lineTo(x - 3, yy + 2); ctx.moveTo(x, yy + 6); ctx.lineTo(x + 3, yy + 2); ctx.stroke(); }
+    if (W.type === 'gust') hudText(ctx, '바람이 몰아친다 — 탄막의 빈틈으로', x0 + w / 2, y0 + h - 30, '#ffe9a0', 'center', 8);
+  } else if (W.type === 'roar') { // 포효: 머리에서 퍼지는 음파 + 엄폐 안내 + 기둥 뒤 안전한 그림자
+    const hx = e.x, hy = e.y + 10, M = (typeof game !== 'undefined') && game.map; ctx.globalAlpha = 0.22 + 0.3 * W.k; ctx.fillStyle = '#7affa0';
+    if (M) for (let ty = r.y0; ty < r.y0 + r.h; ty++) for (let tx = r.x0; tx < r.x0 + r.w; tx++) { if (M.get(tx, ty) !== T_COVER) continue;
+      const cs = [[tx, ty], [tx + 1, ty], [tx + 1, ty + 1], [tx, ty + 1]].map(([a, b2]) => [a * TILE, b2 * TILE]), far = cs.map(([px, py]) => { const dx = px - hx, dy = py - hy, L = Math.hypot(dx, dy) || 1; return [px + dx / L * 220, py + dy / L * 220]; });
+      ctx.beginPath(); ctx.moveTo(cs[0][0], cs[0][1]); for (const q of [...cs, ...far.reverse()]) ctx.lineTo(q[0], q[1]); ctx.closePath(); ctx.fill(); }
+    for (let i = 0; i < 4; i++) { const k = ((t * 1.6 + i / 4) % 1); ctx.globalAlpha = (1 - k) * (0.25 + 0.5 * W.k); ctx.strokeStyle = '#ff9a4a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(e.x, e.y + 10, 30 + k * 260, (30 + k * 260) * 0.55, 0, 0, TAU); ctx.stroke(); }
+    ctx.globalAlpha = 0.9; hudText(ctx, '포효가 온다 — 기둥 뒤로 숨어라!', x0 + w / 2, y0 + h - 30, '#ffb07a', 'center', 9);
+  } else if (W.type === 'core') { // 핵 폭발: 안전지대(용의 바로 아래)만 빼고 아레나 전체가 붉게
+    ctx.globalAlpha = 0.08 + 0.3 * W.k * (0.7 + 0.3 * Math.sin(t * (6 + W.k * 14))); ctx.fillStyle = '#ff5a2a'; ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.ellipse(W.x, W.y, W.r, W.r * 0.6, 0, 0, TAU, true); ctx.fill('evenodd');
+    ctx.globalAlpha = 0.9; ctx.strokeStyle = '#9fe89f'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(W.x, W.y, W.r, W.r * 0.6, 0, 0, TAU); ctx.stroke();
+    hudText(ctx, `태초의 핵 과충전 ${Math.floor(W.k * 100)}% — 용의 바로 아래로!`, x0 + w / 2, y0 + h - 30, '#ffd060', 'center', 9);
+  }
+  ctx.restore(); ctx.lineWidth = 1;
+}
+// ── 페이즈별 아레나 변화: 1 황금 문양 · 2 바닥 균열(금빛) · 3 균열이 붉게 타오르고 전장 색이 핵의 빛으로 물듦
+function drawPrimordialArena(ctx, game) {
+  const B = game.enemies && game.enemies.find((e) => e.def.colossal && e.state !== 'DEAD'); if (!B || !B.room || !B.room.arena) return;
+  const r = B.room, ph = B.phase || 1, t = game.time, x0 = r.x0 * TILE, y0 = r.y0 * TILE, w = r.w * TILE, h = r.h * TILE, cx = x0 + w / 2, cy = y0 + h * 0.6;
+  if (!r.cracks) { let sd = r.x0 * 31 + r.y0 * 17; const rnd = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; }; r.cracks = [];
+    for (let i = 0; i < 14; i++) { const a = rnd() * TAU, pts = [[cx + Math.cos(a) * 30, cy + Math.sin(a) * 18]]; let ang = a, L = 40 + rnd() * 120;
+      for (let k = 0; k < 6; k++) { ang += (rnd() - 0.5) * 0.9; const [px, py] = pts[pts.length - 1]; pts.push([px + Math.cos(ang) * L / 6, py + Math.sin(ang) * L / 9]); } r.cracks.push(pts); } }
+  ctx.save();
+  ctx.globalAlpha = 0.12 + 0.05 * Math.sin(t * 1.5); ctx.strokeStyle = '#ffc040'; ctx.lineWidth = 1; // 황금 문양 (원 두 겹 + 방사선)
+  ctx.beginPath(); ctx.ellipse(cx, cy, 120, 52, 0, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx, cy, 80, 34, 0, 0, TAU); ctx.stroke();
+  for (let i = 0; i < 12; i++) { const a = i * TAU / 12 + t * 0.05; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 80, cy + Math.sin(a) * 34); ctx.lineTo(cx + Math.cos(a) * 120, cy + Math.sin(a) * 52); ctx.stroke(); }
+  if (ph >= 2) { const n = ph >= 3 ? r.cracks.length : 8, col = ph >= 3 ? '#ff6a2a' : '#ffb030'; // 바닥 균열
+    for (let i = 0; i < n; i++) { const C = r.cracks[i]; ctx.globalAlpha = (ph >= 3 ? 0.55 : 0.4) + 0.2 * Math.sin(t * 3 + i); ctx.strokeStyle = col; ctx.lineWidth = ph >= 3 ? 2 : 1.5;
+      ctx.beginPath(); ctx.moveTo(C[0][0], C[0][1]); for (const [px, py] of C) ctx.lineTo(px, py); ctx.stroke(); } }
+  if (ph >= 3) { ctx.globalAlpha = 0.07 + 0.04 * Math.sin(t * 2); ctx.fillStyle = '#ff7a2a'; ctx.fillRect(x0, y0, w, h); // 전장이 핵의 빛으로 물듦 + 불티
+    ctx.globalAlpha = 0.7; ctx.fillStyle = '#ffd060'; for (let i = 0; i < 18; i++) { const f = (t * 0.3 + i / 18) % 1; ctx.fillRect(Math.round(x0 + ((i * 97) % w)), Math.round(y0 + h - f * h), 1, 2); } }
+  ctx.restore(); ctx.lineWidth = 1;
+}
+// ── 유성 낙하 전용 연출: 경고 원 위로 하늘에서 불붙은 바위가 떨어짐 (태고룡전에서만)
+function drawPrimordialFX(ctx, game) {
+  const B = game.enemies && game.enemies.find((e) => e.def.colossal && e.alive); if (!B) return;
+  for (const hz of game.hazards) { if (!hz.alive || !(hz.delay > 0) || hz.t >= hz.delay) continue; const k = hz.t / hz.delay, sx = hz.x + 50 * (1 - k), sy = hz.y - 170 * (1 - k);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.25 + 0.6 * k; ctx.strokeStyle = '#ff9a3a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(sx + 26, sy - 90); ctx.lineTo(sx, sy); ctx.stroke();
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, 9); g.addColorStop(0, '#fff4c0'); g.addColorStop(1, 'rgba(255,120,30,0)'); ctx.fillStyle = g; ctx.fillRect(sx - 9, sy - 9, 18, 18); ctx.restore();
+    ctx.fillStyle = '#3a2a1a'; ctx.fillRect(Math.round(sx - 3), Math.round(sy - 3), 6, 6); ctx.fillStyle = '#ffb030'; ctx.fillRect(Math.round(sx - 1), Math.round(sy - 2), 2, 2); }
+  ctx.lineWidth = 1;
+}
+// ── 매 프레임: 유성 착탄 충격 · 페이즈가 바뀔 때 변신 연출
+function primordialTick(game, dt) {
+  const B = game.enemies && game.enemies.find((e) => e.def.colossal && e.alive); if (!B) return;
+  for (const hz of game.hazards) if (hz.alive && hz.delay > 0 && hz.t >= hz.delay && !hz._primHit) { hz._primHit = true; game.addShake(0.15, 3); game.effects.burst(hz.x, hz.y, '#ff9a3a', 12); game.effects.ring(hz.x, hz.y, (hz.r || 30) + 6, '#ffd060'); }
+  const ph = B.phase || 1; if (B._lastPh == null) B._lastPh = ph;
+  if (ph !== B._lastPh) { B._lastPh = ph; game.addShake(0.6, 8); game.effects.rays(B.x, B.y - 74, ph >= 3 ? '#ffe060' : '#ffb030', 18, 160, 1.2);
+    game.announceBossSkill(B, ph >= 3 ? '각성 — 태초의 재앙' : '찢긴 날개 — 그래도 멈추지 않는다'); if (ph >= 3) { game.screenFlash = 0.3; game.flashColor = '255,220,140'; } }
+}

@@ -189,7 +189,7 @@ const AI_BEHAVIORS = {
       if (!e.home) e.home = { x: e.x, y: e.y };
       if (!e.swooping && e.state !== 'INTRO') { const t = world.time || 0; e.x = e.home.x + Math.sin(t * 0.45) * 46; e.y = e.home.y + Math.sin(t * 1.2) * 3; } }
     if (want > phase && e.state !== 'INTRO' && !channeling) {
-      if (def.colossal) { e.swooping = false; e.perched = false; e.swoopWarn = null; if (e.home) { e.x = e.home.x; e.y = e.home.y; } } // 페이즈가 바뀌면 상공으로 돌아감
+      if (def.colossal) { e.swooping = false; e.perched = false; e.swoopWarn = null; e.primWarn = null; e.roaring = false; e.coreCharge = 0; if (e.home) { e.x = e.home.x; e.y = e.home.y; } } // 페이즈가 바뀌면 상공으로 돌아감
       if (e.ult) { e.ult = false; e.damage = e.dmg0; }
       e.riposteT = 0; e.riposteHit = false; e.slashWarn = null; e.dashWarn = null; if (!channeling) e.fortress = null;
       e.phase = want; e.jumpH = 0; e.laser = null; e.fade = 1; e.finalCd = e.ultUsed ? Math.max(e.finalCd ?? 0, 1.5) : 1.5; /* 이미 궁극기를 썼으면 페이즈가 바뀌어도 쿨타임 유지 */
@@ -1360,6 +1360,52 @@ const BOSS_PATTERNS = {
       if (d.phase === 'rest') { if (Math.random() < 0.4) world.effects.part(e.x + (Math.random() - 0.5) * 40, e.y - 6, 0, -30, { color: '#ffd08a', life: 0.6, size: 1.6, size2: 0, drag: 1, add: true });
         if (d.pt >= P.rest / Math.max(1, enr * 0.9)) { d.phase = 'rise'; d.pt = 0; e.perched = false; } }
       return false;
+    }
+  },
+  // ── 태고룡 신규 패턴 [사용자 요청: 기존 공격과 다른 회피 방식]
+  // 날개 충격파: 날갯짓 바람이 플레이어를 아래로 밀어내는 동안 빈틈 있는 탄막 줄이 내려옴 → 바람을 거슬러 빈틈으로
+  wingGust: { // (예고 = 보스의 TELEGRAPH 동안 바람이 모임)
+    begin(e) { const d = e.pd; d.rowT = 0; e.primWarn = { type: 'gust', k: 0 }; },
+    aim(e) { if (e.primWarn) e.primWarn.k = Math.min(1, e.stateTime / (e.pat.telegraph || 1)); },
+    update(e, dt, world, ctx, enr) {
+      const d = e.pd, P = e.pat, r = e.room; d.pt = (d.pt || 0) + dt;
+      if (!d.blow) { d.blow = true; world.addShake(0.35, 4); SFX.play('heavy', 0.6); }
+      e.primWarn = { type: 'gustOn', k: 1 };
+      world.eachTarget((q) => { if (q.state !== 'DEAD') moveAndCollide(q, 0, P.push * dt, world.map); });
+      if (Math.random() < 0.6 && r) world.effects.part((r.x0 + 1 + Math.random() * (r.w - 2)) * TILE, e.y + 20, 0, 160, { color: '#ffe9a0', life: 0.5, size: 1.4, size2: 0, drag: 0.5, add: true });
+      d.rowT -= dt;
+      if (d.rowT <= 0 && r) { d.rowT = P.interval / enr; const x0 = (r.x0 + 1) * TILE, x1 = (r.x0 + r.w - 1) * TILE, gap = x0 + 50 + Math.random() * (x1 - x0 - 100);
+        for (let x = x0; x <= x1; x += 13) if (Math.abs(x - gap) > P.gap) world.enemyShoot(x, e.y + 34, Math.PI / 2, P.speed, Math.round(e.damage * (P.dmgMult || 1)), P.color, 3); }
+      if (d.pt >= P.duration) { e.primWarn = null; return true; } return false;
+    }
+  },
+  // 용의 포효: 포효를 모으는 동안(TELEGRAPH) 기둥 뒤로 숨어야 함 — 머리에서 보이는 자리면 큰 피해
+  roar: {
+    begin(e) { e.roaring = true; e.primWarn = { type: 'roar', k: 0 }; },
+    aim(e) { if (e.primWarn) e.primWarn.k = Math.min(1, e.stateTime / (e.pat.telegraph || 1)); },
+    update(e, dt, world) {
+      const d = e.pd, P = e.pat; d.pt = (d.pt || 0) + dt;
+      if (!d.done) { d.done = true; e.primWarn = null; world.addShake(0.7, 9); SFX.play('heavy');
+        for (const rr of [60, 120, 190, 260]) world.effects.ring(e.x, e.y, rr, P.color);
+        world.eachTarget((q) => { if (q.state === 'DEAD') return; const seen = hasLineOfSight({ x: e.x, y: e.y + 10 }, q, world.map);
+          if (seen) { world.damagePlayer(Math.round(e.damage * P.mult)); world.effects.text(q.x, q.y - 24, '포효에 휩쓸림', '#ff8a5a'); }
+          else world.effects.text(q.x, q.y - 24, '엄폐!', '#9fe89f'); }); }
+      if (d.pt >= 0.6) { e.roaring = false; return true; } return false;
+    }
+  },
+  // 태초의 핵 (핵 폭발): 심핵이 과충전되는 동안 용의 바로 아래(안전지대)로 파고들어야 함 — 멀리 있으면 폭발에 휩쓸림
+  coreBurst: {
+    begin(e) { e.coreCharge = 0; e.primWarn = { type: 'core', k: 0, x: e.x, y: e.y + 70, r: e.pat.safe }; },
+    update(e, dt, world, ctx, enr) {
+      const d = e.pd, P = e.pat; d.pt = (d.pt || 0) + dt; const tel = P.charge / enr;
+      if (!d.done) { const k = Math.min(1, d.pt / tel); e.coreCharge = k; e.primWarn = { type: 'core', k, x: e.x, y: e.y + 70, r: P.safe };
+        if (Math.random() < 0.5) world.effects.part(e.x + (Math.random() - 0.5) * 140, e.y - 70 + (Math.random() - 0.5) * 80, 0, 0, { color: '#ffd060', life: 0.3, size: 2, size2: 0, add: true });
+        if (d.pt < tel) return false;
+        d.done = true; d.pt = 0; e.primWarn = null; e.coreCharge = 0; world.addShake(0.8, 10); SFX.play('excal');
+        world.screenFlash = 0.35; world.flashColor = '255,210,120'; world.effects.rays(e.x, e.y - 74, '#ffe9a0', 22, 220, 1.3);
+        world.eachTarget((q) => { if (q.state === 'DEAD') return; if (Math.hypot(q.x - e.x, (q.y - (e.y + 70)) / 0.6) > P.safe) { world.damagePlayer(Math.round(e.damage * P.mult)); world.effects.text(q.x, q.y - 24, '핵 폭발', '#ff8a5a'); } else world.effects.text(q.x, q.y - 24, '안전!', '#9fe89f'); });
+        for (let i = 0; i < P.bullets; i++) { const a = i * TAU / P.bullets; if (a > Math.PI * 0.3 && a < Math.PI * 0.7) continue; world.enemyShoot(e.x, e.y - 60, a, e.def.bulletSpeed * 0.8, e.damage, P.color, 3); } } // 안전지대(아래쪽)로는 탄을 쏘지 않음
+      return d.pt >= 0.5;
     }
   },
   // 격자 폭격: 방 전체에 장판, 가로·세로 한 줄씩만 안전

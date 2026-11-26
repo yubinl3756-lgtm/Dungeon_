@@ -1348,7 +1348,7 @@ class Game {
     let fx = p.x + mx * 0.2, fy = p.y + my * 0.2;
     const cs = this.cutscene, focus = cs && cs.focus ? cs.focus : this.cinematic ? this.cinematic.boss : this.slowMo ? this.slowMo : null; // 컷신·보스 등장·처치 연출 중에는 그쪽을 비춤
     if (focus) { fx = focus.x; fy = focus.y; }
-    else { const C = this.enemies.find((e) => e.alive && e.def.colossal && e.state !== 'SPAWN'); if (C && C.home && this.activeRoom && this.activeRoom.arena) fy = C.home.y + 24; } // 거대 보스 아레나: 세로는 고정(상공의 보스 가슴부터 아레나 바닥까지 한 화면), 가로만 플레이어를 따라감
+    else { const C = this.enemies.find((e) => e.alive && e.def.colossal && e.state !== 'SPAWN'); if (C && C.home && this.activeRoom && this.activeRoom.arena) fy = clamp(this.player.y - 70, C.home.y - 6, C.home.y + 40); } // 플레이어가 위쪽이면 용 전체가, 아래쪽이면 바닥까지 보이게 // 거대 보스 아레나: 세로는 고정(상공의 보스 가슴부터 아레나 바닥까지 한 화면), 가로만 플레이어를 따라감
     return {
       x: clamp(fx - VIEW_W / 2, 0, this.map.width * TILE - VIEW_W),
       y: clamp(fy - VIEW_H / 2, 0, this.map.height * TILE - VIEW_H)
@@ -1426,6 +1426,7 @@ class Game {
     if (this.coop && this.coop.host) { for (const e of this.enemies) this.withPlayer(this.nearestPlayer(e.x, e.y), () => updateEnemy(e, dt, this)); } // 적은 가장 가까운 플레이어를 노림
     else for (const e of this.enemies) updateEnemy(e, dt, this);
     if (typeof glitchTick === 'function') glitchTick(this, dt); // 오염된 적의 순간이동
+    if (typeof primordialTick === 'function') primordialTick(this, dt); // 태고룡: 유성 착탄 · 페이즈 변신 연출
     separateEnemies(this.enemies, this.map);
     for (const pr of this.projectiles) { if (this.coop && this.coop.host && pr.owner && pr.owner !== this.player) this.withPlayer(pr.owner, () => pr.update(dt, this)); else pr.update(dt, this); } // 멀티: 참가자의 탄은 그 사람 기준으로
     for (const b of this.enemyBullets) b.update(dt, this);
@@ -3194,12 +3195,12 @@ class Game {
     if (this.shake > 0) { sx = Math.round((Math.random() - 0.5) * 2 * this.shakeMag); sy = Math.round((Math.random() - 0.5) * 2 * this.shakeMag); }
     ctx.translate(-cx + sx, -cy + sy);
 
-    this.map.render(ctx, { x: cx, y: cy }); if (typeof drawGlitchRooms === 'function') drawGlitchRooms(ctx, this);
+    this.map.render(ctx, { x: cx, y: cy }); if (typeof drawGlitchRooms === 'function') drawGlitchRooms(ctx, this); if (typeof drawPrimordialArena === 'function') drawPrimordialArena(ctx, this);
     this.map.renderDoors(ctx, this.time);
     this.map.renderAnim(ctx, this.time, { x: cx, y: cy });
     for (const po of this.portals) po.render(ctx, this);
     this.renderGather(ctx); // 멀티 단체 입장 안내
-    for (const h of this.hazards) h.render(ctx);
+    for (const h of this.hazards) h.render(ctx); if (typeof drawPrimordialFX === "function") drawPrimordialFX(ctx, this); // 태고룡 유성 낙하
     for (const z of this.zones) z.render(ctx);
     for (const o of this.props) o.render(ctx, this);
     for (const pk of this.pickups) pk.render(ctx);
