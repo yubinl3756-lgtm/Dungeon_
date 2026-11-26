@@ -3175,7 +3175,7 @@ class Game {
     this.map.render(ctx, { x: cx, y: cy }); if (typeof drawGlitchRooms === 'function') drawGlitchRooms(ctx, this);
     this.map.renderDoors(ctx, this.time);
     this.map.renderAnim(ctx, this.time, { x: cx, y: cy });
-    for (const po of this.portals) po.render(ctx);
+    for (const po of this.portals) po.render(ctx, this);
     this.renderGather(ctx); // 멀티 단체 입장 안내
     for (const h of this.hazards) h.render(ctx);
     for (const z of this.zones) z.render(ctx);

@@ -96,10 +96,30 @@ function drawGachaFlipFx(ctx, r, t, i, o) { // 뒤집힌 직후 반짝 (에픽 �
   if (rank >= 3) for (let j = 0; j < (rank >= 4 ? 16 : 8); j++) { const a = j * TAU / (rank >= 4 ? 16 : 8); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 30, cy + Math.sin(a) * 40); ctx.lineTo(cx + Math.cos(a) * (40 + k * 50), cy + Math.sin(a) * (50 + k * 60)); ctx.stroke(); }
   ctx.restore(); ctx.lineWidth = 1;
 }
-function hudText(ctx, str, x, y, color = '#fff', align = 'left', size = 10) {
-  ctx.font = HUD_FONTS[size] || (HUD_FONTS[size] = `bold ${size}px 'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif`); ctx.textAlign = align; ctx.textBaseline = 'top';
+function hudFont(ctx, size) { ctx.font = HUD_FONTS[size] || (HUD_FONTS[size] = `bold ${size}px 'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif`); }
+// maxW: 이 너비를 넘으면 글씨를 줄이고(최소 70%), 그래도 넘으면 '…'로 자름. maxW가 없어도 화면 좌표의 글씨는 화면 밖으로 나가지 않게 맞춤 [UI 개선]
+function hudText(ctx, str, x, y, color = '#fff', align = 'left', size = 10, maxW = 0) {
+  str = String(str); hudFont(ctx, size); ctx.textAlign = align; ctx.textBaseline = 'top';
+  let lim = maxW;
+  if (!lim) { const T = ctx.getTransform(); if (T.e === 0 && T.f === 0 && T.b === 0 && T.c === 0) lim = align === 'center' ? Math.min(x, VIEW_W - x) * 2 - 6 : align === 'right' ? x - 3 : VIEW_W - x - 3; } // 화면 좌표(카메라 이동 없음)일 때만
+  if (lim > 0 && ctx.measureText(str).width > lim) {
+    const min = Math.max(5, size * 0.7); let s2 = size; while (s2 > min && ctx.measureText(str).width > lim) { s2 = Math.max(min, s2 - 0.5); hudFont(ctx, s2); }
+    if (ctx.measureText(str).width > lim) { while (str.length > 1 && ctx.measureText(str + '…').width > lim) str = str.slice(0, -1); str += '…'; }
+  }
   ctx.fillStyle = '#000'; ctx.fillText(str, x + 1, y + 1);
   ctx.fillStyle = color; ctx.fillText(str, x, y);
+}
+// 너비에 맞춰 줄로 나눔 (공백 단위, 너무 긴 낱말은 글자 단위) — 줄 배열을 돌려줌
+function hudLines(ctx, str, maxW, size) {
+  hudFont(ctx, size); const out = []; let cur = '';
+  const push = (w) => { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width <= maxW || !cur) { cur = t; } else { out.push(cur); cur = w; }
+    while (ctx.measureText(cur).width > maxW && cur.length > 1) { let k = cur.length - 1; while (k > 1 && ctx.measureText(cur.slice(0, k)).width > maxW) k--; out.push(cur.slice(0, k)); cur = cur.slice(k); } };
+  for (const w of String(str).split(' ')) push(w); if (cur) out.push(cur); return out;
+}
+// 줄바꿈해서 그림 (maxLines를 넘으면 마지막 줄을 '…'로), 그린 줄 수를 돌려줌
+function hudWrapText(ctx, str, x, y, maxW, color, size, lh, maxLines = 9, align = 'left') {
+  let L = hudLines(ctx, str, maxW, size); if (L.length > maxLines) { L = L.slice(0, maxLines); L[maxLines - 1] = L[maxLines - 1].replace(/.$/, '') + '…'; }
+  L.forEach((l, i) => hudText(ctx, l, x, y + i * lh, color, align, size, maxW)); return L.length;
 }
 // 너비에 맞춰 줄바꿈 (공백 단위), 그린 줄 수를 돌려줌
 function hudWrap(ctx, str, x, y, maxW, color, size, lh) {
@@ -203,11 +223,11 @@ class HUD {
       ctx.strokeStyle = `rgba(255,216,74,${0.4 + 0.4 * Math.sin(game.time * 6)})`; ctx.strokeRect(64.5, by + 15.5, 57, 8);
     }
 
-    if (game.banner && game.banner.t < game.banner.life) {
+    if (game.banner && game.banner.t < game.banner.life && !game.cutscene && !game.overlay) { // 컷신 대사·창과 겹치지 않게 그동안은 숨김
       const b = game.banner, a = Math.min(1, b.t * 4, (b.life - b.t) * 3);
       ctx.globalAlpha = a;
-      hudText(ctx, b.title, VIEW_W / 2, 70, b.color || '#fff', 'center', 16);
-      if (b.sub) hudText(ctx, b.sub, VIEW_W / 2, 92, '#ccc', 'center', 10);
+      hudText(ctx, b.title, VIEW_W / 2, 70, b.color || '#fff', 'center', 16, VIEW_W - 24);
+      if (b.sub) hudWrapText(ctx, b.sub, VIEW_W / 2, 92, VIEW_W - 60, '#ccc', 10, 12, 2, 'center');
       ctx.globalAlpha = 1;
     }
     if (game.overlay) this.overlay(ctx, game);
@@ -253,7 +273,7 @@ class HUD {
   }
   overlay(ctx, game) {
     const o = game.overlay;
-    ctx.fillStyle = o.type === 'story' || o.type === 'treasure_pick' ? '#06050a' : o.type === 'codex' || o.type === 'armory' || o.type === 'treasures' || o.type === 'joblevel' || o.type === 'hero_info' || o.type === 'skins' || o.type === 'travel' || o.type === 'deep_saves' || o.type === 'explorer_talk' || o.type === 'archive' || o.type === 'guild' || o.type === 'hunt' || o.type === 'trade' || o.type === 'gamble' || o.type === 'trial_confirm' || o.type === 'trial_weapons' || o.type === 'admin' || o.type === 'details' || o.type === 'quests' || o.type === 'multi' || o.type === 'rank' ? 'rgba(8,6,14,0.94)' : 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    ctx.fillStyle = o.type === 'story' || o.type === 'treasure_pick' ? '#06050a' : o.type === 'codex' || o.type === 'armory' || o.type === 'treasures' || o.type === 'joblevel' || o.type === 'hero_info' || o.type === 'skins' || o.type === 'travel' || o.type === 'deep_saves' || o.type === 'explorer_talk' || o.type === 'archive' || o.type === 'guild' || o.type === 'hunt' || o.type === 'trade' || o.type === 'gamble' || o.type === 'trial_confirm' || o.type === 'trial_weapons' || o.type === 'admin' || o.type === 'details' || o.type === 'quests' || o.type === 'multi' || o.type === 'rank' ? 'rgba(8,6,14,0.99)' : 'rgba(0,0,0,0.78)'; ctx.fillRect(0, 0, VIEW_W, VIEW_H); // 뒤 화면 글씨가 비쳐 겹쳐 보이지 않게
     if (o.type === 'pause') { drawPauseMenu(ctx, game); // Esc 메뉴 (js/ui/pause_menu.js)
     } else if (o.type === 'keys') { /* 조작키 설정 */
       hudText(ctx, '조작키 설정', VIEW_W / 2, 20, '#fff', 'center', 14);
@@ -466,22 +486,22 @@ class HUD {
         if (!disc.has(c.d.id)) { hudText(ctx, '???', c.x + 8, c.y + 8, '#555', 'left', 9); continue; }
         ctx.save(); ctx.beginPath(); ctx.rect(c.x, c.y, c.w - 3, c.h); ctx.clip(); // 칸 밖으로 글자가 삐져나오지 않게
         drawWeaponCentered(ctx, c.d, c.x + 13, c.y + c.h / 2, (typeof uLocalTheme === 'function' ? uLocalTheme() : undefined));
-        hudText(ctx, c.d.name, c.x + 27, c.y + 2, RARITY_COLOR[c.d.rarity], 'left', 8);
-        if (tw) hudText(ctx, pk >= 0 ? `${pk + 1}번 무기` : weaponTraits(c.d, 2), c.x + 27, c.y + 13, pk >= 0 ? '#bfe6ff' : '#c8b890', 'left', 7);
+        hudText(ctx, c.d.name, c.x + 27, c.y + 2, RARITY_COLOR[c.d.rarity], 'left', 8, c.w - 32);
+        if (tw) hudText(ctx, pk >= 0 ? `${pk + 1}번 무기` : weaponTraits(c.d, 2), c.x + 27, c.y + 13, pk >= 0 ? '#bfe6ff' : '#c8b890', 'left', 7, c.w - 32);
         else if (armory) {
           const st = eq ? ['장착됨', '#ffd84a'] : owned ? ['보유', '#9fe89f'] : [`해금 ${ARMORY_PRICE[c.d.rarity]} ${CUR.name}`, sv.bank >= ARMORY_PRICE[c.d.rarity] ? '#fff' : '#888'];
-          hudText(ctx, st[0], c.x + 27, c.y + 13, st[1], 'left', 7);
-        } else hudText(ctx, weaponTraits(c.d, 2), c.x + 27, c.y + 13, '#c8b890', 'left', 7);
+          hudText(ctx, st[0], c.x + 27, c.y + 13, st[1], 'left', 7, c.w - 32);
+        } else hudText(ctx, weaponTraits(c.d, 2), c.x + 27, c.y + 13, '#c8b890', 'left', 7, c.w - 32);
         ctx.restore();
       }
       const hd = hover && disc.has(hover.d.id) ? hover.d : null; // 호버한 무기 (발견한 것만)
       if (o.msg && o.msg.t > 0) hudText(ctx, o.msg.text, VIEW_W / 2, VIEW_H - 30, o.msg.color, 'center', 9);
       else if (hd) { // 설명 패널: 이름·등급·스탯·특성 + 메커니즘 설명
-        const bx = 28, bw = VIEW_W - 56, by = 248, bh = 23;
+        const bx = 20, bw = VIEW_W - 40, by = 246, bh = 28;
         ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(bx, by, bw, bh);
         ctx.strokeStyle = RARITY_COLOR[hd.rarity]; ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
-        hudText(ctx, `${hd.name}  ·  ${RARITY_NAME[hd.rarity]}  ·  ${weaponStatLine(hd)}  ·  ${weaponTraits(hd)}`, VIEW_W / 2, by + 3, RARITY_COLOR[hd.rarity], 'center', 8);
-        hudText(ctx, hd.desc || weaponTraits(hd, 4), VIEW_W / 2, by + 13, '#d8cfae', 'center', 7);
+        hudText(ctx, `${hd.name}  ·  ${RARITY_NAME[hd.rarity]}  ·  ${weaponStatLine(hd)}  ·  ${weaponTraits(hd)}`, VIEW_W / 2, by + 2, RARITY_COLOR[hd.rarity], 'center', 8, bw - 10);
+        hudWrapText(ctx, hd.desc || weaponTraits(hd, 4), VIEW_W / 2, by + 12, bw - 12, '#d8cfae', 6.5, 7.5, 2, 'center'); // 설명이 길면 두 줄
       } else hudText(ctx, tw ? '도감에서 발견한 무기 중에서 고를 수 있습니다' : armory ? '던전에서 발견한 무기를 해금해 시작 보조 무기로 장착할 수 있습니다' : '무기에 마우스를 올리면 설명이 나옵니다', VIEW_W / 2, VIEW_H - 30, '#ccc', 'center', 9);
       hudText(ctx, `1~4 / 클릭: 탭 전환   ·   ${pages > 1 ? `◀ ▶ · A·D · 휠: 페이지 ${page + 1}/${pages}   ·   ` : ''}${tw ? (o.picked.length ? '클릭: 선택/해제   ·   Enter: 보스전 시작   ·   Esc: 로비로' : '클릭: 무기 선택 (최대 2개)   ·   Esc: 로비로') : 'E / Esc: 닫기'}`, VIEW_W / 2, VIEW_H - 12, pages > 1 ? '#bbb' : '#888', 'center', 8);
     } else if (o.type === 'archive') { // 이야기 기록
@@ -506,7 +526,7 @@ class HUD {
             hudText(ctx, q.claimed ? '받음' : ok ? `받기  ${CUR.name} +${q.reward}` : `보상 ${CUR.name} ${q.reward}`, r.x + r.w - 8, r.y + 9, q.claimed ? '#666' : ok ? '#ffd84a' : CUR.color, 'right', 9); });
           hudText(ctx, o.tab ? '주간 퀘스트는 매주 월요일에 바뀝니다' : '일일 퀘스트는 매일 바뀝니다', VIEW_W / 2, 152, '#777', 'center', 8);
         } else game.visibleTitles().forEach((T, i) => { const r = HUD.titleCell(i), got = game.titleUnlocked(T), eq = sv.title === T.id; box(r, on(r) && got, eq ? '#ffd84a' : got ? '#7a6a40' : null);
-          hudText(ctx, (eq ? '★ ' : '') + T.name, r.x + 6, r.y + 3, got ? (eq ? '#ffd84a' : '#fff') : '#666', 'left', 9); hudText(ctx, T.desc, r.x + 6, r.y + 15, got ? '#aaa' : '#555', 'left', 7); });
+          hudText(ctx, (eq ? '★ ' : '') + T.name, r.x + 6, r.y + 3, got ? (eq ? '#ffd84a' : '#fff') : '#666', 'left', 9); hudText(ctx, T.desc, r.x + 6, r.y + 15, got ? '#aaa' : '#555', 'left', 7, r.w - 12); });
       } else if (o.type === 'hunt') {
         hudText(ctx, `오늘의 의뢰 (클릭: 수락, 동시에 ${GUILD_HUNT.maxActive}개까지)`, 40, 36, '#ffb08a', 'left', 8);
         G.offers.forEach((h, i) => { const r = HUD.guildRow(i), fin = !!(G.huntDone && G.huntDone.ids.includes(h.id)), taken = fin || G.active.some((a) => a.id === h.id && a.day === G.day); box(r, on(r) && !taken, h.kind === 'boss' ? '#a04040' : '#4a6a3a');
@@ -519,7 +539,7 @@ class HUD {
       } else if (o.type === 'trade') {
         hudText(ctx, '"오늘 들어온 물건이야. 하나씩만 팔지." — 사면 다음 탐험을 시작할 때 적용', VIEW_W / 2, 36, '#b0f0b0', 'center', 8);
         G.stock.forEach((id, i) => { const S = GUILD_SUPPLIES.find((x) => x.id === id), r = HUD.guildRow(i), got = G.bought.includes(id); box(r, on(r) && !got, got ? '#555' : '#4a7a4a');
-          hudText(ctx, S.name, r.x + 8, r.y + 4, got ? '#777' : '#fff', 'left', 9); hudText(ctx, S.desc, r.x + 8, r.y + 15, got ? '#555' : '#aaa', 'left', 7);
+          hudText(ctx, S.name, r.x + 8, r.y + 4, got ? '#777' : '#fff', 'left', 9); hudText(ctx, S.desc, r.x + 8, r.y + 15, got ? '#555' : '#aaa', 'left', 7, r.w - 16);
           hudText(ctx, got ? '구매함' : `${S.price} ${CUR.name}`, r.x + r.w - 8, r.y + 9, got ? '#666' : sv.bank >= S.price ? CUR.color : '#866', 'right', 9); });
         const pend = (sv.supplies || []).map((id) => GUILD_SUPPLIES.find((x) => x.id === id).name);
         hudText(ctx, pend.length ? `다음 탐험에 적용: ${pend.join(', ')}` : '준비된 보급품 없음', VIEW_W / 2, 150, pend.length ? '#9fe89f' : '#666', 'center', 8);
@@ -564,20 +584,20 @@ class HUD {
         ctx.fillRect(r.x, r.y, r.w, r.h);
         ctx.strokeStyle = active ? (L.color || '#ffd84a') : '#51475f';
         ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
-        hudText(ctx, `${i + 1}. ${L.name}${L.id === chosenId ? '  ★' : ''}`, r.x + 5, r.y + 2, active ? (L.color || '#ffd84a') : '#eee', 'left', 8); /* ★ = 고른 진화 루트 */
+        hudText(ctx, `${i + 1}. ${L.name}${L.id === chosenId ? '  ★' : ''}`, r.x + 5, r.y + 2, active ? (L.color || '#ffd84a') : '#eee', 'left', 8, r.w - 90); /* ★ = 고른 진화 루트 */
         { const K = SKINS.find((k) => k.hero === hero.id && k.line === L.id && (game.save.skins || []).includes(k.id)); if (K) hudText(ctx, `스킨: ${K.name}`, r.x + r.w - 4, r.y + 2, '#ffb0d8', 'right', 6); } /* 이 계열에서 쓸 수 있는 스킨 */
-        hudText(ctx, L.desc, r.x + 5, r.y + 12, '#c8c0d8', 'left', 6);
-        hudText(ctx, L.ranks.join(' → '), r.x + 5, r.y + 20, '#888', 'left', 6);
+        hudText(ctx, L.desc, r.x + 5, r.y + 12, '#c8c0d8', 'left', 6, r.w - 10);
+        hudText(ctx, L.ranks.join(' → '), r.x + 5, r.y + 20, '#888', 'left', 6, r.w - 10);
       });
 
       ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(16, 177, VIEW_W - 32, 85);
       ctx.strokeStyle = line ? (line.color || '#665b78') : '#665b78';
       ctx.strokeRect(16.5, 177.5, VIEW_W - 33, 84);
       if (line) {
-        hudText(ctx, `계열 상세 · ${line.name} — ${line.desc}`, VIEW_W / 2, 181, line.color || '#ffd84a', 'center', 8);
+        const hl = hudWrapText(ctx, `계열 상세 · ${line.name} — ${line.desc}`, VIEW_W / 2, 180, VIEW_W - 44, line.color || '#ffd84a', 8, 9, 2, 'center'), sy0 = hl > 1 ? 202 : 196, gap = hl > 1 ? 19 : 21;
         line.skills.forEach((sk, i) => {
           const stage = ['기본', '1차 진화', '2차 진화'][i] || `단계 ${i + 1}`;
-          hudText(ctx, `${stage} · ${line.ranks[i]} · ${sk.name} (쿨타임 ${sk.cd}초) — ${sk.desc}`, 24, 198 + i * 19, '#ddd', 'left', 6.5);
+          hudWrapText(ctx, `${stage} · ${line.ranks[i]} · ${sk.name} (쿨타임 ${sk.cd}초) — ${sk.desc}`, 24, sy0 + i * gap, VIEW_W - 48, '#ddd', 6.5, 8.5, 2);
         });
       }
       if (o.msg && o.msg.t > 0) hudText(ctx, o.msg.text, VIEW_W / 2, VIEW_H - 24, '#ffd84a', 'center', 8);
@@ -600,8 +620,8 @@ class HUD {
         hudText(ctx, `Lv.${lv}/${J.max}`, r.x + r.w - 5, r.y + 2, lv >= J.max ? '#ffd84a' : '#c8c0d8', 'right', 7);
         const bonus = `HP +${J.hp * lv}  ATK +${Math.round(J.atk * lv * 1000) / 10}%  EN +${J.energy * lv}`;
         const tail = !unlocked ? '직업 해금 필요' : cost !== null ? `다음 ${cost} ${CUR.name}` : `★ ${pk ? pk.name : '루트 숙련 완료'}`;
-        hudText(ctx, bonus, r.x + 5, r.y + 12, unlocked ? '#c8c0d8' : '#777', 'left', 6);
-        hudText(ctx, tail, r.x + r.w - 5, r.y + 12, unlocked ? (cost === null ? '#ffd84a' : '#8ab8ff') : '#777', 'right', 6);
+        hudText(ctx, bonus, r.x + 5, r.y + 12, unlocked ? '#c8c0d8' : '#777', 'left', 6, r.w * 0.55);
+        hudText(ctx, tail, r.x + r.w - 5, r.y + 12, unlocked ? (cost === null ? '#ffd84a' : '#8ab8ff') : '#777', 'right', 6, r.w * 0.42);
         ctx.globalAlpha = 1;
       });
       for (let i = 0; i < pageCount; i++) { const r = HUD.jobLinePageRect(i, pageCount), active = page === i, on = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h;
@@ -618,8 +638,8 @@ class HUD {
         ctx.fillStyle = hover ? 'rgba(255,220,120,0.25)' : 'rgba(255,255,255,0.08)'; ctx.fillRect(r.x, r.y, r.w, r.h);
         ctx.strokeStyle = hover ? '#ffd84a' : '#666'; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
         hudText(ctx, `${i + 1}`, r.x + 8, r.y + 6, '#888', 'left', 9);
-        hudText(ctx, b.name, r.x + r.w / 2, r.y + 26, '#fff', 'center', 12);
-        hudText(ctx, b.desc, r.x + r.w / 2, r.y + 50, '#ccc', 'center', 9);
+        hudText(ctx, b.name, r.x + r.w / 2, r.y + 26, '#fff', 'center', 12, r.w - 12);
+        hudWrapText(ctx, b.desc, r.x + r.w / 2, r.y + 46, r.w - 12, '#ccc', 9, 11, 2, 'center');
       });
       hudText(ctx, '클릭 또는 1 / 2 / 3', VIEW_W / 2, 200, '#888', 'center', 9);
     } else if (o.type === 'variant') {
@@ -629,15 +649,15 @@ class HUD {
       o.lines.forEach((L, i) => { const r = HUD.variantRect(i, o.lines.length), m = game.input.mouse, on = m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h, current = o.branch && L.id === o.currentLineId;
         ctx.fillStyle = current ? 'rgba(255,216,74,0.13)' : on ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = L.color || '#ffd84a'; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
         hudText(ctx, `${i + 1}  ${o.trialRank != null ? L.ranks[o.trialRank] + (o.trialRank === 2 ? ' (최종 진화)' : ` (${o.trialRank + 1}진)`) : L.name + (current ? '  ★ 현재' : '')}`, r.x + 6, r.y + 5, L.color || '#ffd84a', 'left', 11); // 선택 계열은 ★로 표시
-        hudText(ctx, L.desc, r.x + 6, r.y + 21, '#ccc', 'left', 7);
-        hudText(ctx, o.trialRank != null ? `스킬: ${L.skills[o.trialRank].name}` : L.skills.map((s) => s.name).join(' → '), r.x + 6, r.y + 34, '#ffe9a0', 'left', 7);
-        hudText(ctx, L.ranks.join(' → '), r.x + 6, r.y + 46, '#8a8a9a', 'left', 7); });
+        hudText(ctx, L.desc, r.x + 6, r.y + 21, '#ccc', 'left', 7, r.w - 12);
+        hudText(ctx, o.trialRank != null ? `스킬: ${L.skills[o.trialRank].name}` : L.skills.map((s) => s.name).join(' → '), r.x + 6, r.y + 34, '#ffe9a0', 'left', 7, r.w - 12);
+        hudText(ctx, L.ranks.join(' → '), r.x + 6, r.y + 46, '#8a8a9a', 'left', 7, r.w - 12); });
     } else if (o.type === 'evolve') {
       const p = game.player, L = o.npc.branch || p.line, n = p.rank + 1, hy = o.npc.hybrid, sk = hy ? hy.H.skill : L.skills[n];
       hudText(ctx, `${L.ranks[p.rank]}  →  ${hy ? game.hybridTitle(o.npc) : L.ranks[n]}`, VIEW_W / 2, 56, hy ? (hy.el.color || '#ffd84a') : '#ffd84a', 'center', 15);
       if (hy) hudText(ctx, `혼합 전직 — ${hy.el.name}의 마도사 상위자가 나타났습니다 · 근접 공격에 ${Math.round(hy.H.passiveChance * 100)}% 확률로 속성 상태이상`, VIEW_W / 2, 70, '#c8b8e0', 'center', 8);
       hudText(ctx, `새 스킬: ${sk.name}`, VIEW_W / 2, 84, '#ffe9a0', 'center', 11);
-      hudText(ctx, sk.desc, VIEW_W / 2, 100, '#ccc', 'center', 9);
+      hudWrapText(ctx, sk.desc, VIEW_W / 2, 98, VIEW_W - 60, '#ccc', 9, 10, 2, 'center');
       hudText(ctx, `최대 체력 +${EVOLUTION.hp[n - 1]} · 최대 에너지 +${EVOLUTION.energy[n - 1]}`, VIEW_W / 2, 114, '#9fe89f', 'center', 8);
       hudText(ctx, `1  시련 — ${hy ? hy.el.name + '의 마도사 ' : ''}상위자와 대결 (이기면 무료로 진화)`, VIEW_W / 2, 142, '#fff', 'center', 10);
       hudText(ctx, `2  대가 — ${game.evolvePrice()}골드를 내고 바로 진화 (보유 ${game.gold})`, VIEW_W / 2, 160, game.gold >= game.evolvePrice() ? '#fff' : '#888', 'center', 10);
@@ -896,15 +916,17 @@ class HUD {
   static travelRect(i, n) { const w = 300, h = 30, x = (VIEW_W - w) / 2, y0 = 70; return { x, y: y0 + i * (h + 6), w, h }; }
   static skinHeroArrow(d) { return { x: d ? VIEW_W - 34 : 10, y: 6, w: 24, h: 20 }; } // 스킨창 직업 바꾸기
   static skinRect(i, n = 0) { const tiny = n > 15, small = n > 8, cols = tiny ? 6 : small ? 5 : 4, w = tiny ? 78 : small ? 92 : 112, h = tiny ? 70 : small ? 72 : 92, gap = tiny ? 4 : small ? 5 : 8, x0 = (VIEW_W - (cols * w + (cols - 1) * gap)) / 2; return { x: x0 + (i % cols) * (w + gap), y: (small ? 36 : 40) + Math.floor(i / cols) * (h + gap), w, h, small, tiny }; } // 16개 이상: 6열 (한 직업 최대 18개)
-  static heroBranchRect(i, n) { return { x: 18 + (i % 2) * 240, y: 85 + Math.floor(i / 2) * 29, w: 236, h: 26 }; }
+  static heroBranchRect(i, n) { return { x: 18 + (i % 2) * 240, y: 85 + Math.floor(i / 2) * 31, w: 236, h: 29 }; }
   static variantRect(i, n) { const cols = Math.min(3, n), w = 156, h = 58, gap = 8, rows = Math.ceil(n / cols), total = w * cols + gap * (cols - 1); return { x: (VIEW_W - total) / 2 + (i % cols) * (w + gap), y: 66 + Math.floor(i / cols) * (h + gap) + (rows === 1 ? 30 : 0), w, h }; }
   // 컷신: 위아래 검은 띠 + 아래 띠에 한 자씩 나오는 대사
   static cutscene(ctx, game) {
     const c = game.cutscene, ease = Math.min(1, c.t / 0.5), H = Math.round(40 * ease);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VIEW_W, H); ctx.fillRect(0, VIEW_H - H, VIEW_W, H);
     if (ease < 1) return;
-    const line = c.lines[Math.min(c.i, c.lines.length - 1)] || '', n = Math.min(line.length, Math.floor(c.lt * 28)), txt = line.slice(0, n);
-    hudText(ctx, txt, VIEW_W / 2, VIEW_H - 28, '#f0e8d0', 'center', 11);
+    const line = c.lines[Math.min(c.i, c.lines.length - 1)] || '', n = Math.min(line.length, Math.floor(c.lt * 28));
+    let L = hudLines(ctx, line, VIEW_W - 70, 11), fs = 11; if (L.length > 2) { fs = 9.5; L = hudLines(ctx, line, VIEW_W - 60, fs).slice(0, 3); } // 길면 두 줄 (그래도 길면 작게 세 줄)
+    let left = n; const lh = fs + 3, y0 = VIEW_H - 22 - (L.length * lh) / 2;
+    L.forEach((l, i) => { const k = Math.max(0, Math.min(l.length, left)); left -= l.length + 1; if (k) hudText(ctx, l.slice(0, k), VIEW_W / 2, Math.round(y0 + i * lh), '#f0e8d0', 'center', fs, VIEW_W - 40); });
     if (n >= line.length && Math.floor(c.t * 2.5) % 2 === 0) hudText(ctx, '▶', VIEW_W - 22, VIEW_H - 16, '#ffe9a0', 'center', 9);
     hudText(ctx, `${c.i + 1} / ${c.lines.length}`, 14, 14, '#666', 'left', 8);
     hudText(ctx, 'Enter·클릭: 다음   Esc: 건너뛰기', VIEW_W - 10, 14, '#666', 'right', 8);
@@ -953,7 +975,7 @@ class HUD {
       const LN = K.line && jobLines(K.hero).find((l) => l.id === K.line), L2 = hero ? `${hero.name}${LN ? ' · ' + LN.name + ' 계열 전용' : uni ? ' · 모든 계열' : ''}` : '';
       hudText(ctx, L2, tx, 132, col, 'left', 10);
       const desc = (K.desc || '').split(' — ').pop().replace(/\s*\(.*\)\s*$/, '');
-      hudText(ctx, desc, tx, 152, '#d8d0e8', 'left', 9);
+      hudWrapText(ctx, desc, tx, 152, (im ? W - 60 : W - 150) - tx, '#d8d0e8', 9, 11, 2);
       ctx.globalAlpha = 1;
       // 섬광
       if (t < 1.45) { ctx.globalAlpha = Math.max(0, 1 - Math.abs(t - 1.12) / 0.33); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
@@ -966,7 +988,7 @@ class HUD {
       const bx = im ? 130 : 18, by = im ? H - bar - 40 : 168, bw = im ? W - 148 : 282, fs = im ? 10 : 9; // 배너 있음: 오른쪽 아래 / 없음: 설명 아래 (캐릭터와 안 겹치게)
       ctx.fillStyle = 'rgba(5,4,10,0.72)'; ctx.fillRect(bx, by, bw, 28); ctx.fillStyle = col; ctx.fillRect(bx, by, 2, 28);
       hudText(ctx, K.druid ? '반디' : K.name, bx + 10, by + 3, col, 'left', 7);
-      hudText(ctx, line, bx + 10, by + 13, '#fff', 'left', fs);
+      hudText(ctx, line, bx + 10, by + 13, '#fff', 'left', fs, bw - 16);
     }
     if (t >= HUD.legIntroEnd(K)) { ctx.globalAlpha = 0.55 + 0.45 * Math.sin(t * 4); hudText(ctx, L.queue.length ? '클릭 — 다음 스킨' : '클릭하여 계속', cx, H - 17, '#ffe9a0', 'center', 8); ctx.globalAlpha = 1; }
     else if (t > 1.3) hudText(ctx, '클릭 — 건너뛰기', W - 10, H - 17, '#777', 'right', 7);

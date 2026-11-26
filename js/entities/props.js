@@ -510,7 +510,7 @@ class Merchant {
 
 class Portal {
   constructor(x, y, onEnter, label, color = [90, 160, 255]) { this.x = x; this.y = y; this.t = 0; this.onEnter = onEnter; this.label = label; this.color = color; }
-  render(ctx) {
+  render(ctx, game) {
     const x = Math.round(this.x), y = Math.round(this.y), [r, g, b] = this.color;
     for (let i = 3; i >= 0; i--) {
       ctx.fillStyle = `rgba(${Math.min(255, r + i * 30)},${Math.min(255, g + i * 20)},${b},${0.25 + i * 0.12})`;
@@ -522,7 +522,7 @@ class Portal {
       const a = this.t * 2 + i * TAU / 4;
       ctx.fillRect(Math.round(x + Math.cos(a) * 12), Math.round(y + Math.sin(a) * 16), 1, 1);
     }
-    if (this.label) hudText(ctx, this.label, x, y - 30, '#bfe0ff', 'center', 8);
+    if (this.label) { const near = game && game.portals && game.portals.find((q) => q !== this && q.label && Math.abs(q.x - this.x) < 110 && Math.abs(q.y - this.y) < 24); const lift = near && near.x < this.x ? 11 : 0; hudText(ctx, this.label, x, y - 30 - lift, '#bfe0ff', 'center', 8, near ? 120 : 0); } // 옆 포탈과 이름이 겹치지 않게 한 줄 올림
   }
 }
 

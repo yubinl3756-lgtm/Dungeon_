@@ -95,9 +95,9 @@ function drawQuestWindow(ctx, game, o) {
     const x = 40, y = QUEST_TOP + i * QUEST_ROW_H, w = VIEW_W - 80, [c1, c2, mark] = COL[q.state] || COL.now, hov = m.x >= x && m.x <= x + w && m.y >= y && m.y < y + QUEST_ROW_H - 3;
     ctx.fillStyle = q.state === 'now' || q.state === 'ready' ? (hov ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.06)') : 'rgba(255,255,255,0.025)'; ctx.fillRect(x, y, w, QUEST_ROW_H - 3);
     if (q.state === 'now' || q.state === 'ready') { ctx.fillStyle = q.state === 'ready' ? '#ffd84a' : '#9ad8ff'; ctx.fillRect(x, y, 2, QUEST_ROW_H - 3); }
-    hudText(ctx, mark + q.title, x + 8, y + 3, c1, 'left', 9);
+    hudText(ctx, mark + q.title, x + 8, y + 3, c1, 'left', 9, w - 110);
     if (q.prog) hudText(ctx, q.prog, x + w - 6, y + 3, q.state === 'ready' ? '#ffd84a' : q.state === 'done' ? '#6a8a6a' : '#9ad8ff', 'right', 8);
-    hudText(ctx, q.desc, x + 18, y + 14, c2, 'left', 7);
+    hudText(ctx, q.desc, x + 18, y + 14, c2, 'left', 7, w - 26);
   });
   if (!list.length) hudText(ctx, '아직 아무것도 없습니다', VIEW_W / 2, QUEST_TOP + 30, '#777', 'center', 9);
   if ((o.tab || 0) === 1 && B.hidden) hudText(ctx, `??? 아직 찾지 못한 이야기 ${B.hidden}개`, VIEW_W / 2, QUEST_TOP + Math.min(list.length, QUEST_ROWS) * QUEST_ROW_H + 4, '#666', 'center', 8);
