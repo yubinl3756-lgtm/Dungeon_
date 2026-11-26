@@ -113,7 +113,39 @@ const BALANCE = {
   mobDeep: { dmg: 1.3 },  // [사용자 결정] 심층 일반 몬스터(보스 아님) 공격력 배율 — 스테이지 곡선 위에 더 곱함
   deepBossTreasureMult: 0.5, // [사용자 결정] 심층 보스가 공격형 보구(게이트 오브 바빌론·엑스칼리버·롱고미니아드·게이볼그, 게이볼그 출혈 포함)에게 받는 피해 배율
   // 스킬 피해가 스테이지(깊이)를 따라 자라는 비율 (1 = 몬스터 체력 성장과 같음) · 직업 갈래별 예외 · 직업별 스킬 피해 배율 [제안 수치]
-  skillScale: { base: 0.5, from: 3, lines: { 'hero_engineer|trap': 0.66, 'hero_engineer|drone': 0.72 }, hero: { hero_druid: 1.1 } },
+  // [사용자 요청] 직업 밸런스 (검사 기준 측정, tools/jobs.js): 검사 대비 115% 넘던 갈래만 살짝 너프 — 갈래별 [기본, 1차, 2차] 피해 배율 (무기·스킬 모두)
+  lineDmg: {
+    'hero_druid|shape': [0.83, 1.0, 0.86],
+    'hero_mage|dark': [0.85, 0.92, 0.88],
+    'hero_priest|smite': [0.88, 0.92, 1.0],
+    'hero_berserker|blood': [0.88, 0.95, 0.82],
+    'hero_druid|thorn': [0.88, 0.96, 0.91],
+    'hero_mage|ice': [0.88, 1.0, 0.91],
+    'hero_mage|light': [0.89, 0.94, 0.84],
+    'hero_engineer|trap': [0.89, 0.93, 0.85],
+    'hero_engineer|base': [0.89, 0.92, 1.0],
+    'hero_mage|nature': [0.9, 0.91, 0.81],
+    'hero_engineer|drone': [0.9, 0.85, 0.89],
+    'hero_druid|base': [0.91, 0.87, 0.87],
+    'hero_mage|fire': [0.91, 0.96, 0.85],
+    'hero_gunner|demo': [0.92, 0.94, 0.9],
+    'hero_swordsman|spear': [0.92, 1.0, 0.96],
+    'hero_mage|lightning': [0.93, 0.96, 0.8],
+    'hero_swordsman|great': [0.93, 0.95, 0.86],
+    'hero_gunner|sniper': [0.94, 0.94, 0.89],
+    'hero_priest|bless': [0.95, 0.95, 0.82],
+    'hero_berserker|base': [0.95, 0.96, 0.84],
+    'hero_assassin|shadow': [0.96, 0.9, 0.91],
+    'hero_priest|base': [0.96, 0.92, 0.92],
+    'hero_assassin|venom': [0.97, 0.93, 0.78],
+    'hero_berserker|warcry': [1.0, 0.96, 0.86],
+    'hero_engineer|shield': [1.0, 0.93, 0.93],
+    'hero_gunner|base': [1.0, 0.96, 0.87],
+    'hero_berserker|feast': [1.0, 0.96, 0.88],
+    'hero_assassin|blade': [1.0, 0.91, 0.8]
+  },
+  // 스킬 피해 성장: start×기본 + (몬스터 체력 배율-1)×base — [사용자 요청] 저층은 약하게(start 0.88), 고층으로 갈수록 조금 더 강하게(base 0.5 → 0.58)
+  skillScale: { start: 0.88, base: 0.58, from: 3, lines: { 'hero_engineer|trap': 0.66, 'hero_engineer|drone': 0.72 }, hero: { hero_druid: 1.1 } },
   // [사용자 결정] 드루이드 '포식' 갈래 [제안 수치]: 중첩 하나당 일반 몬스터 피해 +perStack (cap까지) · 이동 속도 +speedPer (speedCap까지) · 보스에게는 피해 ×bossMult · healAt 이상이면 처치마다 체력 회복
   // [사용자 결정] 소울 이터: 포식 스택 — 일반 몬스터 피해는 상한 없이 조금씩(10당 +0.4%), 이동속도·피해감소는 게임이 깨지지 않게 상한을 둠 · 보스에게는 약함 · 750·2000에서 진화
   //  dmgPer10: 10스택당 일반 몬스터 피해 배율 증가(상한 없음) · speed/guard: 10스택당 증가(상한 cap) · evolve: 스택 진화 문턱

@@ -1915,7 +1915,7 @@ class Game {
   skillDmg(base) {
     const trial = this.mode === 'dungeon' && this.trialW;
     const p0 = this.player, SK = BALANCE.skillScale, lk = p0 && p0.line && p0.hero && SK.lines[p0.hero.id + '|' + p0.line.id]; /* [사용자 결정] 함정·드론 기술자: 깊이 내려갈수록 스킬이 덜 자라서 약해지던 것 → 스테이지 성장을 더 많이 받음 */
-    const sh = this.scale.hp; let m = base * (1 + (sh - 1) * (trial ? 1 : SK.base) + (!trial && lk ? Math.max(0, sh - SK.from) * (lk - SK.base) : 0)); /* 갈래 예외는 후반(몬스터 체력 ×from 이상)부터만 더 자람 */
+    const sh = this.scale.hp; let m = base * ((trial ? 1 : SK.start || 1) + (sh - 1) * (trial ? 1 : SK.base) + (!trial && lk ? Math.max(0, sh - SK.from) * (lk - SK.base) : 0)); /* 갈래 예외는 후반(몬스터 체력 ×from 이상)부터만 더 자람 */
     if (p0 && p0.hero && SK.hero[p0.hero.id]) m *= SK.hero[p0.hero.id]; /* [사용자 결정] 드루이드 계열 살짝 강화 */
     if (p0 && p0.jobMaster) m *= 1 + (BALANCE.jobLevel.maxDmg || 0); /* [사용자 결정] 직업 숙련(Lv.10): 스킬 데미지 +10% */
     if (trial) { const w = this.player && this.player.weapon; if (w) m *= 1 + (BALANCE.trialSkillRarity[w.def.rarity] || 0) + (upgradeMult(w.lv || 0) - 1) * 0.25; }

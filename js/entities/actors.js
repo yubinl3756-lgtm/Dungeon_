@@ -20,6 +20,7 @@ class Entity {
   }
 }
 
+function jobDmgMult(p) { const L = p && p.line && p.hero && BALANCE.lineDmg && BALANCE.lineDmg[p.hero.id + '|' + p.line.id]; return L ? L[Math.max(0, Math.min(2, p.rank || 0))] || 1 : 1; } // 갈래·진화 단계별 피해 배율 (balance.js lineDmg)
 class Player extends Entity {
   constructor(x, y, hero, base) {
     super(x, y, base.hitboxHalf);
@@ -43,7 +44,7 @@ class Player extends Entity {
   }
   get weapon() { return this.weapons[this.slot] || null; }
   get isInvulnerable() { return this.dashInvuln > 0 || this.hurtInvuln > 0 || this.whirl > 0 || this.blinkInv > 0 || this.aegisT > 0 || this.scabbardT > 0 || this.hornT > 0; }
-  get mods() { return { attackBonus: this.stats.attackBonus + (this.rage > 0 ? this.rageAtk : 0) + (this.overdrive > 0 ? this.odDmg : 0) + (this.sancBoost > 0 ? 0.35 : 0) + (this.solomon > 0 ? this.treasure.atk : 0) + (this.hadesT > 0 ? this.treasure.atk : 0) + (this.avalonT > 0 ? this.avalonAtk : 0) + (this.buffT > 0 ? this.buffAtk || 0 : 0) + (this.hero.lowHpBonus && this.hp <= this.maxHp * 0.5 ? this.hero.lowHpBonus : 0) + (this.jobLowHp && this.hp <= this.maxHp * (this.jobLowHpAt || 0.5) ? this.jobLowHp : 0), critChance: this.stats.critChance, critMultiplier: this.stats.critMultiplier, damageMult: this.feastPenaltyActive ? (this.feastPenaltyFactor || 0.6) : 1 }; }
+  get mods() { return { attackBonus: this.stats.attackBonus + (this.rage > 0 ? this.rageAtk : 0) + (this.overdrive > 0 ? this.odDmg : 0) + (this.sancBoost > 0 ? 0.35 : 0) + (this.solomon > 0 ? this.treasure.atk : 0) + (this.hadesT > 0 ? this.treasure.atk : 0) + (this.avalonT > 0 ? this.avalonAtk : 0) + (this.buffT > 0 ? this.buffAtk || 0 : 0) + (this.hero.lowHpBonus && this.hp <= this.maxHp * 0.5 ? this.hero.lowHpBonus : 0) + (this.jobLowHp && this.hp <= this.maxHp * (this.jobLowHpAt || 0.5) ? this.jobLowHp : 0), critChance: this.stats.critChance, critMultiplier: this.stats.critMultiplier, damageMult: (this.feastPenaltyActive ? (this.feastPenaltyFactor || 0.6) : 1) * jobDmgMult(this) }; }
 
   update(dt, input, map, mouseWorld) {
     this.time += dt;
