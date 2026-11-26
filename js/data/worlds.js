@@ -338,7 +338,53 @@ const DEEP_WORLDS = [
   { id: 'deep_corrupted', name: '오염된 층', boss: 'boss_formless', waves: 2, deep: true, glitchFloor: true,
     enemies: [['enemy_brokenshade_001', 3], ['enemy_noisewisp_001', 3], ['enemy_errorturret_001', 2], ['enemy_damagedknight_001', 2]],
     palette: { style: 'void', accent: '#ff3af0', floor: ['#22222a', '#25252e'], corridor: ['#16161c', '#18181e'], wall: '#32323e', wallTop: '#424252',
-      wallFace: '#7a7a96', faceLine: '#62627c', deco: 'rgba(58,255,224,0.32)' } }
+      wallFace: '#7a7a96', faceLine: '#62627c', deco: 'rgba(58,255,224,0.32)' } },
+  // ── 심층 61~69 — 70층(시원체)을 앞두고, 생명의 기척이 조금씩 짙어지는 층들 (드러내지는 않음) [사용자 요청]
+  // ── 심층 61: 이끼 낀 수도원
+  { id: 'deep_mossabbey', name: '이끼 낀 수도원', boss: 'boss_moss_abbot', waves: 2, deep: true,
+    enemies: [['enemy_mossmonk_001', 2], ['enemy_mossstatue_001', 2], ['enemy_vinepilgrim_001', 3], ['enemy_sporebat_001', 3]],
+    palette: { style: 'moss', accent: '#a8e070', floor: ['#34402c', '#38442f'], corridor: ['#22291c', '#242b1e'], wall: '#465a3a', wallTop: '#5c7448',
+      wallFace: '#a8c080', faceLine: '#8aa468', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 62: 산호 묘지
+  { id: 'deep_coralgrave', name: '산호 묘지', boss: 'boss_coral_warden', waves: 2, deep: true,
+    enemies: [['enemy_coralskull_001', 3], ['enemy_anemoneturret_001', 2], ['enemy_coraleel_001', 3], ['enemy_jellysoul_001', 2]],
+    palette: { style: 'sunken', accent: '#ff9a8a', floor: ['#2e3a44', '#313e48'], corridor: ['#1e262e', '#202830'], wall: '#3e4e5e', wallTop: '#506478',
+      wallFace: '#e0a090', faceLine: '#c08474', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 63: 고치의 회랑
+  { id: 'deep_cocoonhall', name: '고치의 회랑', boss: 'boss_chrysalis_empress', waves: 2, deep: true,
+    enemies: [['enemy_silkworm_001', 2], ['enemy_mothknight_001', 3], ['enemy_cocoonturret_001', 2], ['enemy_dustmoth_001', 3]],
+    palette: { style: 'library', accent: '#f0e0c0', floor: ['#3e3830', '#423b33'], corridor: ['#2a2620', '#2c2822'], wall: '#54483a', wallTop: '#6e604c',
+      wallFace: '#d8c8a8', faceLine: '#b8a888', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 64: 맥박 치는 광산
+  { id: 'deep_pulsemine', name: '맥박 치는 광산', boss: 'boss_pulse_vein', waves: 2, deep: true,
+    enemies: [['enemy_veingolem_001', 3], ['enemy_orespider_001', 3], ['enemy_pulsecrystal_001', 2], ['enemy_pulseminer_001', 2]],
+    palette: { style: 'mine', accent: '#ff6a7a', floor: ['#3a3034', '#3e3438'], corridor: ['#262022', '#282224'], wall: '#4e4048', wallTop: '#665460',
+      wallFace: '#c08a98', faceLine: '#a0707e', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 65: 씨앗 저장고
+  { id: 'deep_seedvault', name: '씨앗 저장고', boss: 'boss_vault_reaper', waves: 2, deep: true,
+    enemies: [['enemy_grainscarecrow_001', 3], ['enemy_seedturret_001', 2], ['enemy_vaultrat_001', 3], ['enemy_harvestspirit_001', 2]],
+    palette: { style: 'wood', accent: '#ffd070', floor: ['#4a3e2a', '#4e422d'], corridor: ['#32291c', '#342b1e'], wall: '#5e4c32', wallTop: '#7a6340',
+      wallFace: '#d0b078', faceLine: '#b09460', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 66: 버섯 등불 늪
+  { id: 'deep_lanternswamp', name: '버섯 등불 늪', boss: 'boss_spore_lord', waves: 2, deep: true,
+    enemies: [['enemy_lanternshroom_001', 2], ['enemy_swamptoad_001', 3], ['enemy_sporewisp_001', 3], ['enemy_mudshaman_001', 2]],
+    palette: { style: 'fungal', accent: '#c8ff8a', floor: ['#2e3428', '#31382b'], corridor: ['#1e221a', '#20241c'], wall: '#3e4834', wallTop: '#506044',
+      wallFace: '#9ac080', faceLine: '#7ea468', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 67: 나이테 탑
+  { id: 'deep_treering', name: '나이테 탑', boss: 'boss_ring_guardian', waves: 2, deep: true,
+    enemies: [['enemy_barksoldier_001', 3], ['enemy_resinwisp_001', 3], ['enemy_ringturret_001', 2], ['enemy_woodpeckerknight_001', 2]],
+    palette: { style: 'wood', accent: '#e0b070', floor: ['#463424', '#4a3727'], corridor: ['#2e2218', '#30241a'], wall: '#5a4430', wallTop: '#74583e',
+      wallFace: '#c89a6a', faceLine: '#a88052', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 68: 알 껍데기 사막
+  { id: 'deep_eggshelldesert', name: '알 껍데기 사막', boss: 'boss_unhatched', waves: 2, deep: true,
+    enemies: [['enemy_shellcrab_001', 3], ['enemy_sandlizard_001', 3], ['enemy_brokeneggturret_001', 2], ['enemy_vultureghost_001', 2]],
+    palette: { style: 'sand', accent: '#fff0d0', floor: ['#5a5244', '#5e5648'], corridor: ['#3e382e', '#403a30'], wall: '#6e6452', wallTop: '#8a7e68',
+      wallFace: '#e0d4bc', faceLine: '#c0b49c', deco: 'rgba(255,255,255,0.3)' } },
+  // ── 심층 69: 숨 쉬는 동굴
+  { id: 'deep_breathcave', name: '숨 쉬는 동굴', boss: 'boss_cave_breath', waves: 2, deep: true,
+    enemies: [['enemy_breathwisp_001', 3], ['enemy_sporesac_001', 2], ['enemy_heartstonegolem_001', 3], ['enemy_caveserpent_001', 2]],
+    palette: { style: 'abyss', accent: '#ffb0c0', floor: ['#34282e', '#382b31'], corridor: ['#221a1e', '#241c20'], wall: '#4a3840', wallTop: '#604a54',
+      wallFace: '#c09aa8', faceLine: '#a07e8c', deco: 'rgba(255,255,255,0.3)' } }
 
 
 ];
