@@ -16,6 +16,7 @@ function pauseMenuItems(game) {
     { id: 'travel', label: '빠른 이동', key: '+', code: 'Equal', act: go({ type: 'travel', sub: null, msg: null }), hide: !(lobby && sv.babylon && sv.babylon.visited) },
     { id: 'details', label: '상세 정보', key: 'I', code: 'KeyI', act: go({ type: 'details', tab: 0 }) },
     IS_MOBILE ? { id: 'guide', label: '조작 안내', key: '', act: go({ type: 'touch_guide' }) } : { id: 'keys', label: '조작키 설정', key: 'O', code: 'KeyO', act: go({ type: 'keys', wait: null, msg: null }) }, // 모바일: 조작키 설정 대신 터치 조작 안내
+    { id: 'layout', hide: !IS_MOBILE, label: '조작 버튼 설정', key: '', act: go({ type: 'touch_layout' }) },
     { id: 'stick', hide: !IS_MOBILE, label: typeof touchStickFixed === 'function' && touchStickFixed() ? '조이스틱 고정: 켜짐' : '조이스틱 고정: 꺼짐', key: '', act: () => { setTouchStickFixed(!touchStickFixed()); SFX.play('ui'); }, stay: true },
     { id: 'gift', label: '선물 코드', key: 'G', code: 'KeyG', act: () => { G.overlay = { type: 'gift', code: '', msg: null }; G.input.typed.length = 0; } },
     { id: 'admin', label: '관리자 메뉴', key: '`', code: 'Backquote', act: go({ type: 'admin', msg: null }), hide: !G.admin },

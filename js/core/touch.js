@@ -20,6 +20,41 @@ const TOUCH_BTNS = [ // x, y, r = 화면(512×288) 좌표 · code = 게임 키 (
 ];
 const TOUCH_UI_BACK = { x: 16, y: 272, r: 11, code: 'Escape' }; // 창·대사 화면의 ✕ (Esc)
 const TOUCH_STICK = { r: 30, dead: 0.25, x: 80, y: 204 }; // x·y = 고정 조이스틱 자리
+// ── 버튼 배치 맞춤설정 (위치·크기·투명도) — localStorage 'pd_touch_layout' = { c: { id: { x, y, s } }, a }
+const TOUCH_DEF = Object.fromEntries([...TOUCH_BTNS.map((b) => [b.id, { x: b.x, y: b.y, r: b.r }]), ['stick', { x: TOUCH_STICK.x, y: TOUCH_STICK.y, r: TOUCH_STICK.r }]]);
+const TOUCH_LAYOUT = { c: {}, a: 1 };
+function touchCtl(id) { return id === 'stick' ? TOUCH_STICK : TOUCH_BTNS.find((b) => b.id === id); }
+function applyTouchLayout() { for (const id in TOUCH_DEF) { const D = TOUCH_DEF[id], L = TOUCH_LAYOUT.c[id] || {}, B = touchCtl(id); if (!B) continue; B.x = L.x != null ? L.x : D.x; B.y = L.y != null ? L.y : D.y; B.r = Math.round(D.r * (L.s || 1)); } }
+function loadTouchLayout() { try { const v = JSON.parse(localStorage.getItem('pd_touch_layout') || 'null'); if (v && typeof v === 'object') { TOUCH_LAYOUT.c = v.c && typeof v.c === 'object' ? v.c : {}; TOUCH_LAYOUT.a = typeof v.a === 'number' ? Math.max(0.3, Math.min(1.6, v.a)) : 1; } } catch (e) { /* 기본 배치 */ } applyTouchLayout(); }
+function saveTouchLayout() { applyTouchLayout(); try { localStorage.setItem('pd_touch_layout', JSON.stringify(TOUCH_LAYOUT)); } catch (e) {} }
+function resetTouchLayout() { TOUCH_LAYOUT.c = {}; TOUCH_LAYOUT.a = 1; saveTouchLayout(); }
+loadTouchLayout();
+const TOUCH_LAYOUT_NAMES = { stick: '조이스틱', attack: '공격', dash: '대시', skill: '스킬', treasure: '보구', swap: '무기 교체', interact: '상호작용 E', menu: '메뉴' };
+const TOUCH_LAYOUT_ACTS = [['크기 −', 'size', -0.1], ['크기 +', 'size', 0.1], ['진하게', 'alpha', 0.15], ['연하게', 'alpha', -0.15], ['초기화', 'reset'], ['완료', 'done']];
+function touchLayoutActRect(i) { const w = 52, gap = 4, tot = TOUCH_LAYOUT_ACTS.length * w + (TOUCH_LAYOUT_ACTS.length - 1) * gap; return { x: Math.round(VIEW_W / 2 - tot / 2) + i * (w + gap), y: 34, w, h: 18 }; }
+function updateTouchLayout(game, input) { // 버튼을 끌어서 옮기기 · 고른 버튼 크기 조절 · 전체 투명도
+  const o = game.overlay, m = input.mouse; if (!o.sel) o.sel = 'attack';
+  if (input.wasPressed('Escape')) { saveTouchLayout(); game.overlay = { type: 'pause' }; return; }
+  if (input.wasPressed('Mouse0')) {
+    const ai = TOUCH_LAYOUT_ACTS.findIndex((_, i) => { const r = touchLayoutActRect(i); return m.x >= r.x && m.x <= r.x + r.w && m.y >= r.y && m.y <= r.y + r.h; });
+    if (ai >= 0) { const [, kind, d] = TOUCH_LAYOUT_ACTS[ai]; SFX.play('ui'); input.mouse.down = false;
+      if (kind === 'size') { const L = TOUCH_LAYOUT.c[o.sel] = TOUCH_LAYOUT.c[o.sel] || {}; L.s = Math.max(0.7, Math.min(1.7, Math.round(((L.s || 1) + d) * 10) / 10)); saveTouchLayout(); }
+      else if (kind === 'alpha') { TOUCH_LAYOUT.a = Math.max(0.3, Math.min(1.6, Math.round((TOUCH_LAYOUT.a + d) * 100) / 100)); saveTouchLayout(); }
+      else if (kind === 'reset') resetTouchLayout(); else if (kind === 'done') { saveTouchLayout(); game.overlay = { type: 'pause' }; }
+      return; }
+    let best = null, bd = 1e9; for (const id in TOUCH_DEF) { const B = touchCtl(id); if (!B || (id === 'treasure' && false)) continue; const d = Math.hypot(m.x - B.x, m.y - B.y); if (d <= B.r + 8 && d < bd) { bd = d; best = id; } }
+    if (best) { const B = touchCtl(best); o.sel = best; o.drag = { id: best, dx: B.x - m.x, dy: B.y - m.y }; }
+  }
+  if (o.drag && m.down) { const B = touchCtl(o.drag.id), L = TOUCH_LAYOUT.c[o.drag.id] = TOUCH_LAYOUT.c[o.drag.id] || {};
+    L.x = Math.round(Math.max(B.r, Math.min(VIEW_W - B.r, m.x + o.drag.dx))); L.y = Math.round(Math.max(B.r + 56, Math.min(VIEW_H - B.r, m.y + o.drag.dy))); applyTouchLayout(); }
+  else if (o.drag) { o.drag = null; saveTouchLayout(); }
+}
+function drawTouchLayout(ctx, game) {
+  const o = game.overlay; hudText(ctx, '조작 버튼 설정', VIEW_W / 2, 8, '#ffd84a', 'center', 12);
+  hudText(ctx, `버튼을 끌어서 옮기기 · 고른 버튼: ${TOUCH_LAYOUT_NAMES[o.sel || 'attack']} (크기 ${Math.round(((TOUCH_LAYOUT.c[o.sel || 'attack'] || {}).s || 1) * 100)}%) · 진하기 ${Math.round(TOUCH_LAYOUT.a * 100)}%`, VIEW_W / 2, 22, '#c8c0d8', 'center', 7, VIEW_W - 40);
+  TOUCH_LAYOUT_ACTS.forEach(([label, kind], i) => { const r = touchLayoutActRect(i); ctx.globalAlpha = 0.92; ctx.fillStyle = '#1e1830'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.globalAlpha = 1; ctx.strokeStyle = kind === 'done' ? '#9fe89f' : kind === 'reset' ? '#ff9a9a' : '#ffd84a'; ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1); hudText(ctx, label, r.x + r.w / 2, r.y + 4, ctx.strokeStyle, 'center', 8, r.w - 4); });
+  const B = touchCtl(o.sel || 'attack'); if (B) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(game.time * 6); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(B.x, B.y, B.r + 5, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineWidth = 1; }
+}
 function touchStickFixed() { try { return localStorage.getItem('pd_stick_free') !== '1'; } catch (e) { return true; } } // 기본: 고정 ([사용자 요청])
 function setTouchStickFixed(on) { try { localStorage.setItem('pd_stick_free', on ? '0' : '1'); } catch (e) {} }
 
@@ -92,18 +127,19 @@ function drawTouchControls(ctx, game) {
   const T = game.input.touch; if (!T || !T.enabled) return;
   const mode = T.mode(); if (mode !== 'play') T.clearPlay();
   if (mode === 'play' && !T.guideChecked) { T.guideChecked = true; maybeTouchGuide(game); } // 처음 플레이할 때 조작 안내
-  const guide = game.overlay && game.overlay.type === 'touch_guide';
+  const guide = game.overlay && game.overlay.type === 'touch_guide', layout = game.overlay && game.overlay.type === 'touch_layout', TA = TOUCH_LAYOUT.a;
   ctx.save();
-  if (mode === 'play' || guide) {
+  if (mode === 'play' || guide || layout) {
     const S = T.stick, bx = S ? S.ox : TOUCH_STICK.x, by = S ? S.oy : TOUCH_STICK.y; // 조이스틱 (안 누를 땐 흐리게 자리만)
-    ctx.globalAlpha = S ? 0.5 : 0.22; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.stroke();
-    ctx.globalAlpha = S ? 0.8 : 0.3; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx + (S ? S.kx : 0) * TOUCH_STICK.r, by + (S ? S.ky : 0) * TOUCH_STICK.r, 11, 0, TAU); ctx.fill();
+    ctx.globalAlpha = Math.min(1, TA * (S ? 0.5 : 0.22)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.stroke();
+    ctx.globalAlpha = Math.min(1, TA * (S ? 0.8 : 0.3)); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx + (S ? S.kx : 0) * TOUCH_STICK.r, by + (S ? S.ky : 0) * TOUCH_STICK.r, 11, 0, TAU); ctx.fill();
     const held = new Set([...T.ids.values()].filter((v) => v.kind === 'btn').map((v) => v.code));
-    for (const B of touchBtns(game)) { const on = held.has(B.code); ctx.globalAlpha = on ? 0.75 : 0.42; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.fill();
-      ctx.globalAlpha = on ? 1 : 0.7; ctx.strokeStyle = B.color; ctx.lineWidth = on ? 2.5 : 1.5; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.stroke();
-      ctx.globalAlpha = 0.9; hudText(ctx, B.label, B.x, B.y - (B.r > 20 ? 6 : 4), B.color, 'center', B.r > 20 ? 11 : 8); }
-    const p = game.player; if (p && p.skillCooldown > 0 && p.skillCdMax) { const k = Math.min(1, p.skillCooldown / p.skillCdMax), B = TOUCH_BTNS[2]; ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.arc(B.x, B.y, B.r, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.closePath(); ctx.fill(); } // 스킬 쿨타임
+    for (const B of (layout ? TOUCH_BTNS : touchBtns(game))) { const on = held.has(B.code); ctx.globalAlpha = Math.min(1, TA * (on ? 0.75 : 0.42)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.fill();
+      ctx.globalAlpha = Math.min(1, TA * (on ? 1 : 0.7)); ctx.strokeStyle = B.color; ctx.lineWidth = on ? 2.5 : 1.5; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.stroke();
+      ctx.globalAlpha = Math.min(1, TA * (0.9)); hudText(ctx, B.label, B.x, B.y - (B.r > 20 ? 6 : 4), B.color, 'center', B.r > 20 ? 11 : 8); }
+    const p = game.player; if (p && p.skillCooldown > 0 && p.skillCdMax) { const k = Math.min(1, p.skillCooldown / p.skillCdMax), B = TOUCH_BTNS[2]; ctx.globalAlpha = Math.min(1, TA * (0.55)); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.arc(B.x, B.y, B.r, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.closePath(); ctx.fill(); } // 스킬 쿨타임
     if (guide) drawTouchGuideLabels(ctx, game);
+    if (layout) drawTouchLayout(ctx, game);
   } else {
     for (const U of touchUiButtons(game)) { ctx.globalAlpha = 0.92; ctx.fillStyle = '#1e1830'; ctx.fillRect(U.x, U.y, U.w, U.h); ctx.globalAlpha = 1; ctx.strokeStyle = U.color || '#ffd84a'; ctx.lineWidth = 1; ctx.strokeRect(U.x + 0.5, U.y + 0.5, U.w - 1, U.h - 1);
       hudText(ctx, U.label, U.x + U.w / 2, U.y + U.h / 2 - 5, U.color || '#ffd84a', 'center', 9, U.w - 6); }
@@ -142,7 +178,7 @@ function touchHasTreasure(game) { const p = game && game.player; return !!(p && 
 function touchBtns(game) { return touchHasTreasure(game) ? TOUCH_BTNS : TOUCH_BTNS.filter((b) => b.id !== 'treasure'); }
 function touchGuide(game) { return touchHasTreasure(game) ? TOUCH_GUIDE : TOUCH_GUIDE.filter(([id]) => id !== 'treasure'); }
 function drawTouchGuideLabels(ctx, game) {
-  touchGuide(game).forEach(([id], i) => { const B = id === 'stick' ? { x: 80, y: 204, r: TOUCH_STICK.r } : TOUCH_BTNS.find((b) => b.id === id); if (!B) return;
+  touchGuide(game).forEach(([id], i) => { const B = id === 'stick' ? TOUCH_STICK : TOUCH_BTNS.find((b) => b.id === id); if (!B) return;
     const bx = Math.round(B.x - B.r * 0.75), by = Math.round(B.y - B.r * 0.75); ctx.globalAlpha = 1; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(bx, by, 6, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), bx, by - 4, '#1a1206', 'center', 8); });
   const G = touchGuide(game), x0 = 140, y0 = 62, w = 196, h = 16 + G.length * 13; ctx.globalAlpha = 0.9; ctx.fillStyle = '#120e1c'; ctx.fillRect(x0, y0, w, h); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
   ctx.globalAlpha = 1; G.forEach(([, text], i) => { const y = y0 + 8 + i * 13; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(x0 + 12, y + 4, 5, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), x0 + 12, y, '#1a1206', 'center', 7); hudText(ctx, text, x0 + 22, y, '#ffe9a0', 'left', 7, w - 28); });

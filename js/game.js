@@ -1595,6 +1595,7 @@ class Game {
       if (ch < 0) return; const d = items[ch]; this.overlay = null;
       this.transition = { t: 0, swapped: false, action: () => (d ? this.startFromDeepSave(d) : this.startRun(true)) };
       return;
+    } else if (o.type === 'touch_layout') { updateTouchLayout(this, input); // 모바일 조작 버튼 위치·크기·투명도
     } else if (o.type === 'touch_guide') { // 모바일 조작 안내: 아무 곳이나 터치하면 닫힘
       if (input.wasPressed('Mouse0') || input.wasPressed('Escape') || input.wasPressed('Enter')) { this.overlay = null; this.input.mouse.down = false; }
       return;
