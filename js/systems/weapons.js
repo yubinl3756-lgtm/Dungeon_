@@ -3,9 +3,10 @@
 // 무기 시스템
 // ════════════════════════════════════════════
 // 강화 단계만큼 공격력 보너스를 더한 피해 계산용 수치 (치명타 보너스 무기 포함)
+function upgradeMult(lv) { const U = BALANCE.upgrade; return 1 + U.perLevel * lv + (U.curve || 0) * lv * lv; } // 강화 단계별 피해 배율
 function weaponMods(player, w) {
   const def = w.def, m = Object.assign({}, player.mods);
-  m.attackBonus += (w.lv || 0) * BALANCE.upgrade.perLevel;
+  m.damageMult = (Number.isFinite(m.damageMult) ? m.damageMult : 1) * upgradeMult(w.lv || 0); // 강화: 다른 보너스에 묻히지 않게 따로 곱함
   if (def.critBonus) m.critChance = player.stats.critChance + def.critBonus;
   return m;
 }

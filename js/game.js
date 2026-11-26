@@ -1918,7 +1918,7 @@ class Game {
     const sh = this.scale.hp; let m = base * (1 + (sh - 1) * (trial ? 1 : SK.base) + (!trial && lk ? Math.max(0, sh - SK.from) * (lk - SK.base) : 0)); /* 갈래 예외는 후반(몬스터 체력 ×from 이상)부터만 더 자람 */
     if (p0 && p0.hero && SK.hero[p0.hero.id]) m *= SK.hero[p0.hero.id]; /* [사용자 결정] 드루이드 계열 살짝 강화 */
     if (p0 && p0.jobMaster) m *= 1 + (BALANCE.jobLevel.maxDmg || 0); /* [사용자 결정] 직업 숙련(Lv.10): 스킬 데미지 +10% */
-    if (trial) { const w = this.player && this.player.weapon; if (w) m *= 1 + (BALANCE.trialSkillRarity[w.def.rarity] || 0) + (w.lv || 0) * BALANCE.upgrade.perLevel * 0.25; }
+    if (trial) { const w = this.player && this.player.weapon; if (w) m *= 1 + (BALANCE.trialSkillRarity[w.def.rarity] || 0) + (upgradeMult(w.lv || 0) - 1) * 0.25; }
     return m;
   }
   setJob(p, line, rank) {
