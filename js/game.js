@@ -10,7 +10,7 @@ class Game {
     this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.data = data;
     this.input = new InputManager(canvas);
     if (typeof setupTouch === 'function') { setupTouch(this.input); // 모바일 터치 조작: 플레이 중(조이스틱·버튼) / 창·대사(터치 = 클릭)
-      this.input.touch.mode = () => (this.overlay || this.cutscene || this.transition || (this.legendIntro && this.legendIntro.K) || !this.player || (this.mode !== 'dungeon' && this.mode !== 'lobby') ? 'ui' : 'play'); }
+      this.input.touch.mode = () => (this.overlay || this.cutscene || this.transition || (this.legendIntro && this.legendIntro.K) || !this.player || (this.mode !== 'dungeon' && this.mode !== 'lobby') ? 'ui' : 'play'); this.input.touch.game = this; }
     this.effects = new Effects(); this.hud = new HUD();
     this.weaponSystem = new WeaponSystem(this);
     this.shake = 0; this.shakeMag = 0; this.time = 0;

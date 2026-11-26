@@ -189,7 +189,7 @@ const GIFT_CODES = [
   { hash: '30fbc0b', skin: 'skin_bandi' } // FireFly
 ];
 function giftHash(code) { let h = 0x811c9dc5; for (const ch of 'pd_gift:' + String(code).toUpperCase()) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h.toString(16); }
-function skinsForMenu(save) { const owned = save && Array.isArray(save.skins) ? save.skins : []; return SKINS.filter((k) => (k.source !== 'code' && k.source !== 'common' && k.rarity !== 'unique') || owned.includes(k.id)); } // 코드·일반·고유 스킨은 보유해야 목록에 나옴 ([사용자 결정] 고유는 얻기 전까지 숨김)
+function skinsForMenu(save) { const owned = save && Array.isArray(save.skins) ? save.skins : []; return SKINS.filter((k) => (k.source !== 'code' && k.rarity !== 'unique') || owned.includes(k.id)); } // 코드·고유 스킨만 보유해야 목록에 나옴 — 일반·레어·에픽은 미획득(🔒)으로도 보임 ([사용자 결정])
 // ── 스킨 뽑기 [사용자 결정] 재화=결정석, 1뽑/5뽑. 5%로 배너 스킨 "전설 조각" → 20개 모으면 스킨 완성. 나머지는 스킨 마일리지. 마일리지 상점 별도
 const GACHA = {
   costSingle: 300, cost5: 1500,           // 결정석 비용 (1뽑 300, 5뽑 1500)

@@ -41,7 +41,7 @@ function setupTouch(input) {
     const mode = T.mode();
     for (const t of e.changedTouches) { const p = toView(t);
       if (mode === 'play') {
-        const B = TOUCH_BTNS.find((b) => hitBtn(p, b));
+        const B = touchBtns(T.game).find((b) => hitBtn(p, b));
         if (B) { hold(B.code); T.ids.set(t.identifier, { kind: 'btn', code: B.code }); continue; }
         if (p.x < VIEW_W * 0.55 && !T.stick) { T.stick = { id: t.identifier, ox: p.x, oy: p.y, x: p.x, y: p.y, kx: 0, ky: 0 }; T.ids.set(t.identifier, { kind: 'stick' }); setStick(T.stick); continue; }
         T.ids.set(t.identifier, { kind: 'none' });
@@ -91,7 +91,7 @@ function drawTouchControls(ctx, game) {
     ctx.globalAlpha = S ? 0.5 : 0.22; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.stroke();
     ctx.globalAlpha = S ? 0.8 : 0.3; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx + (S ? S.kx : 0) * TOUCH_STICK.r, by + (S ? S.ky : 0) * TOUCH_STICK.r, 11, 0, TAU); ctx.fill();
     const held = new Set([...T.ids.values()].filter((v) => v.kind === 'btn').map((v) => v.code));
-    for (const B of TOUCH_BTNS) { const on = held.has(B.code); ctx.globalAlpha = on ? 0.75 : 0.42; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.fill();
+    for (const B of touchBtns(game)) { const on = held.has(B.code); ctx.globalAlpha = on ? 0.75 : 0.42; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.fill();
       ctx.globalAlpha = on ? 1 : 0.7; ctx.strokeStyle = B.color; ctx.lineWidth = on ? 2.5 : 1.5; ctx.beginPath(); ctx.arc(B.x, B.y, B.r, 0, TAU); ctx.stroke();
       ctx.globalAlpha = 0.9; hudText(ctx, B.label, B.x, B.y - (B.r > 20 ? 6 : 4), B.color, 'center', B.r > 20 ? 11 : 8); }
     const p = game.player; if (p && p.skillCooldown > 0 && p.skillCdMax) { const k = Math.min(1, p.skillCooldown / p.skillCdMax), B = TOUCH_BTNS[2]; ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.moveTo(B.x, B.y); ctx.arc(B.x, B.y, B.r, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.closePath(); ctx.fill(); } // 스킬 쿨타임
@@ -110,11 +110,14 @@ const TOUCH_GUIDE = [ // [버튼 id 또는 'stick', 설명] — 버튼마다 번
   ['stick', '이동 — 왼쪽 아무 곳이나 누르고 끌기'], ['attack', '공격 — 누르고 있으면 가까운 적 자동 조준'], ['skill', '스킬'], ['dash', '대시 (잠깐 무적)'],
   ['treasure', '보구'], ['swap', '무기 교체'], ['interact', 'E — 상자·포탈·사람과 상호작용'], ['menu', '메뉴 — 퀘스트·스킨·조작 안내']
 ];
+function touchHasTreasure(game) { const p = game && game.player; return !!(p && p.treasure); } // 보구는 얻기 전까지 버튼 숨김
+function touchBtns(game) { return touchHasTreasure(game) ? TOUCH_BTNS : TOUCH_BTNS.filter((b) => b.id !== 'treasure'); }
+function touchGuide(game) { return touchHasTreasure(game) ? TOUCH_GUIDE : TOUCH_GUIDE.filter(([id]) => id !== 'treasure'); }
 function drawTouchGuideLabels(ctx, game) {
-  TOUCH_GUIDE.forEach(([id], i) => { const B = id === 'stick' ? { x: 80, y: 204, r: TOUCH_STICK.r } : TOUCH_BTNS.find((b) => b.id === id); if (!B) return;
+  touchGuide(game).forEach(([id], i) => { const B = id === 'stick' ? { x: 80, y: 204, r: TOUCH_STICK.r } : TOUCH_BTNS.find((b) => b.id === id); if (!B) return;
     const bx = Math.round(B.x - B.r * 0.75), by = Math.round(B.y - B.r * 0.75); ctx.globalAlpha = 1; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(bx, by, 6, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), bx, by - 4, '#1a1206', 'center', 8); });
-  const x0 = 140, y0 = 62, w = 196, h = 16 + TOUCH_GUIDE.length * 13; ctx.globalAlpha = 0.9; ctx.fillStyle = '#120e1c'; ctx.fillRect(x0, y0, w, h); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
-  ctx.globalAlpha = 1; TOUCH_GUIDE.forEach(([, text], i) => { const y = y0 + 8 + i * 13; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(x0 + 12, y + 4, 5, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), x0 + 12, y, '#1a1206', 'center', 7); hudText(ctx, text, x0 + 22, y, '#ffe9a0', 'left', 7, w - 28); });
+  const G = touchGuide(game), x0 = 140, y0 = 62, w = 196, h = 16 + G.length * 13; ctx.globalAlpha = 0.9; ctx.fillStyle = '#120e1c'; ctx.fillRect(x0, y0, w, h); ctx.strokeStyle = '#ffd84a'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
+  ctx.globalAlpha = 1; G.forEach(([, text], i) => { const y = y0 + 8 + i * 13; ctx.fillStyle = '#ffd84a'; ctx.beginPath(); ctx.arc(x0 + 12, y + 4, 5, 0, TAU); ctx.fill(); hudText(ctx, String(i + 1), x0 + 12, y, '#1a1206', 'center', 7); hudText(ctx, text, x0 + 22, y, '#ffe9a0', 'left', 7, w - 28); });
   hudText(ctx, '모바일 조작 안내', VIEW_W / 2, 22, '#ffd84a', 'center', 14);
   hudText(ctx, '창·대사에서는 화면을 터치해 고르고, 왼쪽 아래 ✕로 닫습니다', VIEW_W / 2, 42, '#c8c0d8', 'center', 8);
   hudText(ctx, '화면을 터치하면 시작', VIEW_W / 2, y0 + h + 8, '#ffffff', 'center', 9);
@@ -129,7 +132,7 @@ const MOBILE_TEXT_FIX = [
   [/F\/우클릭 스킬 · E 상호작용 · Esc 조작법/, '스킬 버튼 · E 상호작용 · ≡ 메뉴'], [/\(Esc → K로 켜기\/끄기\)/, '(≡ 메뉴 → 스킨에서 켜기/끄기)'], [/로비 Esc → J /, '로비 ≡ 메뉴 → '],
   [/↑↓ · 클릭 · Enter 선택/, '터치로 선택'], [/(숫자 키(\(1~0\))?|번호 키|1~\d|1·2·3|\d)\s*\/\s*클릭/g, '터치'], [/클릭\s*\/\s*(숫자|번호) 키/g, '터치'], [/숫자 키\s*\/\s*클릭/g, '터치'],
   [/Enter\s*·\s*클릭/g, '터치'], [/클릭 또는 1 \/ 2 \/ 3/g, '터치해서 고르기'], [/\s*\/\s*Enter\s*—/g, ' —'], [/좌클릭/g, '공격 버튼'], [/우클릭/g, '스킬 버튼'], [/마우스를 올리면/g, '터치하면'],
-  [/([A-Z`+]|\d)\s*\/\s*(Enter\s*\/\s*)?Esc/g, 'Esc'], [/\bEsc\b/g, '✕'], [/클릭/g, '터치'], [/\s*\((?:[A-Z]|[A-Z] 키)\)/g, '']
+  [/([A-Z`+]|\d)\s*\/\s*(Enter\s*\/\s*)?Esc/g, 'Esc'], [/\bEsc\b/g, '✕'], [/클릭/g, '터치'], [/\s*\((?:[A-Z]|[A-Z] 키)\)/g, ''], [/\[[A-Z]\]\s*/g, '']
 ];
 function mobileText(str) {
   if (typeof str !== 'string' || !str) return str; let r = _mobileTextCache.get(str); if (r !== undefined) return r;
