@@ -99,7 +99,8 @@ function drawGachaFlipFx(ctx, r, t, i, o) { // 뒤집힌 직후 반짝 (에픽 �
 function hudFont(ctx, size) { ctx.font = HUD_FONTS[size] || (HUD_FONTS[size] = `bold ${size}px 'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif`); }
 // maxW: 이 너비를 넘으면 글씨를 줄이고(최소 70%), 그래도 넘으면 '…'로 자름. maxW가 없어도 화면 좌표의 글씨는 화면 밖으로 나가지 않게 맞춤 [UI 개선]
 function hudText(ctx, str, x, y, color = '#fff', align = 'left', size = 10, maxW = 0) {
-  str = String(str); hudFont(ctx, size); ctx.textAlign = align; ctx.textBaseline = 'top';
+  str = String(str); if (typeof IS_MOBILE !== 'undefined' && IS_MOBILE) { str = mobileText(str); if (!str) return; } // 모바일: PC 안내 문구를 터치용으로
+  hudFont(ctx, size); ctx.textAlign = align; ctx.textBaseline = 'top';
   let lim = maxW;
   if (!lim) { const T = ctx.getTransform(); if (T.e === 0 && T.f === 0 && T.b === 0 && T.c === 0) lim = align === 'center' ? Math.min(x, VIEW_W - x) * 2 - 6 : align === 'right' ? x - 3 : VIEW_W - x - 3; } // 화면 좌표(카메라 이동 없음)일 때만
   if (lim > 0 && ctx.measureText(str).width > lim) {

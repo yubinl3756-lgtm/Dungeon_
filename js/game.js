@@ -1595,6 +1595,9 @@ class Game {
       if (ch < 0) return; const d = items[ch]; this.overlay = null;
       this.transition = { t: 0, swapped: false, action: () => (d ? this.startFromDeepSave(d) : this.startRun(true)) };
       return;
+    } else if (o.type === 'touch_guide') { // 모바일 조작 안내: 아무 곳이나 터치하면 닫힘
+      if (input.wasPressed('Mouse0') || input.wasPressed('Escape') || input.wasPressed('Enter')) { this.overlay = null; this.input.mouse.down = false; }
+      return;
     } else if (o.type === 'explorer_talk') { // 최초의 탐험가에게 묻기
       if (input.wasPressed('Escape') || input.wasPressed('KeyE')) { this.overlay = null; return; }
       const items = this.explorerTalkList(); let ch = -1;
@@ -3259,7 +3262,7 @@ class Game {
     if (this.cutin && !this.overlay) HUD.cutin(ctx, this); else if (this.overlay) this.cutin = null; // 최종 스킬·보구 컷인
     if (this.treasureToast) HUD.treasureToast(ctx, this); // 보구 획득 알림 (결과 화면 위에도 보임)
     if (this.legendIntro && this.legendIntro.K) HUD.legendIntro(ctx, this); // 전설 스킨 첫 획득 컷신 (맨 위)
-    if (typeof drawTouchControls === 'function') drawTouchControls(ctx, this); // 모바일 터치 버튼
+    if (typeof drawTouchControls === 'function') drawTouchControls(ctx, this); // 모바일 터치 버튼 (조작 안내 포함)
 
     /* 조준선은 진짜 마우스 커서로 그림 (InputManager.setupCursor) — 늦게 따라오지 않게 */
 

@@ -15,8 +15,8 @@ function pauseMenuItems(game) {
     { id: 'gacha', label: '스킨 뽑기', key: 'J', code: 'KeyJ', act: go({ type: 'gacha', tab: 0, banner: 0, results: null, msg: null, back: 'pause' }), hide: !lobby },
     { id: 'travel', label: '빠른 이동', key: '+', code: 'Equal', act: go({ type: 'travel', sub: null, msg: null }), hide: !(lobby && sv.babylon && sv.babylon.visited) },
     { id: 'details', label: '상세 정보', key: 'I', code: 'KeyI', act: go({ type: 'details', tab: 0 }) },
-    { id: 'keys', label: '조작키 설정', key: 'O', code: 'KeyO', act: go({ type: 'keys', wait: null, msg: null }) },
-    { id: 'gift', label: '선물 코드', key: 'G', code: 'KeyG', act: () => { G.overlay = { type: 'gift', code: '', msg: null }; G.input.typed.length = 0; } },
+    IS_MOBILE ? { id: 'guide', label: '조작 안내', key: '', act: go({ type: 'touch_guide' }) } : { id: 'keys', label: '조작키 설정', key: 'O', code: 'KeyO', act: go({ type: 'keys', wait: null, msg: null }) }, // 모바일: 조작키 설정 대신 터치 조작 안내
+    { id: 'gift', hide: IS_MOBILE, label: '선물 코드', key: 'G', code: 'KeyG', act: () => { G.overlay = { type: 'gift', code: '', msg: null }; G.input.typed.length = 0; } },
     { id: 'mute', label: sv.muted ? '소리 켜기' : '소리 끄기', key: 'M', code: 'KeyM', act: () => G.toggleMute(), stay: true },
     { id: 'prologue', label: '프롤로그 다시 보기', key: 'P', code: 'KeyP', act: go({ type: 'story', lines: PROLOGUE_LINES, i: 0, t: 0, done: () => {} }), hide: !lobby },
     lobby ? { id: 'logout', label: '로그아웃', key: 'L', code: 'KeyL', act: () => G.logout(), danger: true }
@@ -55,8 +55,8 @@ function drawPauseMenu(ctx, game) {
       ctx.fillStyle = it.danger ? 'rgba(255,106,122,0.5)' : 'rgba(255,216,74,0.45)'; ctx.fillRect(r.x, r.y + r.h - 1, r.w, 1); }
     const ox = on ? 10 + Math.round(Math.sin(t * 6) * 0.6) : 7;
     hudText(ctx, cf ? '정말 포기할까요?' : it.label, r.x + ox, r.y + 3, it.danger ? (on ? '#ff8a96' : '#c8707a') : on ? '#ffffff' : '#c8c0d8', 'left', 10);
-    ctx.fillStyle = on ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'; const kw = it.key.length * 6 + 8; ctx.fillRect(r.x + r.w - kw - 4, r.y + 3, kw, 11);
-    hudText(ctx, it.key, r.x + r.w - 4 - kw / 2, r.y + 4, on ? '#ffd84a' : '#8878a0', 'center', 8); });
+    if (!IS_MOBILE && it.key) { ctx.fillStyle = on ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'; const kw = it.key.length * 6 + 8; ctx.fillRect(r.x + r.w - kw - 4, r.y + 3, kw, 11);
+    hudText(ctx, it.key, r.x + r.w - 4 - kw / 2, r.y + 4, on ? '#ffd84a' : '#8878a0', 'center', 8); } }); // 모바일은 키 표시 없음
   hudText(ctx, '↑↓ · 클릭 · Enter 선택', PM.x, VIEW_H - 14, '#6a5a80', 'left', 7);
   if (o.msg) hudText(ctx, o.msg.text, PM.x, VIEW_H - 26, '#ff9aa6', 'left', 8);
   // 오른쪽 정보 카드
@@ -84,8 +84,12 @@ function drawPauseMenu(ctx, game) {
   }
   // ② 조작
   { const y0 = card(58, '조작'), B = game.input.binds, k = (id) => (B[id] || []).filter(Boolean).map(keyLabel).join('/') || '없음';
-    const rows = [[`${k('up')}${k('left')}${k('down')}${k('right')}`, '이동'], [k('attack'), '공격'], [k('dash'), '대시'], [k('skill'), '스킬'], [k('interact'), '상호작용'], [`${k('swap')}/휠`, '무기 교체']];
-    if ((sv.treasures || []).length || p.treasure) rows.push([k('treasure'), '보구']);
+    if (IS_MOBILE) { // 모바일: 터치 조작 (두 칸씩)
+      [['이동', '왼쪽 누르고 끌기'], ['공격', '공격 버튼 · 자동 조준'], ['대시·스킬·보구', '각 버튼'], ['무기 교체', '교체 버튼'], ['상호작용', 'E 버튼'], ['메뉴', '≡ (조작 안내: 메뉴)']].forEach(([what, how], i) => { const cx = CX + 10 + (i % 2) * Math.floor((CW - 16) / 2), cy = y0 + 16 + Math.floor(i / 2) * 13;
+        hudText(ctx, what, cx, cy, '#ffd84a', 'left', 8); hudText(ctx, how, cx + 64, cy, '#c8c0d8', 'left', 7, Math.floor((CW - 16) / 2) - 68); }); }
+    const rows = IS_MOBILE ? []
+      : [[`${k('up')}${k('left')}${k('down')}${k('right')}`, '이동'], [k('attack'), '공격'], [k('dash'), '대시'], [k('skill'), '스킬'], [k('interact'), '상호작용'], [`${k('swap')}/휠`, '무기 교체']];
+    if (!IS_MOBILE && ((sv.treasures || []).length || p.treasure)) rows.push([k('treasure'), '보구']);
     rows.forEach(([key, what], i) => { const cx = CX + 10 + (i % 3) * Math.floor((CW - 16) / 3), cy = y0 + 16 + Math.floor(i / 3) * 14;
       hudText(ctx, key, cx, cy, '#ffd84a', 'left', 8); hudText(ctx, what, cx + Math.min(70, key.length * 7 + 6), cy, '#c8c0d8', 'left', 8); }); }
   // ③ 원소 반응
