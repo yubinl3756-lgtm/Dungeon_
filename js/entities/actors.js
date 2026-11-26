@@ -83,6 +83,8 @@ class Player extends Entity {
     if (input.isDown('KeyD')) ix += 1;
     if (input.isDown('KeyW')) iy -= 1;
     if (input.isDown('KeyS')) iy += 1;
+    const TS = input.touch && input.touch.enabled && input.touch.stick; // 모바일 조이스틱: 8방향 키 대신 손가락 방향 그대로 (360°)
+    if (TS && Math.hypot(TS.kx, TS.ky) > TOUCH_STICK.dead) { ix = TS.kx; iy = TS.ky; }
     const ilen = Math.hypot(ix, iy);
     this.moving = ilen > 0;
     if (ilen > 0) { ix /= ilen; iy /= ilen; this.lastMoveDir.x = ix; this.lastMoveDir.y = iy; }

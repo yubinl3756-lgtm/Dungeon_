@@ -19,7 +19,9 @@ const TOUCH_BTNS = [ // x, y, r = 화면(512×288) 좌표 · code = 게임 키 (
   { id: 'menu', label: '메뉴', x: 496, y: 68, r: 13, code: 'Escape', color: '#ffffff' }
 ];
 const TOUCH_UI_BACK = { x: 16, y: 272, r: 11, code: 'Escape' }; // 창·대사 화면의 ✕ (Esc)
-const TOUCH_STICK = { r: 30, dead: 0.3 };
+const TOUCH_STICK = { r: 30, dead: 0.25, x: 80, y: 204 }; // x·y = 고정 조이스틱 자리
+function touchStickFixed() { try { return localStorage.getItem('pd_stick_free') !== '1'; } catch (e) { return true; } } // 기본: 고정 ([사용자 요청])
+function setTouchStickFixed(on) { try { localStorage.setItem('pd_stick_free', on ? '0' : '1'); } catch (e) {} }
 
 function setupTouch(input) {
   const T = input.touch = { enabled: IS_MOBILE, stick: null, ids: new Map(), vec: { x: 1, y: 0 }, mode: () => 'ui', fsTried: false };
@@ -43,7 +45,7 @@ function setupTouch(input) {
       if (mode === 'play') {
         const B = touchBtns(T.game).find((b) => hitBtn(p, b));
         if (B) { hold(B.code); T.ids.set(t.identifier, { kind: 'btn', code: B.code }); continue; }
-        if (p.x < VIEW_W * 0.55 && !T.stick) { T.stick = { id: t.identifier, ox: p.x, oy: p.y, x: p.x, y: p.y, kx: 0, ky: 0 }; T.ids.set(t.identifier, { kind: 'stick' }); setStick(T.stick); continue; }
+        if (p.x < VIEW_W * 0.55 && !T.stick) { const fx = touchStickFixed(); T.stick = { id: t.identifier, fixed: fx, ox: fx ? TOUCH_STICK.x : p.x, oy: fx ? TOUCH_STICK.y : p.y, x: p.x, y: p.y, kx: 0, ky: 0 }; /* 고정: 왼쪽 어디를 눌러도 제자리 조이스틱 기준 */ T.ids.set(t.identifier, { kind: 'stick' }); setStick(T.stick); continue; }
         const G = T.game, onNotice = G && G.mode === 'lobby' && typeof HUD !== 'undefined' && HUD.noticeBtn && (() => { const r = HUD.noticeBtn(); return p.x >= r.x - 4 && p.x <= r.x + r.w + 4 && p.y >= r.y - 4 && p.y <= r.y + r.h + 4; })();
         if (G && (onNotice || (G.minimapTarget && G.minimapTarget(p)))) { input.mouse.x = p.x; input.mouse.y = p.y; input.pressed.add('Mouse0'); input.raw.push('Mouse0'); } // 미니맵 · 공지 (공격은 안 함)
         T.ids.set(t.identifier, { kind: 'none' });
@@ -59,7 +61,7 @@ function setupTouch(input) {
     if (onLogin(e) || !IS_MOBILE) return; e.preventDefault();
     for (const t of e.changedTouches) { const v = T.ids.get(t.identifier); if (!v) continue; const p = toView(t);
       if (v.kind === 'stick' && T.stick && T.stick.id === t.identifier) { T.stick.x = p.x; T.stick.y = p.y;
-        const dx = p.x - T.stick.ox, dy = p.y - T.stick.oy, d = Math.hypot(dx, dy); if (d > TOUCH_STICK.r * 1.6) { T.stick.ox = p.x - dx / d * TOUCH_STICK.r * 1.6; T.stick.oy = p.y - dy / d * TOUCH_STICK.r * 1.6; } // 손가락을 따라오는 조이스틱
+        const dx = p.x - T.stick.ox, dy = p.y - T.stick.oy, d = Math.hypot(dx, dy); if (!T.stick.fixed && d > TOUCH_STICK.r * 1.6) { T.stick.ox = p.x - dx / d * TOUCH_STICK.r * 1.6; T.stick.oy = p.y - dy / d * TOUCH_STICK.r * 1.6; } // 손가락을 따라오는 조이스틱
         setStick(T.stick); }
       else if (v.kind === 'ui') { input.mouse.x = p.x; input.mouse.y = p.y; // 위아래로 끌면 스크롤 (퀘스트·상점 등 휠 대신)
         const dy = p.y - v.ly; if (Math.abs(dy) >= 14) { const k = dy < 0 ? 'WheelDown' : 'WheelUp'; input.pressed.add(k); input.raw.push(k); v.ly = p.y; v.dragged = true; } }
@@ -93,7 +95,7 @@ function drawTouchControls(ctx, game) {
   const guide = game.overlay && game.overlay.type === 'touch_guide';
   ctx.save();
   if (mode === 'play' || guide) {
-    const S = T.stick, bx = S ? S.ox : 80, by = S ? S.oy : 204; // 조이스틱 (안 누를 땐 흐리게 자리만)
+    const S = T.stick, bx = S ? S.ox : TOUCH_STICK.x, by = S ? S.oy : TOUCH_STICK.y; // 조이스틱 (안 누를 땐 흐리게 자리만)
     ctx.globalAlpha = S ? 0.5 : 0.22; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, TOUCH_STICK.r, 0, TAU); ctx.stroke();
     ctx.globalAlpha = S ? 0.8 : 0.3; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(bx + (S ? S.kx : 0) * TOUCH_STICK.r, by + (S ? S.ky : 0) * TOUCH_STICK.r, 11, 0, TAU); ctx.fill();
     const held = new Set([...T.ids.values()].filter((v) => v.kind === 'btn').map((v) => v.code));
