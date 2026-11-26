@@ -3,7 +3,7 @@
 // HUD / 오버레이
 // ════════════════════════════════════════════
 const HUD_FONTS = {}; // 글꼴 문자열은 크기마다 한 번만 만듦 (같은 문자열을 다시 지정하면 브라우저가 빠르게 처리)
-const _bannerImgs = {}; // 사용자 제공 1024×576 배너 원본 (webp · 예비 jpg)
+const _bannerImgs = {}; // 사용자 제공 2000×1125 고화질 배너 원본 (webp) · 예비 1024×576 jpg
 function bannerImg(key) {
   let im = _bannerImgs[key];
   if (im === undefined) {
