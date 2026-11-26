@@ -9,6 +9,8 @@ class Game {
   constructor(canvas, data) {
     this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.data = data;
     this.input = new InputManager(canvas);
+    if (typeof setupTouch === 'function') { setupTouch(this.input); // 모바일 터치 조작: 플레이 중(조이스틱·버튼) / 창·대사(터치 = 클릭)
+      this.input.touch.mode = () => (this.overlay || this.cutscene || this.transition || (this.legendIntro && this.legendIntro.K) || !this.player || (this.mode !== 'dungeon' && this.mode !== 'lobby') ? 'ui' : 'play'); }
     this.effects = new Effects(); this.hud = new HUD();
     this.weaponSystem = new WeaponSystem(this);
     this.shake = 0; this.shakeMag = 0; this.time = 0;
@@ -1342,7 +1344,7 @@ class Game {
   addShake(t, mag) { this.shake = Math.max(this.shake, t); this.shakeMag = Math.max(this.shakeMag, mag); }
 
   // ── 카메라
-  mouseWorld() { if (this.coop && this.coop.aim) return this.coop.aim; return { x: this.input.mouse.x + Math.round(this.cam.x), y: this.input.mouse.y + Math.round(this.cam.y) }; }
+  mouseWorld() { if (this.coop && this.coop.aim) return this.coop.aim; if (this.input.touch && this.input.touch.enabled && this.input.touch.mode() === 'play') { const a = touchAimWorld(this); if (a) return a; } /* 모바일: 자동 조준 */ return { x: this.input.mouse.x + Math.round(this.cam.x), y: this.input.mouse.y + Math.round(this.cam.y) }; }
   cameraTarget() { // 멀티: 내가 쓰러지면 동료를 비춤
     const p = this.coop && this.player.state === 'DEAD' ? this.allPlayers().find((q) => q.state !== 'DEAD') || this.player : this.player, mx = this.input.mouse.x - VIEW_W / 2, my = this.input.mouse.y - VIEW_H / 2;
     let fx = p.x + mx * 0.2, fy = p.y + my * 0.2;
@@ -3257,6 +3259,7 @@ class Game {
     if (this.cutin && !this.overlay) HUD.cutin(ctx, this); else if (this.overlay) this.cutin = null; // 최종 스킬·보구 컷인
     if (this.treasureToast) HUD.treasureToast(ctx, this); // 보구 획득 알림 (결과 화면 위에도 보임)
     if (this.legendIntro && this.legendIntro.K) HUD.legendIntro(ctx, this); // 전설 스킨 첫 획득 컷신 (맨 위)
+    if (typeof drawTouchControls === 'function') drawTouchControls(ctx, this); // 모바일 터치 버튼
 
     /* 조준선은 진짜 마우스 커서로 그림 (InputManager.setupCursor) — 늦게 따라오지 않게 */
 
