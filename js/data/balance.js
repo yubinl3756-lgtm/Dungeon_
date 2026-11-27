@@ -84,7 +84,7 @@ const BALANCE = {
     // 행운의 기계 확률표 (합 1). 골드 기대값 = 판돈의 0.8배 + 물약·에너지·무기 (예전엔 '두 배'가 실제로는 판돈의 40%만 돌려줘서 골드 기대값 0.1배)
     gambleTable: { lose: 0.2, refund: 0.15, double: 0.25, triple: 0.05, hp: 0.15, energy: 0.12, weapon: 0.08 },
     challenge: { waves: 3, extra: 2, hp: 1.3, dmg: 1.15 } }, // 도전방: 웨이브 수, 웨이브당 추가 몬스터, 정예 위에 더 곱하는 체력·공격력
-  // 무기 강화 (그 판 동안만): 단계마다 피해 +perLevel, 최대 maxLevel
+  // 무기 강화 (그 판 동안만): 상한 없이 강화 가능, 단계가 높아질수록 피해 증가 효율은 점감
   //  비용 = base × (다음 단계) × 등급 배율 × 스테이지 물가, 성공률은 다음 단계 기준 (실패해도 단계 유지)
   trialSkillRarity: { common: 0, uncommon: 0.03, rare: 0.06, epic: 0.1, legendary: 0.15 }, // 시련에서 스킬 피해에 더하는 무기 등급 몫 (+ 강화 단계당 perLevel의 1/4)
   // [사용자 결정] 기술자 함정 계열 · 덫 장비 — 수치는 모두 [제안] 초기값 (여기서만 고치면 됨)
@@ -104,7 +104,7 @@ const BALANCE = {
     death: { life: 15, range: 150, every: 0.6, dmg: 20, /* [밸런스 조정] 파수기 직선 번개 피해 24 → 20 */ corpseRange: 120, corpseR: 46, corpseEvery: 1.2, corpseHp: 0.65, /* [밸런스 조정] 시체 폭발 피해 80% → 65%, 범위 52 → 46 */ corpseHeal: 0.1, lifesteal: 0.05, bossCorpse: 60, corpseCap: 700, corpseHealCap: 0.04 }, /* 시체 폭발: 일반 몬스터 skillDmg(corpseCap)·보스 skillDmg(bossCorpse)까지, 시체 1개 회복은 최대 체력 corpseHealCap까지 */ // 망자의 파수기 (2차) — 번개 = dmg(스킬 피해 배율·공격력 적용), 시체 폭발 피해 = 죽은 적 최대 체력 × corpseHp, 폭발 때 죽은 적 최대 체력 × corpseHeal 회복, 파수기가 준 피해 × lifesteal 회복 [사용자 결정]
     corpseLife: 6           // 시체가 남아 있는 시간(초)
   },
-  upgrade: { maxLevel: 10, perLevel: 0.14, curve: 0.006, base: 30, /* [사용자 요청] 강화는 다른 공격력 보너스와 따로 곱함: ×(1 + perLevel×n + curve×n²) → +5 ×1.85 · +10 ×3.0 */ chance: [1, 0.9, 0.75, 0.6, 0.45, 0.38, 0.32, 0.26, 0.2, 0.15],
+  upgrade: { awakenLevel: 10, perLevel: 0.14, power: 0.85, base: 27, /* 강화 피해 배율: 1 + 0.14 × 강화 단계^0.85 · +10 약 ×1.99, 이후 증가 효율 점감 · 상한 없음 */ chance: [1, 0.9, 0.75, 0.6, 0.45, 0.38, 0.32, 0.26, 0.2, 0.15],
     rarityMult: { common: 1, uncommon: 1.2, rare: 1.5, epic: 1.8, legendary: 2.2, unique: 2.2 }, forgeRoomDiscount: 0.7, forgeRoomBonus: 0.1 },
   // 보스 강화 배율 (전직의 방 상위자는 제외): 체력·공격력·공격 간격
   //  boss = 1~10필드 보스, bossDeep = 심층 보스 (보구를 가진 상태를 기준으로 더 강함)

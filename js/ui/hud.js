@@ -738,13 +738,14 @@ class HUD {
         T('오른쪽 확률 = 한 스테이지에서 그 방이 나올 확률 (진화 단계에 따라 달라짐)', 40, 72 + SR.pool.length * 14 + 4, '#888', 'left', 7);
       } else if (o.tab === 1) {
         const U = BALANCE.upgrade, R = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-        T(`최대 +${U.maxLevel}강 · +10강 피해 ×${upgradeMult(U.maxLevel).toFixed(1)} (단계가 오를수록 더 크게) · 실패해도 단계는 내려가지 않음 · 강화는 그 판에서만 유지`, 40, 44, '#c8c0d8');
+        T(`강화 상한 없음 · +10강 피해 ×${upgradeMult(U.awakenLevel).toFixed(2)} · 단계가 높아질수록 피해 증가 효율 점감 · 강화는 그 판에서만 유지`, 40, 44, '#c8c0d8');
         T('단계', 40, 62, '#ffd84a'); T('성공 확률 (모루)', 150, 62, '#ffd84a', 'center'); T('성공 확률 (강화소)', 260, 62, '#ffd84a', 'center'); T('누적 피해', 360, 62, '#ffd84a', 'center');
         U.chance.forEach((c, i) => { const y = 76 + i * 14; T(`+${i} → +${i + 1}`, 40, y); T(pct(c), 150, y, '#9fe89f', 'center'); T(pct(Math.min(1, c + U.forgeRoomBonus)), 260, y, '#9ad8ff', 'center'); T('×' + upgradeMult(i + 1).toFixed(2), 360, y, '#ffd8a0', 'center'); });
         const y0 = 76 + U.chance.length * 14 + 8;
         T(`비용 = ${U.base} × 다음 단계 × 등급 배율 × 스테이지 물가(스테이지마다 +${pct(BALANCE.shopInflate)})`, 40, y0, '#c8c0d8');
         T('등급 배율: ' + R.map((r) => `${RARITY_NAME[r]} ×${U.rarityMult[r]}`).join(' · '), 40, y0 + 14, '#c8c0d8');
         T(`강화소(특수방): 비용 ${pct(1 - U.forgeRoomDiscount)} 할인 · 성공 확률 +${pct(U.forgeRoomBonus)}`, 40, y0 + 28, '#9ad8ff');
+        T('+10 이후 성공률은 단계마다 1%p 감소 · +24강부터 1% 고정', 40, y0 + 42, '#9ad8ff');
       } else {
         T('상태이상: 화상(불) · 빙결(얼음) · 중독(자연) · 전격(번개) · 실명(빛) · 저주(어둠) — 서로 다른 둘이 겹치면 반응', 40, 44, '#c8c0d8');
         const RX = [['열충격', '화상 + 빙결', '큰 단일 피해, 두 상태 해제'], ['독 연소', '화상 + 중독', '주변 폭발 피해'], ['감전', '빙결 + 전격', '피해 + 주변 3명에게 번개'],

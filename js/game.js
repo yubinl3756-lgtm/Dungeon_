@@ -174,7 +174,7 @@ class Game {
     if (fromStash.length && this.effects) this.effects.text(p.x, p.y - 26, `보급품: ${fromStash.join(' · ')}`, '#9fe89f');
     for (const id of list) {
       if (id === 's_bless') pick(DATA_BUFFS).apply(p);
-      else if (id === 's_whet' && p.weapons[0]) p.weapons[0].lv = Math.min(BALANCE.upgrade.maxLevel, (p.weapons[0].lv || 0) + 1);
+      else if (id === 's_whet' && p.weapons[0]) p.weapons[0].lv = (p.weapons[0].lv || 0) + 1;
       else if (id === 's_purse') this.gold += 80;
       else if (id === 's_mana') { p.maxEnergy += 60; p.energy = p.maxEnergy; }
       else if (id === 's_amulet') { p.maxHp += 30; p.hp = p.maxHp; }
@@ -354,7 +354,7 @@ class Game {
     if (R.id === 'rank1' || R.id === 'rank2') { const want = R.id === 'rank1' ? 1 : 2; while (p.rank < want) { const br = p.rank === 0 && branchesAtEvolve(p.hero.id) ? jobLines(p.hero.id).find((l) => l.id === p.lineChoice) : null; const r0 = p.rank; this.evolve(null, br || null); if (p.rank === r0) break; } }
     else if (R.id === 'bless') { const b = pick(DATA_BUFFS); b.apply(p); p.buffs.push(b.id); }
     else if (R.id === 'treasure') { if (p.treasure && p.treasure.apply) p.treasure.apply(p); p.treasureCd = 0; }
-    else if (R.id === 'king') { p.maxHp += 40; p.hp += 40; p.maxEnergy += 60; p.energy = p.maxEnergy; for (const w of p.weapons) w.lv = Math.min(BALANCE.upgrade.maxLevel, (w.lv || 0) + 2); }
+    else if (R.id === 'king') { p.maxHp += 40; p.hp += 40; p.maxEnergy += 60; p.energy = p.maxEnergy; for (const w of p.weapons) w.lv = (w.lv || 0) + 2; }
     this.effects.ring(p.x, p.y, 34, '#ffd84a'); this.effects.ring(p.x, p.y, 54, '#fff4c0'); this.effects.goldBurst(p.x, p.y - 6, 18); this.effects.rays(p.x, p.y, '#ffd84a', 14, 70, 0.8); SFX.play('solomon', 0.5);
     const gift = R.id === 'king'; /* 왕을 마주할 권리: 빼앗긴 게 아니라 엔키두가 새로 건넨 권리 */
     this.effects.text(p.x, p.y - 34, gift ? `${R.name} 획득` : `${R.name} 회복`, gift ? '#9ae8d8' : '#ffd84a', true);
@@ -2628,18 +2628,17 @@ class Game {
   }
   // 무기 강화: 성공하면 +1 (실패해도 단계 유지, 비용만 듦)
   upgradeCost(w, discount = 1) { const U = BALANCE.upgrade; return Math.round(U.base * (w.lv + 1) * U.rarityMult[w.def.rarity] * (1 + BALANCE.shopInflate * this.stageIndex) * discount * (1 - (this.player.hero.upgradeDiscount || 0))); }
-  upgradeChance(w, bonus = 0) { return Math.min(1, BALANCE.upgrade.chance[w.lv] + bonus); }
+  upgradeChance(w, bonus = 0) { const C = BALANCE.upgrade.chance, base = C[Math.min(w.lv, C.length - 1)] - Math.max(0, w.lv - (C.length - 1)) * 0.01; return Math.min(1, Math.max(0.01, base + bonus)); }
   tryUpgrade(discount = 1, bonus = 0, at) {
     const p = this.player, w = p.weapon, U = BALANCE.upgrade;
     if (!w) return;
-    if (w.lv >= U.maxLevel) { this.effects.text(p.x, p.y - 18, '최대 강화입니다', '#aaa'); SFX.play('deny'); return; }
     const cost = this.upgradeCost(w, discount);
     if (this.gold < cost) { this.effects.text(p.x, p.y - 18, '골드가 부족합니다', '#ff7070'); SFX.play('deny'); return; }
     this.gold -= cost;
     const fx = at || p;
     if (Math.random() < this.upgradeChance(w, bonus)) {
       w.lv++;
-      if (w.lv >= BALANCE.upgrade.maxLevel && w.base && w.base.awaken) { this.showBanner(`각성! ${w.def.name}`, w.base.awaken.desc, '#ffd84a'); this.effects.rays(p.x, p.y, '#ffd84a', 18, 80, 1); this.screenFlash = 0.2; this.flashColor = '255,216,74'; SFX.play('solomon', 0.5); } /* [사용자 결정] 기본 무기 +10 각성 */
+      if (w.lv === U.awakenLevel && w.base && w.base.awaken) { this.showBanner(`각성! ${w.def.name}`, w.base.awaken.desc, '#ffd84a'); this.effects.rays(p.x, p.y, '#ffd84a', 18, 80, 1); this.screenFlash = 0.2; this.flashColor = '255,216,74'; SFX.play('solomon', 0.5); } /* [사용자 결정] 기본 무기 +10 각성 */
       this.effects.text(p.x, p.y - 24, `강화 성공! ${weaponTitle(w)}`, '#ffd84a', true); this.effects.burst(fx.x, fx.y - 6, '#ffd84a', 16); this.effects.ring(fx.x, fx.y, 18, '#ffd84a');
       SFX.play(w.lv >= 4 ? 'clear' : 'buy'); if (w.lv >= 4) this.addShake(0.12, 2);
     } else {
