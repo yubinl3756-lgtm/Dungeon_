@@ -298,7 +298,14 @@ function placeCover(map, r) {
   switch (randInt(0, 6)) {
     case 0: block(cx - 5, cy - 3, 2, 2); block(cx + 4, cy - 3, 2, 2); block(cx - 5, cy + 2, 2, 2); block(cx + 4, cy + 2, 2, 2); break;
     case 1: block(cx - 3, cy - 3, 7, 1); block(cx - 3, cy + 3, 7, 1); break;
-    case 2: block(cx - 1, cy - 1, 3, 3); break;
+    case 2:
+      if (r.type === 'challenge') {
+        // 도전의 석판은 방 중앙에 놓인다. 중앙 3×3 엄폐물이 석판을 둘러싸면
+        // 벽 충돌·시야 판정 때문에 상호작용할 수 없으므로, 모서리 배치로 대체한다.
+        block(cx - 5, cy - 3, 2, 2); block(cx + 4, cy - 3, 2, 2);
+        block(cx - 5, cy + 2, 2, 2); block(cx + 4, cy + 2, 2, 2);
+      } else block(cx - 1, cy - 1, 3, 3);
+      break;
     case 3: block(cx - 4, cy - 3, 2, 2); block(cx + 3, cy + 2, 2, 2); break;
     case 4: for (const [dx, dy] of [[-4, -3], [0, -3], [4, -3], [-4, 3], [0, 3], [4, 3]]) block(cx + dx, cy + dy, 1, 1); break;
     case 5: block(cx - 4, cy - 2, 1, 5); block(cx + 4, cy - 2, 1, 5); break;
