@@ -104,7 +104,7 @@ const BALANCE = {
     death: { life: 15, range: 150, every: 0.6, dmg: 20, /* [밸런스 조정] 파수기 직선 번개 피해 24 → 20 */ corpseRange: 120, corpseR: 46, corpseEvery: 1.2, corpseHp: 0.65, /* [밸런스 조정] 시체 폭발 피해 80% → 65%, 범위 52 → 46 */ corpseHeal: 0.1, lifesteal: 0.05, bossCorpse: 60, corpseCap: 700, corpseHealCap: 0.04 }, /* 시체 폭발: 일반 몬스터 skillDmg(corpseCap)·보스 skillDmg(bossCorpse)까지, 시체 1개 회복은 최대 체력 corpseHealCap까지 */ // 망자의 파수기 (2차) — 번개 = dmg(스킬 피해 배율·공격력 적용), 시체 폭발 피해 = 죽은 적 최대 체력 × corpseHp, 폭발 때 죽은 적 최대 체력 × corpseHeal 회복, 파수기가 준 피해 × lifesteal 회복 [사용자 결정]
     corpseLife: 6           // 시체가 남아 있는 시간(초)
   },
-  upgrade: { awakenLevel: 10, perLevel: 0.14, power: 0.85, base: 27, /* 강화 피해 배율: 1 + 0.14 × 강화 단계^0.85 · +10 약 ×1.99, 이후 증가 효율 점감 · 상한 없음 */ chance: [1, 0.9, 0.75, 0.6, 0.45, 0.38, 0.32, 0.26, 0.2, 0.15],
+  upgrade: { awakenLevel: 10, perLevel: 0.24013138258586825, power: 0.85, base: 27, /* 강화 피해 배율: 1 + 0.24013138258586825 × 강화 단계^0.85 · +10 ×2.70, 이후 증가 효율 점감 · 상한 없음 */ chance: [1, 0.9, 0.75, 0.6, 0.45, 0.38, 0.32, 0.26, 0.2, 0.15],
     rarityMult: { common: 1, uncommon: 1.2, rare: 1.5, epic: 1.8, legendary: 2.2, unique: 2.2 }, forgeRoomDiscount: 0.7, forgeRoomBonus: 0.1 },
   // 보스 강화 배율 (전직의 방 상위자는 제외): 체력·공격력·공격 간격
   //  boss = 1~10필드 보스, bossDeep = 심층 보스 (보구를 가진 상태를 기준으로 더 강함)
